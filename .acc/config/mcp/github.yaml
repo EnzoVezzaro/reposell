@@ -1,0 +1,23 @@
+name: github
+type: stdio
+command: npx
+args:
+  - -y
+  - "@modelcontextprotocol/server-github"
+env:
+  GITHUB_TOKEN: "${GITHUB_TOKEN}"
+tools:
+  - github_get_repository
+  - github_list_repositories
+  - github_list_releases
+  - github_get_release
+  - github_get_file_contents
+  - github_list_commits
+  - github_create_issue
+  - github_create_pull_request
+  - github_get_workflow_run
+  - github_list_workflow_runs
+resources:
+  - github://repos/{owner}/{repo}
+  - github://repos/{owner}/{repo}/releases
+  - github://repos/{owner}/{repo}/contents/{path}

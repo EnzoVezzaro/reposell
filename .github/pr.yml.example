@@ -1,0 +1,7 @@
+# AI Contribution Declaration
+# Add this file to your PR to declare the AI tooling used
+# CI will verify against .github/pr_allow_providers.yml
+
+harness: opencode
+provider: anthropic
+model: claude-sonnet-4-20250514

@@ -1,0 +1,100 @@
+reposell CLI License
+Version 1.0, August 2026
+
+Copyright (c) 2026 Enzo Vezzaro and contributors
+
+This license governs use of the reposell CLI ("Software"), the core
+command-line interface for the reposell repository-to-repository
+marketplace protocol.
+
+1. GRANT OF RIGHTS
+   Subject to the terms of this License, you are granted a perpetual,
+   worldwide, non-exclusive, royalty-free license to:
+   
+   a) Use, copy, modify, and distribute the Software in source and
+      binary forms;
+   
+   b) Create derivative works based on the Software;
+   
+   c) Sublicense the foregoing rights to third parties;
+   
+   d) Use the Software for any purpose, including commercial purposes.
+
+2. ECOSYSTEM INTEGRITY REQUIREMENTS
+   If you distribute the Software or derivative works:
+   
+   a) You MUST NOT modify the core protocol constants:
+      - The `/sell` endpoint path
+      - The `/marketplace` endpoint path
+      - The `reposell` protocol identifier
+      - The canonical repository identity format
+   
+   b) You MUST preserve the PaymentProvider abstraction interface
+      and MUST NOT hardcode Stripe or any single payment provider.
+   
+   c) You MUST preserve the GitProvider abstraction interface
+      and MUST NOT hardcode GitHub as the only provider.
+   
+   d) You MUST preserve the zero-config principle: all values that
+      can be derived from Git/GitHub/CI MUST be auto-derived.
+
+3. TRADEMARK NOTICE
+   "reposell" and the reposell logo are trademarks of Enzo Vezzaro.
+   This License does not grant permission to use these trademarks
+   except:
+   
+   a) To identify the original Software;
+   
+   b) To indicate compatibility with the reposell protocol
+      (e.g., "Compatible with reposell v1.0");
+   
+   c) In accordance with the reposell Trademark Policy.
+
+4. PATENT GRANT
+   Each contributor grants you a perpetual, worldwide, non-exclusive,
+   royalty-free patent license to make, use, sell, offer for sale,
+   import, and otherwise transfer the Software, where such license
+   applies only to patent claims licensable by the contributor that
+   are necessarily infringed by their contribution.
+
+5. DISCLAIMER OF WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY.
+
+6. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES ARISING FROM USE OF THE SOFTWARE.
+
+7. VALIDATION REQUIREMENT
+   Any distribution claiming to be "reposell CLI" or "compatible with
+   reposell" MUST pass the official validation suite:
+   
+   a) The `reposell doctor` command MUST report no errors;
+   
+   b) The `acc check` command MUST report no ACC0xx errors;
+   
+   c) The official protocol test suite MUST pass;
+   
+   d) The cryptographic identity and signature verification MUST work
+      with the official verification key.
+
+   Failure to pass validation means the distribution MAY NOT use the
+   "reposell" name or claim protocol compatibility.
+
+8. TERMINATION
+   This License terminates automatically if you breach its terms.
+   Rights may be reinstated if the breach is cured within 30 days
+   of notice.
+
+9. GOVERNING LAW
+   This License shall be governed by the laws of the Dominican
+   Republic, without regard to conflict-of-law principles.
+
+10. CONTRIBUTIONS
+    Contributions are accepted under the terms of this License.
+    By submitting a contribution, you represent that you have the
+    right to license it under these terms.

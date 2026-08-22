@@ -1,0 +1,8 @@
+# ACC ignore patterns
+# These paths are ignored during ACC scanning
+
+tools/oxlint/anti-slop/**
+.agents/skills/**
+node_modules/**
+dist/**
+build/**

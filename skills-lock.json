@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "acc": {
+      "source": "EnzoVezzaro/agents-code-context",
+      "sourceType": "github",
+      "skillPath": "skills/acc/SKILL.md",
+      "computedHash": "f67928932e20a307813a871680d3177c528b0a9267919cfbe4cb319cce5d52ce"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "3afb2a5e8cb327d83f75d585494dcdb6aaaf7506cf0410cddd072b30f960efea"
+    },
+    "install-anti-slop": {
+      "source": "dmmulroy/anti-slop",
+      "sourceType": "github",
+      "skillPath": "skills/install-anti-slop/SKILL.md",
+      "computedHash": "b903a7ac2c823d473a4b0046834fccbab0bc75ee4fda8be4f81efa895d475b01"
+    }
+  }
+}

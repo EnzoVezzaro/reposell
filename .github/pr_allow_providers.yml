@@ -1,0 +1,75 @@
+# reposell CLI - AI Provider Allowlist
+# CI verifies .github/pr.yml against this policy
+# Keep this file in sync across all three repos
+
+providers:
+  anthropic:
+    free_api_access: false
+    models:
+      claude-sonnet-4-20250514:
+        free_model: false
+      claude-3-5-sonnet-20241022:
+        free_model: false
+      claude-3-5-haiku-20241022:
+        free_model: false
+
+  google:
+    free_api_access: true
+    models:
+      gemini-2.5-pro:
+        free_model: true
+      gemini-2.5-flash:
+        free_model: true
+      gemini-2.5-flash-lite:
+        free_model: true
+      gemini-2.0-flash:
+        free_model: true
+
+  openrouter:
+    free_api_access: true
+    models:
+      "deepseek/deepseek-chat-v3.1":
+        free_model: true
+      "qwen/qwen3-coder":
+        free_model: true
+      "meta-llama/llama-3.1-405b-instruct":
+        free_model: true
+
+  ollama:
+    free_api_access: true
+    models:
+      "(all)":
+        free_model: true
+
+harnesses:
+  opencode:
+    allowed: true
+    free_tier: true
+  claude-code:
+    allowed: true
+    free_tier: false
+  cursor:
+    allowed: true
+    free_tier: false
+  windsurf:
+    allowed: true
+    free_tier: false
+  codex:
+    allowed: true
+    free_tier: true
+  gemini-cli:
+    allowed: true
+    free_tier: true
+  aider:
+    allowed: true
+    free_tier: true
+  continue:
+    allowed: true
+    free_tier: true
+
+# Validation rules
+validation:
+  require_pr_yml: true
+  require_free_model: false  # Set true to require free models only
+  allow_proprietary_models: true
+  post_verification_comment: true
