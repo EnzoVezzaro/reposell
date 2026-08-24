@@ -1,0 +1,65 @@
+name: deploy
+
+# One Pages site: the docs landing at root + the /reposell/* protocol
+# surface (built when a reposell.yml exists in this repository).
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build CLI
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build protocol surface (optional)
+        run: |
+          if [ -f reposell.yml ]; then
+            node dist/bin/reposell.js validate
+            node dist/bin/reposell.js build --out dist-proto
+          else
+            echo "no reposell.yml — skipping protocol surface"
+          fi
+
+      - name: Build docs site
+        run: |
+          cd docs
+          npm ci
+          npx vitepress build
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp -r docs/.vitepress/dist/* site/
+          if [ -d dist-proto/reposell ]; then
+            cp -r dist-proto/reposell site/reposell
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
