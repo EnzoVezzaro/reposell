@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-08-23
 
 ### Added
+- **Reciprocity Program**: seller-configured, buyer-enforced — purchased forks carry the program manifest (`REPOSELL-RECIPROCITY.json` via `sell sync`); threshold/contribution/recipients with strict validation (shares total 100); `reposell reciprocity [--revenue N]` show/validate/simulate; seller's own revenue never bound unless `apply_to_own_use`
 - **Protocol engine**: `/reposell/*` static surface generator (index/manifest/health/releases/sell/marketplace), release state machine (DRAFT→PUBLISHED→BLOCKED), publication gates, Ed25519 build signing, Pages CI workflow
 - **License offers**: reusable license schemes (`licensing.schemes` — one-time/recurring, interval, seats, template) bound per release through `offers[]`, each with its own Stripe Payment Link; deep verification is billing-aware (recurring price + interval); legacy per-release pricing/payment removed (clean break)
 - **Licensing framework**: rights catalog (23 groups, closed vocabularies), 15 policy profiles, `license compose|explain|validate|compatibility`, machine artifacts (`.reposell/license.json`, `ai-policy.json`, `commercial-policy.json`, `authorization.json`), SPDX expression parser + family compatibility matrix, policy sha256 bound into signed release manifests

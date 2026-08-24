@@ -32,6 +32,7 @@ export default defineConfig({
           { text: 'Payment Setup', link: '/guide/payment-setup' },
           { text: 'Listing Setup', link: '/guide/listing-setup' },
           { text: 'Licensing Policy & Audit', link: '/guide/licensing-policy' },
+          { text: 'Reciprocity Program', link: '/guide/reciprocity' },
         ],
       },
       {
@@ -91,6 +92,7 @@ export default defineConfig({
             { text: 'Payments & Keys', link: '/guide/payments/' },
             { text: 'Listing Setup', link: '/guide/listing-setup' },
             { text: 'Licensing Policy & Audit', link: '/guide/licensing-policy' },
+            { text: 'Reciprocity Program', link: '/guide/reciprocity' },
           ],
         },
         {

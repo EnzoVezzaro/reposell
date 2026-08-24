@@ -50,6 +50,36 @@ export interface LicensingSection {
   schemes?: Record<string, LicensingScheme>;
 }
 
+export interface ReciprocityThreshold {
+  amount?: number;
+  currency?: string;
+  period?: 'annual' | 'lifetime';
+}
+
+export interface ReciprocityContribution {
+  rate?: number;
+  basis?: 'revenue';
+}
+
+export interface ReciprocityRecipient {
+  recipient?: 'original_repository' | 'dependencies' | 'contributors' | 'reposell';
+  share?: number;
+}
+
+/**
+ * Seller-configured, buyer-enforced: the program binds to FORKS CREATED
+ * FROM PURCHASES of this /sell package. `apply_to_own_use` independently
+ * extends it to the seller's own commercial use — off by default, and the
+ * seller's own repository never becomes subject automatically.
+ */
+export interface ReciprocitySection {
+  enabled?: boolean;
+  apply_to_own_use?: boolean;
+  threshold?: ReciprocityThreshold;
+  contribution?: ReciprocityContribution;
+  recipients?: ReciprocityRecipient[];
+}
+
 /** Status is persisted approval: draft until `reposell publish` passes gates. */
 export type ReleaseStatus = 'draft' | 'published';
 
@@ -91,6 +121,7 @@ export interface ReposellYml {
   version?: number;
   product?: ProductSection;
   licensing?: LicensingSection;
+  reciprocity?: ReciprocitySection;
   releases?: ReleasesSection;
   sell?: SellSection;
   marketplace?: MarketplaceSection;
@@ -266,6 +297,71 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
             config.licensing.schemes[id] = scheme;
           }
         }
+      }
+    }
+  }
+
+  if (raw['reciprocity'] !== undefined && typeof raw['reciprocity'] === 'object' && raw['reciprocity'] !== null && !Array.isArray(raw['reciprocity'])) {
+    // SAFETY: shape checked on previous line; fields validated individually.
+    const rec = raw['reciprocity'] as Record<string, unknown>;
+    config.reciprocity = {};
+    if (rec['enabled'] !== undefined) {
+      recordIssues(issues, typeof rec['enabled'] !== 'boolean', 'reciprocity.enabled must be a boolean');
+      if (typeof rec['enabled'] === 'boolean') config.reciprocity.enabled = rec['enabled'];
+    }
+    if (rec['apply_to_own_use'] !== undefined) {
+      recordIssues(issues, typeof rec['apply_to_own_use'] !== 'boolean', 'reciprocity.apply_to_own_use must be a boolean');
+      if (typeof rec['apply_to_own_use'] === 'boolean') config.reciprocity.apply_to_own_use = rec['apply_to_own_use'];
+    }
+    if (rec['threshold'] !== undefined && typeof rec['threshold'] === 'object' && rec['threshold'] !== null && !Array.isArray(rec['threshold'])) {
+      // SAFETY: shape checked above.
+      const th = rec['threshold'] as Record<string, unknown>;
+      const threshold: ReciprocityThreshold = {};
+      if (th['amount'] !== undefined) {
+        recordIssues(issues, typeof th['amount'] !== 'number' || !Number.isFinite(th['amount']), 'reciprocity.threshold.amount must be a number');
+        if (typeof th['amount'] === 'number') threshold.amount = th['amount'];
+      }
+      if (th['currency'] !== undefined) {
+        recordIssues(issues, typeof th['currency'] !== 'string' || th['currency'].length !== 3, 'reciprocity.threshold.currency must be a 3-letter code');
+        if (typeof th['currency'] === 'string') threshold.currency = th['currency'].toUpperCase();
+      }
+      if (th['period'] !== undefined) {
+        recordIssues(issues, th['period'] !== 'annual' && th['period'] !== 'lifetime', 'reciprocity.threshold.period must be "annual" or "lifetime"');
+        if (th['period'] === 'annual' || th['period'] === 'lifetime') threshold.period = th['period'];
+      }
+      config.reciprocity.threshold = threshold;
+    }
+    if (rec['contribution'] !== undefined && typeof rec['contribution'] === 'object' && rec['contribution'] !== null && !Array.isArray(rec['contribution'])) {
+      // SAFETY: shape checked above.
+      const co = rec['contribution'] as Record<string, unknown>;
+      const contribution: ReciprocityContribution = {};
+      if (co['rate'] !== undefined) {
+        recordIssues(issues, typeof co['rate'] !== 'number' || !Number.isFinite(co['rate']), 'reciprocity.contribution.rate must be a number');
+        if (typeof co['rate'] === 'number') contribution.rate = co['rate'];
+      }
+      if (co['basis'] !== undefined) {
+        recordIssues(issues, co['basis'] !== 'revenue', 'reciprocity.contribution.basis must be "revenue"');
+        if (co['basis'] === 'revenue') contribution.basis = co['basis'];
+      }
+      config.reciprocity.contribution = contribution;
+    }
+    if (rec['recipients'] !== undefined && Array.isArray(rec['recipients'])) {
+      config.reciprocity.recipients = [];
+      for (const rawEntry of rec['recipients']) {
+        if (typeof rawEntry !== 'object' || rawEntry === null || Array.isArray(rawEntry)) {
+          issues.push('reciprocity.recipients entries must be mappings');
+          continue;
+        }
+        // SAFETY: shape checked above.
+        const entry = rawEntry as Record<string, unknown>;
+        const parsedEntry: ReciprocityRecipient = {};
+        if (entry['recipient'] !== undefined && typeof entry['recipient'] === 'string') {
+          parsedEntry.recipient = entry['recipient'] as ReciprocityRecipient['recipient'];
+        }
+        if (entry['share'] !== undefined && typeof entry['share'] === 'number') {
+          parsedEntry.share = entry['share'];
+        }
+        config.reciprocity.recipients.push(parsedEntry);
       }
     }
   }

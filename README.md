@@ -65,6 +65,7 @@ The listing is OPTIONAL. A repository may:
 - **Licensing framework**: 15 policy profiles, ~45 declarative rights (incl. AI training/inference/agents), machine-readable `.reposell/*` artifacts, SPDX expressions with `LicenseRef-reposell-*` support
 - **Compliance audit**: `reposell audit` scans the repo + dependencies against policy — PASS/WARN/BLOCKED, SPDX & CycloneDX SBOMs, Ed25519-signed reports, CI gate mode
 - **License offers**: multiple licensing schemes per release (perpetual, seats, recurring subscriptions), each with its own verified Stripe Payment Link
+- **Reciprocity Program**: seller-configured, buyer-enforced — purchased forks that become commercially successful give back (original repo / dependencies / contributors), split by configurable shares
 
 ## Payment Integration
 

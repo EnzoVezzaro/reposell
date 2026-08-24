@@ -5,6 +5,7 @@ import { licenseCommand } from '../commands/license.js';
 import { auditCommand } from '../commands/audit.js';
 import { listingPublishCommand, formatListingPublish, ListingPublishError } from '../commands/listing-publish.js';
 import { sellSyncCommand } from '../commands/sell-sync.js';
+import { reciprocityCommand } from '../commands/reciprocity.js';
 import { listingCommand } from '../commands/listing.js';
 import { validateCommand } from '../commands/validate.js';
 import { buildCommand } from '../commands/build.js';
@@ -34,6 +35,7 @@ const USAGE = [
   '  listing status              Dashboard: repo, license, /sell endpoint, payments',
   '  listing publish <tag>       Build + verify a Listing publication PR payload',
   '  sell sync [payment_link_id] Pull-based fulfillment: purchases, refunds, fork artifacts',
+  '  reciprocity [--revenue N]   Show/validate/simulate the Reciprocity Program',
   '  release <tag> [--price N] [--currency USD] [--link URL] [--link-id plink_…]',
   '                              Declare a release (interactive when flags omitted)',
   '  publish <tag>               Approve publication after gates pass (manual mode)',
@@ -110,6 +112,10 @@ async function main(): Promise<void> {
         console.log(await auditCommand(cwd, rest));
         break;
       }
+      case 'reciprocity': {
+        console.log(await reciprocityCommand(cwd, rest));
+        break;
+      }
       case 'sell': {
         if (rest[0] === 'sync') {
           const report = await sellSyncCommand(cwd, {
@@ -148,6 +154,10 @@ async function main(): Promise<void> {
           break;
         }
         console.log(await listingCommand(cwd, rest));
+        break;
+      }
+      case 'reciprocity': {
+        console.log(await reciprocityCommand(cwd, rest));
         break;
       }
       case 'sell': {

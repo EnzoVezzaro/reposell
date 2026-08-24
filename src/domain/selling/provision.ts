@@ -11,6 +11,8 @@
 
 import { createHash } from 'crypto';
 
+import type { ReciprocityManifest } from '../reciprocity/program.js';
+
 export interface PurchaseFacts {
   buyer: string;
   buyerEmail?: string;
@@ -85,6 +87,27 @@ export function buildPurchaseArtifact(facts: PurchaseFacts): PurchaseArtifact {
 /** Canonical JSON for REPOSELL-PURCHASE.json (deterministic, signable). */
 export function purchaseArtifactJson(artifact: PurchaseArtifact): string {
   return `${JSON.stringify(artifact, null, 2)}\n`;
+}
+
+/**
+ * REPOSELL-RECIPROCITY.json — the seller's Reciprocity Program as carried
+ * by the purchased fork. SELLER-CONFIGURED, BUYER-ENFORCED: the program
+ * binds the FORK (if it becomes commercially successful it gives back);
+ * it never binds the seller's own repository or revenue unless the seller
+ * separately opted in via apply_to_own_use.
+ */
+export function reciprocityArtifactJson(
+  manifest: ReciprocityManifest,
+  forkFacts: { buyer: string; fork: string },
+): string {
+  const doc = {
+    schema: 'reposell/reciprocity-fork/v1',
+    fork: { buyer: forkFacts.buyer, name: forkFacts.fork },
+    source: manifest.source,
+    program: manifest.program,
+    program_fingerprint: manifest.fingerprint,
+  };
+  return `${JSON.stringify(doc, null, 2)}\n`;
 }
 
 /**

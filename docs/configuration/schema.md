@@ -169,3 +169,27 @@ Rules enforced by the validator and the publication gates:
 - every offer independently passes the price/currency/provider/link gates — one bad offer blocks the release
 - deep Stripe verification checks amount, currency **and billing mode** (a recurring scheme must point at a recurring price with the declared interval)
 - the license policy sha256 (from `reposell license compose`) is bound into every signed release manifest
+
+
+## Reciprocity Program
+
+Seller-configured, buyer-enforced: the program binds forks created from
+purchases of this package (never the seller's own revenue unless
+`apply_to_own_use: true`).
+
+```yaml
+reciprocity:
+  enabled: true
+  apply_to_own_use: false
+  threshold: { amount: 2000000, currency: USD, period: annual }
+  contribution: { rate: 2, basis: revenue }
+  recipients:
+    - { recipient: original_repository, share: 50 }
+    - { recipient: dependencies, share: 30 }
+    - { recipient: contributors, share: 10 }
+    - { recipient: reposell, share: 10 }
+```
+
+Rules: shares total exactly 100; known recipients; rate 0-100; `sell sync`
+writes `REPOSELL-RECIPROCITY.json` into every purchased fork. See the
+[Reciprocy guide](/guide/reciprocity).

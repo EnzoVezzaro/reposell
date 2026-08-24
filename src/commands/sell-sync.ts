@@ -15,11 +15,14 @@ import {
   type PurchaseRecord,
 } from '../domain/selling/sync.js';
 import { buildPurchaseArtifact, purchaseArtifactJson, revocationMarker } from '../domain/selling/provision.js';
+import { buildReciprocityManifest, type ReciprocityProgram } from '../domain/reciprocity/program.js';
 
 export interface SellSyncOptions {
   paymentLinkId?: string;
   env?: EnvSource;
   fetchImpl?: Parameters<typeof syncSell>[0]['fetchImpl'];
+  /** Active Reciprocity Program from reposell.yml — carried by every purchased fork. */
+  reciprocity?: ReciprocityProgram;
 }
 
 export interface SellSyncReport {
@@ -83,6 +86,24 @@ export async function sellSyncCommand(cwd: string, options: SellSyncOptions = {}
         : purchaseArtifactJson(artifact);
     await writeFile(file, content);
     written.push(path.relative(cwd, file));
+
+    // Purchased forks carry the seller's Reciprocity Program (buyer-enforced).
+    if (options.reciprocity !== undefined && options.reciprocity.enabled) {
+      const manifest = buildReciprocityManifest({
+        program: options.reciprocity,
+        repository: artifact.entitlement.repository,
+        release: artifact.entitlement.release,
+      });
+      const reciprocityFile = path.join(purchasesDir, `${record.session}.reciprocity.json`);
+      await writeFile(reciprocityFile, `${JSON.stringify({
+        schema: 'reposell/reciprocity-fork/v1',
+        fork: { buyer: artifact.purchase.buyer, name: artifact.entitlement.licensed_fork },
+        source: manifest.source,
+        program: manifest.program,
+        program_fingerprint: manifest.fingerprint,
+      }, null, 2)}\n`);
+      written.push(path.relative(cwd, reciprocityFile));
+    }
   };
 
   for (const record of result.purchased) await persist(record);
