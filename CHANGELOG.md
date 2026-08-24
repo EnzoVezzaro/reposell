@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-paint font loading for all theme identities
 
 ### Changed
+- Navbar is icon-only (siteTitle: false) — page <title> suffixes unchanged
 - Package version 0.1.0 (honest pre-1.0); footer/nav version chip reads package.json
 - `reposell-listing`/`reposell-listing-public` docs landings unified with the CLI landing system
 

@@ -18,7 +18,7 @@ export default defineConfig({
     ['script', {}, `(function(){try{var p=location.pathname,b='/docs/',h=p===b||p===b+'index.html'||p==='/'||p==='/index.html';if(!h)return;var d=document.documentElement;d.classList.add('rs-home','dark');if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))d.classList.add('lx-boot')}catch(e){}})()`],
   ],
   themeConfig: {
-    title: 'reposell CLI',
+    siteTitle: false,
     description: 'Don\'t let AI consume your repo for free. Earn for the tools you build for the Opensource',
     nav: [
       {
