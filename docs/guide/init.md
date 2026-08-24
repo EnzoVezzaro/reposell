@@ -52,7 +52,7 @@ The product name comes from your repository name. Releases start in `manual` mod
 
 A single deterministic workflow covering push to `main`/`master`, GitHub Release publications, and manual dispatch. Its pipeline:
 
-1. checkout → setup-node (Node 20) → `npm install -g reposell`
+1. checkout → setup-node (Node 20) → `npm install -g @reposell/cli`
 2. `reposell validate` — full publication gate checklist
 3. `reposell build --out dist` — generates the `/reposell/*` static surface and signs it when `REPOSELL_SIGNING_KEY` is present
 4. deploy `dist/reposell` to GitHub Pages

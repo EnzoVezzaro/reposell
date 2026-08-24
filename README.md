@@ -5,7 +5,7 @@ The core developer tool for the reposell repository-to-repository listing protoc
 ## Quickstart
 
 ```bash
-npm install -g reposell
+npm install -g @reposell/cli
 cd your-repo
 reposell init
 ```

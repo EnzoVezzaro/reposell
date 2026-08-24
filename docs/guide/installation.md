@@ -18,7 +18,7 @@ The monorepo enforces `"engines": { "node": ">=18.0.0" }`, and the generated CI 
 ## Global install
 
 ```bash
-npm install -g reposell
+npm install -g @reposell/cli
 ```
 
 This installs two executables (declared in the package `bin` field):

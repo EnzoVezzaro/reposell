@@ -49,7 +49,7 @@ export function createReposellWorkflow(): Record<string, unknown> {
         steps: [
           { uses: 'actions/checkout@v4' },
           { uses: 'actions/setup-node@v4', with: { 'node-version': 20 } },
-          { name: 'Install reposell CLI', run: 'npm install -g reposell' },
+          { name: 'Install reposell CLI', run: 'npm install -g @reposell/cli' },
           {
             name: 'Validate protocol configuration',
             run: 'reposell validate',

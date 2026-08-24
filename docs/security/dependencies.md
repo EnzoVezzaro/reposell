@@ -61,7 +61,7 @@ This is why generated workflows run plain Node plus the published CLI — target
 The CI workflow reposell generates is itself part of the supply chain, so it follows the same rules:
 
 - It pins official actions by major tag (`actions/checkout@v4`, `actions/setup-node@v4`, `actions/configure-pages@v5`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`) — first-party GitHub runners only, no third-party actions in the critical path.
-- It installs the published CLI from npm (`npm install -g reposell`) rather than running ad-hoc scripts with elevated permissions.
+- It installs the published CLI from npm (`npm install -g @reposell/cli`) rather than running ad-hoc scripts with elevated permissions.
 - Regeneration is deterministic: same input produces byte-identical YAML ([Release model](/protocol/release-model)), so an unexpected diff in `.github/workflows/reposell.yml` is itself a signal worth investigating.
 
 ## Reviewing dependency changes

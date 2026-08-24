@@ -9,7 +9,7 @@
 ## Quickstart
 
 ```bash
-npm install -g reposell
+npm install -g @reposell/cli
 reposell init
 ```
 
@@ -21,7 +21,7 @@ The CLI and CI should handle these tasks.
 
 ```bash
 # Global install
-npm install -g reposell
+npm install -g @reposell/cli
 
 # Or from a clone
 npm link

@@ -43,7 +43,7 @@ The repository remains completely independent from RepoSell infrastructure.
 RepoSell must require as little developer work as possible:
 
 ```bash
-npm install -g reposell
+npm install -g @reposell/cli
 reposell init
 git push
 ```
