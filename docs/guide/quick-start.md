@@ -12,7 +12,7 @@ Get up and running with reposell CLI in 5 minutes.
 
 ```bash
 # Global install
-npm install -g @reposell/cli
+npm install -g @reposell/cli   # package @reposell/cli → command "reposell"
 
 # Or from a clone
 npm link

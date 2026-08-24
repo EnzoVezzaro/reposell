@@ -10,6 +10,8 @@ cd your-repo
 reposell init
 ```
 
+> The npm package is **`@reposell/cli`** (published from the `@reposell` org); the command it installs is **`reposell`**. Zero-install alternative: `npx @reposell/cli <command>`.
+
 Everything possible happens automatically. The developer should NOT have to manually maintain listing manifests, synchronize releases, update listing metadata, calculate listing fees, synchronize pricing, manually verify signatures, manually register every release, or manually maintain GitHub workflows.
 
 The CLI and CI handle these tasks.
@@ -35,24 +37,28 @@ The listing is OPTIONAL. A repository may:
 | Command | Description |
 |---------|-------------|
 | `reposell init` | Initialize repository with zero-config defaults |
-| `reposell configure` | View/modify configuration |
-| `reposell sell` | Generate `/sell` endpoint |
-| `reposell listing enable` | Enable listing integration |
-| `reposell listing disable` | Disable listing integration |
-| `reposell listing register` | Register with official listing |
-| `reposell listing status` | Dashboard: repo, license, `/sell` endpoint, Stripe account |
+| `reposell release <tag>` | Declare a release: offers, pricing, Stripe Payment Link (interactive fallback) |
+| `reposell publish <tag>` | Approve publication after gates pass (manual mode) |
+| `reposell validate` | Run the full publication gate checklist |
+| `reposell build [--out dist]` | Generate the `/reposell/*` static surface (uses your `storefront.json` when present) |
+| `reposell health` | Health report for every configured release |
+| `reposell verify <manifest\|trust\|pricing> [url]` | CI verification entry points |
+| `reposell keys <generate\|show>` | Ed25519 signing identity |
+| **Selling** | |
+| `reposell sell sync [plink_id]` | Pull-based fulfillment: purchases, refunds → revocation, fork artifacts |
+| `reposell reciprocity [--revenue N]` | Show / validate / simulate the Reciprocity Program |
+| `reposell listing status` | Dashboard: repo, license, `/sell` endpoint, live Stripe account |
+| `reposell listing publish <tag>` | Build + verify a Listing publication PR payload |
+| **Licensing** | |
 | `reposell license check` | Detect and explain the repository license |
 | `reposell license use rsl` | Generate RSL-1.0 LICENSE + `.reposell/ai-policy.json` |
 | `reposell license keep` | Keep your existing license |
 | `reposell license compose` | Compose a rights-policy profile into `.reposell/*` machine artifacts |
-| `reposell license explain` | Plain-language summary of the active license policy |
+| `reposell license explain` | Plain-language summary of the active policy |
 | `reposell license validate` | Validate the machine-readable licensing artifacts |
 | `reposell license compatibility` | SPDX dependency compatibility check |
+| **Compliance** | |
 | `reposell audit` | Full licensing/compliance audit — PASS / WARN / BLOCKED + SBOMs + signed report |
-| `reposell release` | Manage releases |
-| `reposell verify` | Verify signatures and manifests |
-| `reposell doctor` | Diagnose repository health |
-| `reposell doctor --fix` | Auto-fix safe issues |
 
 ## Key Features
 
