@@ -301,7 +301,7 @@ All documents listed in Section 7 must be created and maintained. Each must be a
 
 ## 12. Definition of Done (CLI Specific)
 
-- [ ] `npm install -g reposell` works
+- [ ] `npm install -g @reposell/cli` works (global binary: `reposell`)
 - [ ] `reposell init` configures a repository automatically
 - [ ] `/sell` endpoint generated and functional
 - [ ] `/listing` manifest generated and signed
