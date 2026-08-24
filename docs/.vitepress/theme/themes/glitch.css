@@ -1,0 +1,83 @@
+/* ============================================================
+   Theme transition FX — glitch burst on every switch.
+   Shared infrastructure (not part of any theme's identity):
+   toggled via html.rs-glitch for ~550ms by the ThemeSwitcher.
+   ============================================================ */
+
+html.rs-glitch #app {
+  animation: rs-glitch-jitter 0.5s steps(2, end) both;
+}
+
+html.rs-glitch #app::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.06) 0 2px,
+      transparent 2px 5px
+    ),
+    linear-gradient(
+      105deg,
+      transparent 42%,
+      rgba(255, 0, 80, 0.14) 46%,
+      transparent 50%,
+      rgba(0, 255, 220, 0.12) 54%,
+      transparent 58%
+    );
+  mix-blend-mode: screen;
+  animation: rs-glitch-sweep 0.5s steps(3, end) both;
+}
+
+html.rs-glitch .VPNavBar .title span,
+html.rs-glitch .lx-title,
+html.rs-glitch .VPHeroName,
+html.rs-glitch h1 {
+  text-shadow:
+    2px 0 rgba(255, 0, 80, 0.75),
+    -2px 0 rgba(0, 255, 220, 0.75);
+}
+
+html.rs-glitch .rs-logo-brand {
+  animation: rs-glitch-skew 0.5s steps(3, end) both;
+}
+
+@keyframes rs-glitch-jitter {
+  0% { transform: translate(0, 0); filter: none; }
+  20% { transform: translate(-3px, 1px) skewX(0.6deg); filter: hue-rotate(35deg) saturate(1.6); }
+  40% { transform: translate(2px, -2px) skewX(-0.8deg); filter: hue-rotate(-50deg) contrast(1.3); }
+  60% { transform: translate(-2px, 2px); filter: invert(0.08) hue-rotate(90deg); }
+  80% { transform: translate(1px, -1px) skewX(0.4deg); filter: saturate(2); }
+  100% { transform: translate(0, 0); filter: none; }
+}
+
+@keyframes rs-glitch-sweep {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  45% { opacity: 0.35; }
+  70% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+@keyframes rs-glitch-skew {
+  0% { transform: translateX(0); }
+  33% { transform: translateX(-3px) skewX(-8deg); }
+  66% { transform: translateX(3px) skewX(6deg); }
+  100% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.rs-glitch #app,
+  html.rs-glitch #app::after,
+  html.rs-glitch .rs-logo-brand {
+    animation: none !important;
+  }
+  html.rs-glitch .VPNavBar .title span,
+  html.rs-glitch .lx-title,
+  html.rs-glitch h1 {
+    text-shadow: none;
+  }
+}

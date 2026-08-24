@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="reposell">
+  <defs>
+    <radialGradient id="glow" cx="30%" cy="20%" r="90%">
+      <stop offset="0%" stop-color="#171B26"/>
+      <stop offset="100%" stop-color="#0B0D12"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="url(#glow)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="16.25" fill="none" stroke="#FFFFFF" stroke-opacity=".1" stroke-width="1.5"/>
+  <g fill="none" stroke="#F2F4F8" stroke-width="6" stroke-linecap="round">
+    <path d="M21 47V17"/>
+    <path d="M21 26.5h12.5"/>
+  </g>
+  <path fill="#0AF188" fill-rule="evenodd" d="M45.5 18.5L53 26.5L45.5 34.5L38 26.5Z M45.5 24.1A2.4 2.4 0 1 0 45.51 24.1Z"/>
+</svg>

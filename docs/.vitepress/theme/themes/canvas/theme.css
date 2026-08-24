@@ -1,0 +1,191 @@
+/* ============================================================
+   CANVAS theme — deep space blue, coral signal, glows, curves.
+   Scoped to html[data-theme='canvas'].
+   ============================================================ */
+
+html[data-theme='canvas'] {
+  --lx-bg: #12122b;
+  --lx-bg-soft: #16213e;
+  --lx-card: #0f3460;
+  --lx-card-hover: #16437a;
+  --lx-line: rgba(255, 255, 255, 0.08);
+  --lx-line-strong: rgba(255, 255, 255, 0.18);
+  --lx-text: #eef0ff;
+  --lx-text-2: #a5b0d0;
+  --lx-text-3: #718096;
+  --lx-accent: #e94560;
+  --lx-accent-hover: #ff6b81;
+  --lx-accent-ink: #ffffff;
+  --lx-purple: #a855f7;
+  --lx-blue: #60a5fa;
+  --lx-cyan: #22d3ee;
+  --lx-radius: 16px;
+  --lx-font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --lx-font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --lx-hero-tint: #e94560;
+
+  --vp-c-bg: #12122b;
+  --vp-c-bg-alt: #0d0d21;
+  --vp-c-bg-elv: #18224a;
+  --vp-c-bg-soft: #18224a;
+  --vp-c-divider: rgba(255, 255, 255, 0.08);
+  --vp-c-border: rgba(255, 255, 255, 0.08);
+  --vp-c-text-1: #eef0ff;
+  --vp-c-text-2: #a5b0d0;
+  --vp-c-text-3: #718096;
+  --vp-c-brand-1: #ff6b81;
+  --vp-c-brand-2: #e94560;
+  --vp-c-brand-3: #ff6b81;
+  --vp-c-brand-soft: rgba(233, 69, 96, 0.16);
+  --vp-c-text-code: #ffd9df;
+  --vp-code-block-bg: #0d0d21;
+  --vp-code-color: #ffd9df;
+  --vp-code-lang-color: #8b93b8;
+  --vp-button-brand-bg: #e94560;
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-border: #e94560;
+  --vp-button-brand-hover-bg: #ff6b81;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-border: #ff6b81;
+  --vp-button-brand-active-bg: #d63a54;
+  --vp-button-brand-active-text: #ffffff;
+  --vp-button-brand-active-border: #d63a54;
+  --vp-button-alt-bg: #18224a;
+  --vp-button-alt-text: #eef0ff;
+  --vp-button-alt-border: rgba(255, 255, 255, 0.14);
+  --vp-font-family-base: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-mono: 'Fira Code', ui-monospace, monospace;
+
+  --rs-paper: #12122b;
+  --rs-paper-soft: #16213e;
+  --rs-card: #0f3460;
+  --rs-ink: #eef0ff;
+  --rs-muted-fg: #a5b0d0;
+  --rs-line: rgba(255, 255, 255, 0.1);
+  --rs-accent: #e94560;
+  --rs-accent-hover: #ff6b81;
+  --rs-accent-dim: rgba(233, 69, 96, 0.2);
+  --rs-purple: #a855f7;
+  --rs-blue: #60a5fa;
+  --rs-cyan: #22d3ee;
+  --rs-radius: 16px;
+}
+
+html[data-theme='canvas'] .lx-cell,
+html[data-theme='canvas'] .lx-step,
+html[data-theme='canvas'] .lx-mathcard,
+html[data-theme='canvas'] .lx-trustcard,
+html[data-theme='canvas'] .lx-link,
+html[data-theme='canvas'] .lx-vprop,
+html[data-theme='canvas'] .lx-cmdchip,
+html[data-theme='canvas'] .lx-trust li,
+html[data-theme='canvas'] .lx-chips li,
+html[data-theme='canvas'] .lx-code,
+html[data-theme='canvas'] .lx-btn,
+html[data-theme='canvas'] .rs-term {
+  clip-path: none;
+  border-radius: var(--lx-radius);
+  box-shadow: 0 10px 40px rgba(6, 10, 40, 0.55);
+}
+html[data-theme='canvas'] .lx-btn--solid {
+  background: linear-gradient(135deg, #e94560, #b83280);
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(233, 69, 96, 0.35);
+}
+html[data-theme='canvas'] .lx-btn:hover {
+  transform: translateY(-2px);
+}
+html[data-theme='canvas'] .lx-title em,
+html[data-theme='canvas'] .lx-num {
+  color: #ff6b81;
+}
+html[data-theme='canvas'] .lx-hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 18, 43, 0.55) 0%,
+    rgba(18, 18, 43, 0.25) 40%,
+    rgba(18, 18, 43, 0.72) 100%
+  );
+}
+
+/* canvas: VitePress component chrome follows the same geometry */
+html[data-theme='canvas'] {
+  --vp-button-brand-radius: 16px;
+  --vp-button-alt-radius: 16px;
+  --vp-custom-block-radius: 16px;
+}
+html[data-theme='canvas'] .vp-doc div[class*='language-'],
+html[data-theme='canvas'] .rs-logo-brand,
+html[data-theme='canvas'] .rs-theme-trigger,
+html[data-theme='canvas'] .rs-theme-credit,
+html[data-theme='canvas'] .rs-theme-picker {
+  border-radius: 16px;
+  clip-path: none;
+}
+
+/* ------------------------------------------------------------
+   CANVAS HERO — orbit: floating glow orbs, centered glass panel
+   ------------------------------------------------------------ */
+html[data-theme='canvas'] .lx-hero--canvas {
+  position: relative;
+  min-height: 82vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: radial-gradient(80% 60% at 50% 110%, #0f3460 0%, transparent 60%), var(--lx-bg);
+  animation: canvas-fade 700ms ease both;
+}
+html[data-theme='canvas'] .lx-shell--center { text-align: center; }
+html[data-theme='canvas'] .lx-orbs { position: absolute; inset: 0; pointer-events: none; }
+html[data-theme='canvas'] .lx-orbs i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+}
+html[data-theme='canvas'] .lx-orbs i:nth-child(1) {
+  width: 420px; height: 420px; top: -8%; left: 8%;
+  background: #e94560;
+  animation: canvas-orbit 14s ease-in-out infinite;
+}
+html[data-theme='canvas'] .lx-orbs i:nth-child(2) {
+  width: 340px; height: 340px; bottom: -12%; right: 6%;
+  background: #7c3aed;
+  animation: canvas-orbit 18s ease-in-out infinite reverse;
+}
+html[data-theme='canvas'] .lx-orbs i:nth-child(3) {
+  width: 260px; height: 260px; top: 30%; right: 22%;
+  background: #22d3ee;
+  opacity: 0.3;
+  animation: canvas-orbit 22s ease-in-out infinite;
+}
+html[data-theme='canvas'] .lx-glass {
+  display: inline-block;
+  padding: 3rem 3.4rem;
+  border-radius: 28px;
+  background: rgba(10, 14, 44, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px rgba(4, 8, 32, 0.6);
+}
+html[data-theme='canvas'] .lx-title--glow .lx-title,
+html[data-theme='canvas'] .lx-title--glow {
+  margin: 0 0 1.2rem;
+  background: linear-gradient(120deg, #eef0ff 20%, #ff6b81 55%, #22d3ee 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+html[data-theme='canvas'] .lx-hero--canvas .lx-sub { margin: 0 auto 2rem; }
+html[data-theme='canvas'] .lx-actions--center { justify-content: center; }
+html[data-theme='canvas'] .lx-glass-foot {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center;
+  margin-top: 2rem; padding-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.1);
+}
+html[data-theme='canvas'] .lx-glass-foot .lx-trust { margin: 0; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+html[data-theme='canvas'] .lx-glass-foot .lx-trust li { list-style: none; font-size: 0.78rem; color: var(--lx-text-2); }
+@keyframes canvas-orbit {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+}
+@keyframes canvas-fade { from { opacity: 0; } to { opacity: 1; } }

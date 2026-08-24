@@ -2,15 +2,15 @@
 
 ## Purpose
 
-The reposell CLI is the core developer tool for the reposell repository-to-repository marketplace protocol. It automates repository initialization, `/sell` endpoint generation, `/marketplace` manifest creation, release management, CI/CD workflow generation, and cryptographic identity/signature operations.
+The reposell CLI is the core developer tool for the reposell repository-to-repository listing protocol. It automates repository initialization, `/sell` endpoint generation, `/listing` manifest creation, release management, CI/CD workflow generation, and cryptographic identity/signature operations.
 
 ## Responsibilities
 
 - Initialize repositories with zero-config defaults (`reposell init`)
 - Generate `/sell` endpoint configuration with payment provider abstraction
-- Generate `/marketplace` manifest with cryptographic signatures
+- Generate `/listing` manifest with cryptographic signatures
 - Manage release selection (selected/all modes) with CI automation
-- Generate GitHub Actions workflows for release detection and marketplace sync
+- Generate GitHub Actions workflows for release detection and listing sync
 - Provide `reposell doctor` for diagnostics and auto-repair
 - Implement PaymentProvider interface with StripePaymentProvider
 - Implement GitProvider interface with GitHubProvider
@@ -31,7 +31,7 @@ Owner: src/cli
 ## Outputs
 
 - `/sell` endpoint configuration
-- `/marketplace/manifest.json` with signatures
+- `/reposell/manifest.json` with signatures
 - `.github/workflows/reposell.yml` and `reposell-release.yml`
 - `reposell.yml` configuration file
 - Cryptographic key pairs and public keys
@@ -59,13 +59,13 @@ Owner: src/cli
 
 The CLI follows clean architecture with these layers:
 
-1. **Domain** - Pure business logic: protocol schemas, identity, product, payment, git, marketplace abstractions
-2. **Application** - Use cases: commands, services (init, sell, marketplace, release, doctor), generators (workflows, manifests, config)
+1. **Domain** - Pure business logic: protocol schemas, identity, product, payment, git, listing abstractions
+2. **Application** - Use cases: commands, services (init, sell, listing, release, doctor), generators (workflows, manifests, config)
 3. **Infrastructure** - External adapters: GitHub API, Stripe API, Ed25519 crypto, filesystem, CI workflow generation
 4. **CLI** - Command framework: parser, command definitions, formatted output
 5. **Config** - Configuration management: schema validation (Zod), loading, merging, environment overrides
 
-Commands are composable: `init`, `configure`, `sell`, `marketplace enable|disable|register|status`, `release`, `verify`, `doctor`.
+Commands are composable: `init`, `configure`, `sell`, `listing enable|disable|register|status`, `release`, `verify`, `doctor`.
 
 ## Workflows
 

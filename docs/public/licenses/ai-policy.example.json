@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "ai": {
+    "training": false,
+    "fine_tuning": false,
+    "distillation": false,
+    "dataset_creation": false,
+    "code_scraping": false,
+    "bulk_crawling": false,
+    "embedding_creation": false,
+    "model_improvement": false
+  },
+  "text_and_data_mining": {
+    "commercial": false,
+    "non_commercial": false
+  },
+  "automated_agents": {
+    "development_use": true,
+    "model_training": false,
+    "model_improvement": false,
+    "retention_for_training": false
+  },
+  "redistribution": {
+    "automatic_license_transfer": false
+  }
+}

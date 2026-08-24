@@ -1,0 +1,161 @@
+/* ============================================================
+   SHADCN theme — zinc surfaces, Inter, rounded geometry.
+   Scoped to html[data-theme='shadcn'].
+   ============================================================ */
+
+html[data-theme='shadcn'] {
+  --lx-bg: #09090b;
+  --lx-bg-soft: #18181b;
+  --lx-card: #0c0c0e;
+  --lx-card-hover: #18181b;
+  --lx-line: hsl(240 3.7% 15.9%);
+  --lx-line-strong: hsl(240 3.7% 25%);
+  --lx-text: hsl(0 0% 98%);
+  --lx-text-2: hsl(240 5% 64.9%);
+  --lx-text-3: hsl(240 3.8% 46.1%);
+  --lx-accent: hsl(0 0% 98%);
+  --lx-accent-hover: hsl(240 5.9% 78%);
+  --lx-accent-ink: hsl(240 5.9% 10%);
+  --lx-purple: hsl(262.1 83.3% 57.8%);
+  --lx-blue: hsl(217.2 91.2% 59.8%);
+  --lx-cyan: hsl(198.6 88.7% 48.4%);
+  --lx-radius: 0.75rem;
+  --lx-font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --lx-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --lx-hero-tint: #fafafa;
+
+  --vp-c-bg: hsl(240 10% 3.9%);
+  --vp-c-bg-alt: hsl(240 10% 3.9%);
+  --vp-c-bg-elv: hsl(240 5.9% 10%);
+  --vp-c-bg-soft: hsl(240 5.9% 10%);
+  --vp-c-divider: hsl(240 3.7% 15.9%);
+  --vp-c-border: hsl(240 3.7% 15.9%);
+  --vp-c-text-1: hsl(0 0% 98%);
+  --vp-c-text-2: hsl(240 5% 64.9%);
+  --vp-c-text-3: hsl(240 3.8% 46.1%);
+  --vp-c-brand-1: hsl(0 0% 98%);
+  --vp-c-brand-2: hsl(240 5.9% 78%);
+  --vp-c-brand-3: hsl(240 5.9% 64.9%);
+  --vp-c-brand-soft: hsl(240 5.9% 20%);
+  --vp-c-text-code: hsl(0 0% 90%);
+  --vp-code-block-bg: hsl(240 5.9% 7%);
+  --vp-code-color: hsl(0 0% 90%);
+  --vp-code-lang-color: hsl(240 5% 55%);
+  --vp-button-brand-bg: hsl(0 0% 98%);
+  --vp-button-brand-text: hsl(240 5.9% 10%);
+  --vp-button-brand-border: hsl(0 0% 98%);
+  --vp-button-brand-hover-bg: hsl(240 5.9% 85%);
+  --vp-button-brand-hover-text: hsl(240 5.9% 10%);
+  --vp-button-brand-hover-border: hsl(240 5.9% 85%);
+  --vp-button-brand-active-bg: hsl(240 5.9% 78%);
+  --vp-button-brand-active-text: hsl(240 5.9% 10%);
+  --vp-button-brand-active-border: hsl(240 5.9% 78%);
+  --vp-button-alt-bg: hsl(240 5.9% 10%);
+  --vp-button-alt-text: hsl(0 0% 98%);
+  --vp-button-alt-border: hsl(240 3.7% 19%);
+  --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --rs-paper: hsl(240 10% 3.9%);
+  --rs-paper-soft: hsl(240 5.9% 8%);
+  --rs-card: hsl(240 5.9% 10%);
+  --rs-ink: hsl(0 0% 98%);
+  --rs-muted-fg: hsl(240 5% 64.9%);
+  --rs-line: hsl(240 3.7% 15.9%);
+  --rs-accent: hsl(0 0% 98%);
+  --rs-accent-hover: hsl(240 5.9% 85%);
+  --rs-accent-dim: hsl(240 5.9% 20%);
+  --rs-purple: hsl(262.1 83.3% 57.8%);
+  --rs-blue: hsl(217.2 91.2% 59.8%);
+  --rs-cyan: hsl(198.6 88.7% 48.4%);
+  --rs-radius: 0.75rem;
+}
+
+/* shadcn shape language: round everything, drop the chamfers */
+html[data-theme='shadcn'] .lx-cell,
+html[data-theme='shadcn'] .lx-step,
+html[data-theme='shadcn'] .lx-mathcard,
+html[data-theme='shadcn'] .lx-trustcard,
+html[data-theme='shadcn'] .lx-link,
+html[data-theme='shadcn'] .lx-vprop,
+html[data-theme='shadcn'] .lx-cmdchip,
+html[data-theme='shadcn'] .lx-trust li,
+html[data-theme='shadcn'] .lx-chips li,
+html[data-theme='shadcn'] .lx-code,
+html[data-theme='shadcn'] .lx-btn,
+html[data-theme='shadcn'] .rs-pill,
+html[data-theme='shadcn'] .rs-navcta,
+html[data-theme='shadcn'] .rs-term {
+  clip-path: none;
+  border-radius: var(--lx-radius);
+}
+html[data-theme='shadcn'] .lx-btn--solid {
+  background: var(--lx-accent);
+  color: var(--lx-accent-ink);
+  box-shadow: none;
+}
+html[data-theme='shadcn'] .lx-btn--solid:hover {
+  background: var(--lx-accent-hover);
+}
+html[data-theme='shadcn'] .lx-cell:hover,
+html[data-theme='shadcn'] .lx-step:hover {
+  box-shadow: 0 0 0 1px var(--lx-line-strong);
+  transform: translateY(-1px);
+}
+
+/* shadcn: VitePress component chrome follows the same geometry */
+html[data-theme='shadcn'] {
+  --vp-button-brand-radius: 0.5rem;
+  --vp-button-alt-radius: 0.5rem;
+  --vp-custom-block-radius: 0.5rem;
+}
+html[data-theme='shadcn'] .vp-doc div[class*='language-'],
+html[data-theme='shadcn'] .vp-doc .vp-code-group .tabs label,
+html[data-theme='shadcn'] .DocSearch-Button {
+  border-radius: 0.5rem;
+}
+
+/* ------------------------------------------------------------
+   SHADCN HERO — editorial: hairline gradient, kicker, huge type
+   ------------------------------------------------------------ */
+html[data-theme='shadcn'] .lx-hero--shadcn {
+  padding: 7rem 0 5rem;
+  background:
+    radial-gradient(60% 50% at 50% 0%, hsl(240 5.9% 14%) 0%, transparent 70%),
+    var(--lx-bg);
+  border-bottom: 1px solid var(--lx-line);
+  animation: shadcn-fade 600ms ease both;
+}
+html[data-theme='shadcn'] .lx-kicker {
+  font-family: var(--lx-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--lx-text-3);
+  margin-bottom: 1rem;
+}
+html[data-theme='shadcn'] .lx-editorial-rule {
+  width: 56px;
+  height: 2px;
+  background: var(--lx-accent);
+  margin-bottom: 2rem;
+}
+html[data-theme='shadcn'] .lx-title--editorial .lx-title,
+html[data-theme='shadcn'] .lx-title--editorial {
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  margin: 0 0 1.4rem;
+}
+html[data-theme='shadcn'] .lx-hero--shadcn .lx-sub { margin-bottom: 2rem; }
+html[data-theme='shadcn'] .lx-actions--pill .lx-btn { border-radius: 999px; }
+html[data-theme='shadcn'] .lx-editorial-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  margin-top: 2.2rem; color: var(--lx-text-3);
+}
+html[data-theme='shadcn'] .lx-editorial-meta .lx-trust { margin: 0; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+html[data-theme='shadcn'] .lx-editorial-meta .lx-trust li {
+  list-style: none; font-size: 0.78rem; border: 1px solid var(--lx-line);
+  border-radius: 999px; padding: 0.25rem 0.7rem;
+}
+@keyframes shadcn-fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }

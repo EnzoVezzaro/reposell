@@ -35,9 +35,8 @@ The reposell CLI implements the following security measures:
 - Idempotent webhook processing
 
 ### Git Provider Security
-- Minimal GitHub OAuth scopes
-- Webhook signature verification
-- Token storage via secure OS keychain
+- Minimal GitHub permissions (workflow-scoped `permissions:` blocks)
+- No GitHub tokens stored or logged by the CLI
 
 ### CLI Security
 - Input validation on all user-provided data
@@ -46,7 +45,7 @@ The reposell CLI implements the following security measures:
 - Secure default file permissions
 
 ### Dependency Security
-- `bun audit` in CI
+- `npm audit` in CI
 - Pinned dependency versions
 - Regular dependency updates
 
@@ -63,7 +62,7 @@ The reposell CLI implements the following security measures:
 This policy covers:
 - The reposell CLI (`reposell` package)
 - Generated code and workflows
-- Protocol implementations (`/sell`, `/marketplace`)
+- Protocol implementations (`/sell`, `/listing`)
 
 Out of scope:
 - Third-party dependencies (report to their maintainers)

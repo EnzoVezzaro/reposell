@@ -10,8 +10,8 @@ are verified against the official reposell trust and pricing policy.
 3. **Fetch pricing policy** from `https://reposell.dev/pricing.json`
 4. **Verify pricing-policy signature** using trust document keys
 5. **Validate pricing policy** (fees, percentages, accounting test)
-6. **Verify marketplace identity** (match registered marketplace_id)
-7. **Validate marketplace registration** (active status, correct endpoint)
+6. **Verify listing identity** (match registered listing_id)
+7. **Validate listing registration** (active status, correct endpoint)
 8. **Validate protocol compatibility** (version match)
 9. **Run application tests** (critical user flows)
 10. **Build** (typecheck, lint, build)
@@ -30,8 +30,8 @@ If ANY verification step fails:
 
 For a $50 product with $5 fee and 50/50 split:
 - Repository owner: $45
-- Main marketplace: $2.50
-- Public marketplace: $2.50
+- Main listing: $2.50
+- Public listing: $2.50
 
 All implementations MUST pass this test at unit, integration, API, and E2E levels.
 

@@ -3,7 +3,7 @@
 ## Repository
 - **URL**: https://github.com/EnzoVezzaro/reposell
 - **Product**: reposell CLI
-- **Current State**: Empty repository (initial commit only)
+- **Current State**: Active development — CLI implemented (51 tests, bin, license engine, listing dashboard); protocol vNext (D10–D15) pending — see section "Protocol Evolution Implementation Plan"
 
 ---
 
@@ -46,7 +46,7 @@ None - greenfield CLI.
 ### Phase 2: Core reposell Protocol
 - [x] Protocol versioning system (protocol: "reposell", version: "1.0")
 - [x] Repository identity model (canonical URL, provider, owner, repo, ID)
-- [x] Manifest schemas (/sell, /marketplace) versioned
+- [x] Manifest schemas (/sell, /listing) versioned
 - [x] Configuration schema (reposell.yml)
 - [x] ACC config (.acc/config/config.yaml)
 
@@ -80,12 +80,12 @@ None - greenfield CLI.
 - [x] CI/CD workflow generation (.github/workflows/)
 - [x] Manifest regeneration on new release
 
-### Phase 7: /marketplace Manifest
+### Phase 7: /listing Manifest
 - [x] Manifest schema design (versioned)
-- [x] Manifest generation (`reposell marketplace enable`)
+- [x] Manifest generation (`reposell listing enable`)
 - [x] Cryptographic identity integration (Ed25519)
 - [x] Signature generation for manifest
-- [x] Marketplace registration workflow
+- [x] Listing registration workflow
 
 ### Phase 8: Cryptographic Identity & Signatures
 - [x] Key pair generation (Ed25519)
@@ -99,10 +99,10 @@ None - greenfield CLI.
 - [x] `reposell init`
 - [x] `reposell configure`
 - [x] `reposell sell`
-- [x] `reposell marketplace enable`
-- [x] `reposell marketplace disable`
-- [x] `reposell marketplace register`
-- [x] `reposell marketplace status`
+- [x] `reposell listing enable`
+- [x] `reposell listing disable`
+- [x] `reposell listing register`
+- [x] `reposell listing status`
 - [x] `reposell release`
 - [x] `reposell verify`
 - [x] `reposell doctor` (with --fix)
@@ -112,12 +112,12 @@ None - greenfield CLI.
 - [x] Git provider detection
 - [x] Authentication validation
 - [x] /sell configuration check
-- [x] /marketplace configuration check
+- [x] /listing configuration check
 - [x] Payment provider validation
 - [x] Releases check
 - [x] CI configuration validation
 - [x] Signature configuration check
-- [x] Marketplace registration status
+- [x] Listing registration status
 - [x] Error/warning reporting
 - [x] Auto-fix for safe issues
 
@@ -129,7 +129,7 @@ None - greenfield CLI.
 - [x] Auto-derive Git provider
 - [x] Auto-derive release information (tags)
 - [x] Auto-derive default metadata (pricing defaults)
-- [x] Auto-derive marketplace endpoint (/marketplace)
+- [x] Auto-derive listing endpoint (/listing)
 
 ### Phase 42: Configuration
 - [x] reposell.yml schema (minimal required config)
@@ -162,7 +162,7 @@ None - greenfield CLI.
 - [x] Supply chain protection (verified dependencies)
 - [x] Input/output validation on all schemas
 - [x] Price security: Stripe handles final transaction client-side (record immutable snapshot)
-- [x] Never trust: repository manifests, marketplace manifests, client-side pricing, client-side transaction state
+- [x] Never trust: repository manifests, listing manifests, client-side pricing, client-side transaction state
 
 ---
 
@@ -176,7 +176,7 @@ None - greenfield CLI.
 | 4 | /sell generation | Phases 2, 3 |
 | 5 | GitHub integration | Phases 1, 2 |
 | 6 | Release management | Phases 3, 5 |
-| 7 | /marketplace manifest | Phases 2, 3, 8 |
+| 7 | /listing manifest | Phases 2, 3, 8 |
 | 8 | Cryptographic identity | Phase 1 |
 | 39 | CLI commands | Phases 3, 4, 5, 6, 7 |
 | 40 | reposell doctor | Phases 3, 4, 5, 6, 7 |
@@ -205,7 +205,7 @@ src/
 │   ├── product/      # Product, pricing, releases
 │   ├── payment/      # Payment provider abstraction
 │   ├── git/          # Git provider abstraction
-│   └── marketplace/  # Marketplace manifest, registration
+│   └── listing/  # Listing manifest, registration
 ├── application/      # Use cases, services
 │   ├── commands/     # CLI command implementations
 │   ├── services/     # Business services
@@ -237,7 +237,7 @@ tests/
 ### CI/CD
 - `.github/workflows/ci.yml` - Main CI pipeline (lint, typecheck, test, acc check)
 - `.github/workflows/release.yml` - Release automation (on tag push)
-- `.github/workflows/verify.yml` - Trust/pricing verification (public marketplace)
+- `.github/workflows/verify.yml` - Trust/pricing verification (public listing)
 - `skills-lock.json` - Installed skills tracking
 
 ### Documentation (Per Section 55)
@@ -289,7 +289,7 @@ tests/
 - [x] Security scan
 - [x] Automated release on tag
 - [x] ACC check passes
-- [x] verify.yml passes for public marketplace deployments
+- [x] verify.yml passes for public listing deployments
 
 ---
 
@@ -304,7 +304,7 @@ All documents listed in Section 7 must be created and maintained. Each must be a
 - [ ] `npm install -g reposell` works
 - [ ] `reposell init` configures a repository automatically
 - [ ] `/sell` endpoint generated and functional
-- [ ] `/marketplace` manifest generated and signed
+- [ ] `/listing` manifest generated and signed
 - [ ] Releases can be selected (selected/all mode)
 - [ ] All-release automation works via CI
 - [ ] GitHub integration works (auth, release detection)
@@ -319,3 +319,123 @@ All documents listed in Section 7 must be created and maintained. Each must be a
 - [ ] ACC framework operational
 - [ ] anti-slop linting passes (npx oxlint)
 - [ ] reposell.dev default domain configured
+---
+
+## Protocol Evolution Implementation Plan (2026-08) — Decisions D10–D15
+
+Source specs: `TRACKING.md` (D10–D15) · `docs/docs/protocol/*` (GitHub Pages Integration Specification).
+Production domains: apex **reposell.dev** (project root) · official listing **listing.reposell.dev**.
+
+### A. `/reposell/*` generator (D10) — `src/generate/`
+
+| File | Purpose |
+|------|---------|
+| `src/domain/protocol/index-json.ts` | discovery doc: `{protocol:"reposell",version:"1",manifest,health,sell,marketplace,releases}` |
+| `src/domain/protocol/repository-manifest.ts` | `reposell/manifest/v1` document from config+git |
+| `src/domain/protocol/release-manifest.ts` | immutable per-release doc (`reposell/release/v1`): version/tag/pricing/payment/license |
+| `src/domain/protocol/releases-index.ts` | catalog with per-release status+health |
+| `src/domain/protocol/health.ts` | `reposell/health/v1`: status + named checks map |
+| `src/app/pages-generator.ts` | renders static `sell/index.html` + `marketplace/index.html` into `dist/reposell/**` |
+| `src/commands/validate.ts` | full publication gate (§8 checklist) → exit codes |
+| `src/commands/build.ts` | validate + generate `dist/reposell/**` |
+| `src/commands/health-cmd.ts` | run checks locally, print report (`reposell health`) |
+
+### B. Release state machine (D10) — `src/domain/release/state.ts`
+
+- States: DRAFT → VALIDATING → BLOCKED \| PUBLISHED → HEALTHY \| UNHEALTHY
+- Persisted in `.reposell/releases.json`; BLOCKED must carry a machine-readable reason
+- Isolation rule: one release's failure never mutates another's state
+
+### C. Payment Link validation (D7/D10) — `src/domain/payment/link-validator.ts`
+
+- Checks: HTTPS · host allowlist `buy.stripe.com` · amount == manifest pricing · currency match
+- Failure semantics: **BLOCKED**, never warn-and-continue
+- Extend `reposell.yml` schema: `release.payment.payment_link`; keep filename `reposell.yml` (`.yaml` rename deferred)
+
+### D. Publish/release commands — `src/commands/{publish,release}.ts`
+
+- `reposell publish vX.Y.Z` — manual gate; runs full validation before committing release manifest
+- `reposell release vX.Y.Z` — interactive: prompts price + Payment Link URL, validates, confirms
+
+### D2. Payment configuration commands (D16 contribution model) — `src/commands/payment.ts`
+
+- `reposell payment setup` — guided config of the seller's own Stripe Payment Link
+- `reposell payment verify` — validate against release: valid Stripe URL · reachable · active · product exists · currency matches · **amount matches release price** · repo/release identifiable where available → BLOCKED + actionable errors on failure
+- `reposell listing enable` — contribution prompt ($5/$10/$25/$50/custom) written to manifest as `pricing.listing.contribution`
+- `reposell listing publish` — creates the publication PR to the listing registry
+- Manifest schema v1.0 gains: `pricing.seller`, `pricing.listing.{enabled,contribution}`, `payment.seller.payment_link`
+- Releases become immutable commercial records (manifest hash + signature + verification state); contribution changes apply only to future releases
+
+### D3. FREE vs PAID pricing types (D18) — schema + gate changes
+
+- Manifest/config schema: `pricing.type: "free" | "paid"` (default `paid` when amount+link present; explicit type required going forward)
+- Publication gate becomes conditional: free → skip provider/link checks entirely (release = direct access); paid → full link verification as today
+- `/sell` generator: free releases render `[Download]` → repository release asset/clone URL instead of `[Buy]`
+- `payment verify` on a free release prints "free release — nothing to verify" and exits 0
+- Listing contribution remains available to FREE projects (donation-style support)
+
+### E. Sell sync fulfillment (D7) — extend `sell` command group
+
+- Pull completed checkout sessions from seller's own Stripe account (existing key resolution)
+- Issue Fork Licenses for new buyers; detect refunds → mark license revoked
+- Cursor persisted in `.reposell/payments.json`
+
+### F. CI workflow generation — update `src/workflows/ci.ts`
+
+Generated `.github/workflows/reposell.yml` must: validate → build → regenerate health.json → deploy `dist/reposell/**` to GitHub Pages. Namespace rule: workflow writes ONLY under `/reposell/**`.
+
+### G. Signing (D10/D13 alignment)
+
+- Sign repository + release manifests with owner Ed25519 key (module exists in crypto domain)
+- Embed public verification key path convention `.github/reposell/verification-key.pem`
+
+### H. Provider abstraction (multi-provider, GitHub first)
+
+- `src/domain/git/provider.ts` — `GitProvider` interface (repository metadata, releases, file content) — see guide/core-concepts
+- `src/domain/git/github.ts` — `GitHubProvider` ships first
+- CI workflow generation parameterized by platform (`.github/workflows/*` today; GitLab CI/others when providers land)
+- Config already supports `git.provider: github|gitlab|bitbucket|gitea|forgejo` — reject unimplemented values with a clear "coming soon" error
+- Landing/docs copy states GitHub-first, more coming soon
+
+### Tests required
+
+payment-link validator (valid/host mismatch/amount mismatch/currency mismatch) · state machine transitions incl. isolation · generator determinism (same input = byte-identical JSON) · health check computation · publish gate ordering
+
+### Docs required
+
+Link new commands from `docs/docs/commands/*`; protocol pages already shipped.
+
+---
+
+## Implemented: Licensing Framework + Offers + Audit (2026-08-23)
+
+Shipped in this tree (all tests green, 73/73):
+
+### A. Licensing framework (spec §1-§31 core)
+
+- `src/domain/licensing/rights.ts` — rights catalog: 23 groups, closed value vocabularies (§2-§27)
+- `src/domain/licensing/policy.ts` — 15 profiles (§29), total compose (profile+spdx+overrides → complete policy), canonical JSON, sha256 `policyHash`, strict `parsePolicy`
+- `src/domain/licensing/generate.ts` — `.reposell/{license,ai-policy,commercial-policy,authorization}.json` + human LICENSE section (§30)
+- `src/domain/licensing/compatibility.ts` — SPDX expression parser (AND/OR/WITH, parens) + family compatibility matrix (§25)
+- `src/app/license-compose-service.ts` + `license compose|explain|validate|compatibility` commands
+
+### B. License schemes × release offers (§18-§19)
+
+- Config: `licensing.schemes` + `releases.definitions[].offers[]` (legacy per-release pricing/payment removed — clean break)
+- `src/domain/licensing/schemes.ts` — `resolveOffers` join with precise issues
+- Gates validate EVERY offer; evaluator carries `offerDeepLinks[]`; deep Stripe verification is billing-aware (recurring price + interval, §18)
+- Release manifests embed `offers[]` + `license.policy_hash`; sell page renders one Buy row per offer; JSON-LD flattened per offer
+
+### C. Compliance audit
+
+- `src/domain/audit/{scan,checks,sbom}.ts`, `src/app/audit-service.ts`, `src/commands/audit.ts`
+- Scan: LICENSE/NOTICE/manifests/package-lock/source SPDX headers/copyrights (bounded walk)
+- Checks: repo license, SPDX validity, LICENSE↔manifest consistency (BLOCK), dep compatibility (BLOCK), copyleft (WARN), forbidden list (BLOCK), missing licenses (WARN), NOTICE (WARN), artifact coherence
+- Verdict PASS/WARN/BLOCKED; flags `--json --ci --strict --release --forbidden`
+- Artifacts: `.reposell/audit/{report.json,sbom.spdx.json,sbom.cyclonedx.json,signature.json}` (signed when key present)
+
+### Deferred (documented, not built)
+
+- External scanner integrations (ScanCode Toolkit / FOSSology / REUSE) — reposell owns policy + verdict; detection foundation pluggable later
+- `audit --fix` auto-remediation
+- Per-scheme CLA/contribution workflows

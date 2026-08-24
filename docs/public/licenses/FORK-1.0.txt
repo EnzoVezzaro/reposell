@@ -1,0 +1,73 @@
+REPOSELL FORK LICENSE
+Version 1.0
+
+This license applies exclusively to the Licensed Fork identified by
+the associated RepoSell License ID.
+
+LICENSE ID:
+[REPOSELL-LICENSE-ID]
+
+PRODUCT:
+[PRODUCT-NAME]
+
+ORIGINAL REPOSITORY:
+[REPOSITORY]
+
+ORIGINAL OWNER:
+[OWNER]
+
+LICENSEE:
+[LICENSEE]
+
+LICENSED RELEASE:
+[VERSION / COMMIT SHA]
+
+LICENSED FORK:
+[FORK URL]
+
+ISSUED:
+[DATE]
+
+EXPIRATION:
+[DATE OR PERPETUAL]
+
+The Licensee is authorized to use and modify the Licensed Fork subject
+to the RepoSell Source License.
+
+This license does not automatically extend to:
+
+- copies;
+- mirrors;
+- archives;
+- clones;
+- redistributed repositories;
+- derivative repositories;
+- exported source archives;
+- independently published versions; or
+- subsequent forks.
+
+Each such distribution requires an independent license from the
+Original Owner unless expressly authorized.
+
+The Licensee may retain and use the Licensed Fork for the purposes
+authorized by this License.
+
+The Licensee may not represent an unauthorized copy as an independently
+licensed RepoSell Product.
+
+The Licensee may not use the Licensed Fork for AI training, AI model
+improvement, dataset creation, or non-consensual AI scraping.
+
+The Licensee may use AI-assisted development tools only where the
+Software is not retained or used for AI training or model improvement.
+
+All intellectual-property rights remain with the Original Owner and
+other applicable rights holders.
+
+The cryptographic signature associated with this License constitutes
+evidence of the identity of the issuing authority and the integrity of
+the license record.
+
+Verification does not itself grant additional rights.
+
+Unauthorized copies are not covered by this License.

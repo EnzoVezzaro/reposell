@@ -1,0 +1,1248 @@
+/* ============================================================
+   reposell landing — Security-template derived, dark-default
+   Scope: html.rs-home ONLY (set by ReposellLayout.vue when the
+   current page is index.md). Zero effect on docs pages.
+   Type: Syne (hero) · Oxanium (headings) · Geist Mono · Ink #0a0a0a
+   Signal green #0af188 · chamfered cut-corner UI · corner-plus motif
+   ============================================================ */
+
+/* ---------- landing palette (Security template dark-first) ---------- */
+html.rs-home {
+  --lx-bg: #0a0a0a;
+  --lx-bg-soft: #111111;
+  --lx-card: #161616;
+  --lx-card-hover: #1a1a1a;
+  --lx-line: rgb(240 240 240 / 0.08);
+  --lx-line-strong: rgb(240 240 240 / 0.14);
+  --lx-text: #f0f0f0;
+  --lx-text-2: #a0a0a0;
+  --lx-text-3: #6b6b6b;
+  --lx-accent: #0af188;
+  /* theme hooks — overridden per data-theme in themes.css */
+  --lx-font-body: var(--lx-font-body);
+  --lx-font-mono: var(--lx-font-mono);
+  --lx-accent-ink: #0a0a0a;
+  --lx-hero-tint: #0af188;
+  --lx-accent-hover: #3df5a0;
+  --lx-purple: #8b5cf6;
+  --lx-blue: #3b82f6;
+  --lx-cyan: #06b6d4;
+
+  /* re-map theme primitives */
+  --vp-c-bg: var(--lx-bg);
+  --vp-c-bg-alt: var(--lx-bg-soft);
+  --vp-c-bg-soft: var(--lx-bg-soft);
+  --vp-c-bg-elv: var(--lx-card);
+  --vp-c-text-1: var(--lx-text);
+  --vp-c-text-2: var(--lx-text-2);
+  --vp-c-text-3: var(--lx-text-3);
+  --vp-c-divider: var(--lx-line);
+  --vp-c-border: var(--lx-line);
+  --vp-c-brand-1: var(--lx-accent);
+  --vp-nav-bg-color: color-mix(in srgb, var(--lx-bg) 88%, transparent);
+
+  /* pin shared branding tokens */
+  --rs-paper: var(--lx-bg);
+  --rs-paper-soft: var(--lx-bg-soft);
+  --rs-card: var(--lx-card);
+  --rs-ink: var(--lx-text);
+  --rs-muted-fg: var(--lx-text-3);
+  --rs-line: var(--lx-line);
+}
+
+/* ---------- base ---------- */
+html.rs-home body {
+  background: var(--lx-bg);
+  font-family: var(--lx-font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.rs-home h1,
+html.rs-home h2,
+html.rs-home h3,
+html.rs-home h4 {
+  font-family: var(--lx-font-body);
+  text-wrap: balance;
+}
+
+html.rs-home code,
+html.rs-home kbd,
+html.rs-home pre {
+  font-family: var(--lx-font-mono);
+}
+
+html.rs-home ::selection {
+  background: color-mix(in srgb, var(--lx-accent) 30%, transparent);
+  color: var(--lx-text);
+}
+
+html.rs-home :focus-visible {
+  outline: 2px solid var(--lx-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.rs-home {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================================
+   NAV — slim sticky glass bar, centered links, extras right
+   ============================================================ */
+html.rs-home .VPNav {
+  position: sticky;
+  top: 0;
+}
+
+html.rs-home .VPNavBar {
+  border-bottom: 1px solid var(--lx-line);
+  background: linear-gradient(
+    color-mix(in srgb, var(--lx-bg) 90%, transparent),
+    color-mix(in srgb, var(--lx-bg) 75%, transparent));
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  backdrop-filter: saturate(140%) blur(14px);
+}
+
+html.rs-home .VPContent {
+  padding-top: 0;
+}
+
+@media (min-width: 960px) {
+  html.rs-home .VPNavBar .container {
+    position: relative;
+  }
+  html.rs-home .VPNavBarMenu {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+html.rs-home .VPNavBarMenuLink {
+  letter-spacing: -0.01em;
+}
+
+html.rs-home .VPNavBarTitle .title {
+  font-family: var(--lx-font-body);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: 16.5px !important;
+}
+
+html.rs-home .VPNavBarAppearance {
+  display: none;
+}
+
+html.rs-home .rs-nav-extra::before {
+  content: "";
+  width: 1px;
+  height: 18px;
+  margin: 0 4px 0 10px;
+  background: var(--lx-line);
+}
+
+html.rs-home .rs-screen-extra {
+  display: flex;
+  padding: 8px 24px 20px;
+}
+
+html.rs-home .rs-screen-extra .rs-navcta--wide {
+  justify-content: center;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+/* ============================================================
+   SHELL — content column
+   ============================================================ */
+html.rs-home .lx-shell {
+  max-width: 1152px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+@media (min-width: 960px) {
+  html.rs-home .lx-shell {
+    padding-inline: 48px;
+  }
+}
+
+/* ============================================================
+   HERO — Faulty Terminal WebGL background
+   ============================================================ */
+.lx-hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: calc(var(--vp-nav-height-desktop, 64px) + clamp(56px, 10vh, 104px));
+  padding-bottom: clamp(40px, 7vh, 72px);
+}
+
+/* FaultyTerminal WebGL background */
+.lx-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.lx-hero-bg canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Dark gradient overlay for text readability */
+.lx-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--lx-bg) 65%, transparent) 0%,
+    color-mix(in srgb, var(--lx-bg) 35%, transparent) 40%,
+    color-mix(in srgb, var(--lx-bg) 75%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+.lx-hero .lx-shell {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lx-title {
+  margin: 0;
+  font-size: clamp(44px, 8vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: var(--lx-text);
+}
+
+.lx-title em {
+  font-style: normal;
+  color: var(--lx-accent);
+}
+
+.lx-sub {
+  margin: 22px 0 0;
+  max-width: 54ch;
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.65;
+  color: var(--lx-text-2);
+}
+
+/* pre-paint hide */
+html.rs-home.lx-boot .kick,
+html.rs-home.lx-boot .lx-title,
+html.rs-home.lx-boot .lx-sub,
+html.rs-home.lx-boot .lx-actions,
+html.rs-home.lx-boot .lx-cmdchip,
+html.rs-home.lx-boot .lx-trust li,
+html.rs-home.lx-boot .lx-vprop {
+  opacity: 0;
+}
+
+/* ============================================================
+   CHAMFERED BUTTONS — Security template signature
+   ============================================================ */
+.lx-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 34px;
+}
+
+.lx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+  padding: 13px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none !important;
+  transition: transform 170ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 170ms ease,
+    background-color 170ms ease, border-color 170ms ease;
+}
+
+.lx-btn:focus-visible {
+  outline: 2px solid var(--lx-accent-hover);
+  outline-offset: 2px;
+}
+
+.lx-btn--solid {
+  background: var(--lx-accent);
+  color: var(--lx-accent-ink);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--lx-accent) 20%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.lx-btn--solid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, #ffffff 15%, transparent), transparent 50%);
+  pointer-events: none;
+}
+
+.lx-btn--solid:hover {
+  background: var(--lx-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--lx-accent) 35%, transparent);
+}
+
+.lx-btn--solid:active {
+  transform: translateY(0);
+}
+
+.lx-btn--ghost {
+  border: 1px solid var(--lx-line-strong);
+  color: var(--lx-text);
+  background: transparent;
+}
+
+.lx-btn--ghost:hover {
+  border-color: color-mix(in srgb, var(--lx-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--lx-accent) 6%, transparent);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   COMMAND CHIP — chamfered
+   ============================================================ */
+.lx-cmdchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+  padding: 10px 12px 10px 16px;
+  background: color-mix(in srgb, var(--lx-bg) 80%, transparent);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+  font-family: var(--lx-font-mono);
+  font-size: 13px;
+  color: var(--lx-text);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.lx-cmdchip:hover {
+  border-color: color-mix(in srgb, var(--lx-accent) 40%, transparent);
+}
+
+.lx-cmdchip .p {
+  color: var(--lx-accent);
+  user-select: none;
+}
+
+.lx-cmdchip .cp {
+  font-size: 11px;
+  color: var(--lx-text-3);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% 100%,
+    4px 100%,
+    0 calc(100% - 4px)
+  );
+  padding: 3px 7px;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.lx-cmdchip:hover .cp {
+  color: var(--lx-text-2);
+}
+
+/* ============================================================
+   TRUST CHIPS — chamfered
+   ============================================================ */
+.lx-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  list-style: none !important;
+  margin: 30px 0 0;
+  padding: 0;
+}
+
+.lx-trust li {
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--lx-text-3);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 5px) 0,
+    100% 5px,
+    100% 100%,
+    5px 100%,
+    0 calc(100% - 5px)
+  );
+  padding: 5px 12px;
+}
+
+/* ============================================================
+   VALUE PROPS — chamfered
+   ============================================================ */
+.lx-vprops {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.lx-vprop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+  background: var(--lx-card);
+  padding: 16px 18px;
+  position: relative;
+}
+
+/* corner-plus motif */
+.lx-vprop::before,
+.lx-vprop::after {
+  content: "+";
+  position: absolute;
+  font-family: var(--lx-font-mono);
+  font-size: 9px;
+  color: var(--lx-text-3);
+  opacity: 0;
+  transition: opacity 200ms ease, color 200ms ease;
+  pointer-events: none;
+}
+.lx-vprop::before { top: 5px; left: 7px; }
+.lx-vprop::after { bottom: 5px; right: 7px; }
+.lx-vprop:hover::before,
+.lx-vprop:hover::after {
+  opacity: 1;
+  color: var(--lx-accent);
+}
+
+.lx-vprop strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lx-text);
+}
+
+.lx-vprop span {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--lx-text-3);
+}
+
+/* ============================================================
+   SECTIONS — giant ghost numeral + heading block
+   ============================================================ */
+.lx-section {
+  padding-top: clamp(72px, 11vh, 128px);
+}
+
+.lx-h2row {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 3vw, 28px);
+  margin-bottom: 30px;
+}
+
+.lx-num {
+  font-family: var(--lx-font-mono);
+  font-weight: 700;
+  font-size: clamp(52px, 8vw, 84px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--lx-text) 4%, transparent);
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--lx-text) 12%, transparent);
+  user-select: none;
+}
+
+.lx-h2block .kick {
+  margin: 0 0 6px;
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--lx-text-3);
+}
+
+.lx-h2block .kick b {
+  color: var(--lx-accent);
+  font-weight: 500;
+}
+
+.lx-h2block h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--lx-text);
+}
+
+.lx-h2block .lede {
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--lx-text-2);
+}
+
+/* ============================================================
+   BENTO — features grid, chamfered + corner-plus motif
+   ============================================================ */
+.lx-bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.lx-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--lx-card);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+  padding: 22px;
+  overflow: hidden;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease,
+    background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.lx-cell:hover {
+  transform: translateY(-3px);
+  background: var(--lx-card-hover);
+}
+
+/* corner-plus motif on cells */
+.lx-cell::before,
+.lx-cell::after {
+  content: "+";
+  position: absolute;
+  font-family: var(--lx-font-mono);
+  font-size: 9px;
+  color: var(--lx-text-3);
+  opacity: 0;
+  transition: opacity 200ms ease, color 200ms ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.lx-cell::before { top: 6px; left: 8px; }
+.lx-cell::after { bottom: 6px; right: 8px; }
+.lx-cell:hover::before,
+.lx-cell:hover::after {
+  opacity: 1;
+  color: var(--lx-accent);
+}
+
+.lx-wide { grid-column: span 2; }
+
+@media (max-width: 960px) {
+  .lx-bento { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .lx-bento { grid-template-columns: 1fr; }
+  .lx-wide { grid-column: auto; }
+}
+
+/* accent cycle — muted Security palette */
+.lx-cell:nth-child(5n + 1):hover {
+  border-color: color-mix(in srgb, var(--lx-accent) 40%, transparent);
+  box-shadow: 0 16px 44px -18px color-mix(in srgb, var(--lx-accent) 25%, transparent);
+}
+.lx-cell:nth-child(5n + 2):hover {
+  border-color: color-mix(in srgb, var(--lx-cyan) 40%, transparent);
+  box-shadow: 0 16px 44px -18px color-mix(in srgb, var(--lx-cyan) 25%, transparent);
+}
+.lx-cell:nth-child(5n + 3):hover {
+  border-color: color-mix(in srgb, var(--lx-purple) 40%, transparent);
+  box-shadow: 0 16px 44px -18px color-mix(in srgb, var(--lx-purple) 25%, transparent);
+}
+.lx-cell:nth-child(5n + 4):hover {
+  border-color: color-mix(in srgb, var(--lx-accent) 40%, transparent);
+  box-shadow: 0 16px 44px -18px color-mix(in srgb, var(--lx-accent) 25%, transparent);
+}
+.lx-cell:nth-child(5n + 5):hover {
+  border-color: color-mix(in srgb, var(--lx-blue) 40%, transparent);
+  box-shadow: 0 16px 44px -18px color-mix(in srgb, var(--lx-blue) 25%, transparent);
+}
+
+.lx-cell-title {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lx-text);
+}
+
+.lx-cell-desc {
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--lx-text-2);
+}
+
+.lx-code {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-top: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--lx-text);
+  background: var(--lx-bg);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% 100%,
+    6px 100%,
+    0 calc(100% - 6px)
+  );
+  padding: 8px 12px;
+}
+
+.lx-code .c { color: var(--lx-accent); user-select: none; }
+.lx-code .k { color: var(--lx-purple); font-style: normal; }
+.lx-code .s { color: var(--lx-cyan); font-style: normal; }
+.lx-code .m { color: var(--lx-text-3); font-style: italic; }
+
+/* corner glow on wide cards */
+.lx-glow::after {
+  content: "";
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lx-accent) 10%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   TICKER
+   ============================================================ */
+.lx-ticker {
+  margin-top: clamp(64px, 9vh, 104px);
+  padding: 15px 0;
+  border-block: 1px solid var(--lx-line);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.lx-ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  width: max-content;
+  white-space: nowrap;
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-text-3);
+}
+
+.lx-ticker-track i {
+  font-style: normal;
+  color: var(--lx-accent);
+}
+
+/* ============================================================
+   PIPELINE — chamfered steps
+   ============================================================ */
+.lx-pipeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  counter-reset: step;
+}
+
+.lx-step {
+  position: relative;
+  background: var(--lx-card);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+  padding: 20px 18px;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.lx-step:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--lx-accent) 35%, transparent);
+  box-shadow: 0 14px 36px -16px color-mix(in srgb, var(--lx-accent) 15%, transparent);
+}
+
+.lx-step::before {
+  counter-increment: step;
+  content: "0" counter(step);
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--lx-accent);
+}
+
+.lx-step strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lx-text);
+}
+
+.lx-step span {
+  display: block;
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lx-text-2);
+}
+
+@media (min-width: 720px) {
+  .lx-step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 1;
+    color: var(--lx-accent);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--lx-accent) 30%, transparent);
+  }
+}
+
+/* ============================================================
+   TERMINAL HOST
+   ============================================================ */
+html.rs-home .rs-term {
+  margin-top: 26px;
+  background: var(--lx-bg);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+  box-shadow: none;
+}
+
+html.rs-home .rs-term-bar {
+  border-bottom: 1px solid color-mix(in srgb, var(--lx-text) 6%, transparent);
+}
+
+html.rs-home .rs-term-title {
+  color: var(--lx-text-3);
+}
+
+html.rs-home .rs-term pre,
+html.rs-home .rs-term-body {
+  background: transparent;
+}
+
+html.rs-home .rs-line--note { color: var(--lx-accent); }
+html.rs-home .rs-cursor { background: var(--lx-accent); }
+
+/* ============================================================
+   CALC — chamfered
+   ============================================================ */
+html.rs-home .rs-calc {
+  background: var(--lx-card);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
+}
+
+html.rs-home .rs-calc-note {
+  border-top: 1px dashed color-mix(in srgb, var(--lx-text) 6%, transparent);
+}
+
+.lx-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none !important;
+  margin: 18px 0 0 !important;
+  padding: 0;
+}
+
+.lx-chips li {
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  color: var(--lx-text-2);
+  border: 1px solid var(--lx-line);
+  background: transparent;
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 5px) 0,
+    100% 5px,
+    100% 100%,
+    5px 100%,
+    0 calc(100% - 5px)
+  );
+  padding: 6px 12px;
+}
+
+.lx-chips li b {
+  color: var(--lx-accent);
+  font-weight: 500;
+}
+
+/* ============================================================
+   TRUST CARD — chamfered
+   ============================================================ */
+.lx-trustcard {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin-top: clamp(72px, 11vh, 128px);
+  padding: 24px 26px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--lx-accent) 5%, transparent), transparent 55%),
+    var(--lx-card);
+  border: 1px solid color-mix(in srgb, var(--lx-accent) 20%, transparent);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+  position: relative;
+}
+
+/* corner-plus motif */
+.lx-trustcard::before,
+.lx-trustcard::after {
+  content: "+";
+  position: absolute;
+  font-family: var(--lx-font-mono);
+  font-size: 10px;
+  color: var(--lx-accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.lx-trustcard::before { top: 8px; left: 10px; }
+.lx-trustcard::after { bottom: 8px; right: 10px; }
+
+.lx-trustcard-icon {
+  font-size: 26px;
+  line-height: 1;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--lx-accent) 35%, transparent));
+}
+
+.lx-trustcard h3 {
+  margin: 0 0 6px !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 17px !important;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lx-text);
+}
+
+.lx-trustcard p {
+  margin: 0 0 10px !important;
+  max-width: 60ch;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--lx-text-2);
+}
+
+.lx-trustcard a {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--lx-accent);
+  text-decoration: none;
+}
+
+.lx-trustcard a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 480px) {
+  .lx-trustcard {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ============================================================
+   LINK CARDS — chamfered
+   ============================================================ */
+.lx-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.lx-link {
+  display: block;
+  background: var(--lx-card);
+  border: 1px solid var(--lx-line);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+  padding: 18px;
+  text-decoration: none !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease,
+    background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.lx-link:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--lx-accent) 35%, transparent);
+  background: var(--lx-card-hover);
+  box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--lx-accent) 15%, transparent);
+  text-decoration: none !important;
+}
+
+.lx-link strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lx-text) !important;
+}
+
+.lx-link strong::after {
+  content: "→";
+  margin-left: auto;
+  color: var(--lx-accent);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lx-link:hover strong::after {
+  transform: translateX(4px);
+}
+
+.lx-link span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--lx-text-2);
+}
+
+.lx-links-after {
+  margin-top: 12px;
+}
+
+/* brand blurb in footer column one */
+.lx-fblurb {
+  margin: 0 !important;
+  max-width: 34ch;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--lx-text-2);
+}
+
+.lx-fbrand p {
+  margin: 12px 0 0 !important;
+  max-width: 34ch;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--lx-text-3);
+}
+
+.lx-socials {
+  display: inline-flex;
+  gap: 16px;
+}
+
+/* ============================================================
+   MEGA FOOTER
+   ============================================================ */
+.lx-footer {
+  position: relative;
+  margin-top: clamp(88px, 13vh, 152px);
+  padding: clamp(48px, 8vh, 80px) 0 32px;
+  border-top: 1px solid var(--lx-line);
+  overflow: hidden;
+}
+
+.lx-footer::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  translate: -50% 0;
+  width: min(420px, 60%);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--lx-accent), transparent);
+  filter: blur(1px);
+  opacity: 0.5;
+}
+
+.lx-wordmark-img {
+  display: block;
+  width: min(520px, 78vw);
+  height: auto;
+  margin: 0 auto 1.6rem;
+  user-select: none;
+}
+
+.lx-wordmark {
+  display: block;
+  width: min(820px, 92%);
+  margin: 0 auto;
+  overflow: visible;
+  user-select: none;
+  pointer-events: none;
+}
+
+.lx-wordmark-text {
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  font-weight: 700;
+  font-size: 96px;
+  letter-spacing: -4px;
+  fill: color-mix(in srgb, var(--lx-text) 4%, transparent);
+  stroke: color-mix(in srgb, var(--lx-text) 12%, transparent);
+  stroke-width: 1.4;
+}
+
+.lx-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 32px;
+  margin-top: clamp(40px, 7vh, 64px);
+}
+
+@media (max-width: 960px) {
+  .lx-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .lx-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.lx-fcol h4 {
+  margin: 0 0 14px;
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-text-3);
+}
+
+.lx-fcol ul {
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+.lx-fcol li {
+  margin: 0 0 9px;
+}
+
+.lx-fcol a {
+  font-size: 13.5px;
+  color: var(--lx-text-2);
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+
+.lx-fcol a:hover {
+  color: var(--lx-accent);
+}
+
+.lx-bottombar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-top: clamp(40px, 7vh, 64px);
+  padding-top: 22px;
+  border-top: 1px solid var(--lx-line);
+  font-size: 12.5px;
+  color: var(--lx-text-3);
+}
+
+.lx-bottombar a {
+  color: var(--lx-text-2);
+  text-decoration: none;
+}
+
+.lx-bottombar a:hover {
+  color: var(--lx-accent);
+}
+
+.lx-bottombar .mono {
+  font-family: var(--lx-font-mono);
+  font-size: 11px;
+}
+
+/* ============================================================
+   MOTION SAFETY — everything off
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html.rs-home *,
+  html.rs-home *::before,
+  html.rs-home *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRICING MATH CARDS — chamfered
+   ============================================================ */
+.lx-mathgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.lx-mathcard {
+  border: 1px solid var(--lx-line);
+  background: var(--lx-card);
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+  padding: 22px;
+}
+
+.lx-mathcard .kick {
+  margin: 0 0 14px;
+}
+
+.lx-math {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.lx-math td {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--lx-line);
+}
+
+.lx-math tr:last-child td {
+  border-bottom: none;
+}
+
+.lx-math td:last-child {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+.lx-math .ok {
+  color: var(--lx-accent);
+}
+
+.lx-math-note {
+  margin: 12px 0 0 !important;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lx-text-3);
+}
+
+/* ---- decrypt text reveal (landingMotion) ---- */
+.lx-scramble-char{display:inline-block;will-change:transform,opacity}

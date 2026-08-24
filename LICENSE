@@ -5,7 +5,7 @@ Copyright (c) 2026 Enzo Vezzaro and contributors
 
 This license governs use of the reposell CLI ("Software"), the core
 command-line interface for the reposell repository-to-repository
-marketplace protocol.
+listing protocol.
 
 1. GRANT OF RIGHTS
    Subject to the terms of this License, you are granted a perpetual,
@@ -25,7 +25,7 @@ marketplace protocol.
    
    a) You MUST NOT modify the core protocol constants:
       - The `/sell` endpoint path
-      - The `/marketplace` endpoint path
+      - The `/listing` endpoint path
       - The `reposell` protocol identifier
       - The canonical repository identity format
    

@@ -10,8 +10,8 @@ The reposell CLI follows clean architecture with these layers:
 
 ## Layer 2: Application (Use Cases & Services)
 - **Depends only on domain**
-- **Services**: InitService, SellService, MarketplaceService, ReleaseService, DoctorService
-- **Commands**: reposell init, reposell sell, reposell marketplace, reposell release, reposell doctor
+- **Services**: InitService, SellService, ListingService, ReleaseService, DoctorService
+- **Commands**: reposell init, reposell sell, reposell listing, reposell release, reposell doctor
 - **Generators**: File/workflow generators
 
 ## Layer 3: Infrastructure (External Adapters)

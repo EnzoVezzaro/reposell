@@ -1,0 +1,84 @@
+/* ============================================================
+   SECURITY theme — reposell lab skin (default).
+   Owns: tokens · fonts · shapes · VitePress chrome · branding
+   component tokens (--rs-*). Chamfered cut-corner identity.
+   Scoped to html[data-theme='security'] so it can never leak
+   into other themes.
+   ============================================================ */
+
+html[data-theme='security'],
+html:not([data-theme]) {
+  /* landing */
+  --lx-bg: #0a0a0a;
+  --lx-bg-soft: #111111;
+  --lx-card: #161616;
+  --lx-card-hover: #1a1a1a;
+  --lx-line: rgb(240 240 240 / 0.08);
+  --lx-line-strong: rgb(240 240 240 / 0.14);
+  --lx-text: #f0f0f0;
+  --lx-text-2: #a0a0a0;
+  --lx-text-3: #6b6b6b;
+  --lx-accent: #0af188;
+  --lx-accent-hover: #3df5a0;
+  --lx-accent-ink: #0a0a0a;
+  --lx-purple: #8b5cf6;
+  --lx-blue: #3b82f6;
+  --lx-cyan: #06b6d4;
+  --lx-radius: 0;
+  --lx-font-body: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --lx-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --lx-hero-tint: #0af188;
+
+  /* vitepress chrome */
+  --vp-c-bg: #0a0a0a;
+  --vp-c-bg-alt: #060606;
+  --vp-c-bg-elv: #111111;
+  --vp-c-bg-soft: #141414;
+  --vp-c-divider: rgba(240, 240, 240, 0.08);
+  --vp-c-border: rgba(240, 240, 240, 0.12);
+  --vp-c-text-1: #f0f0f0;
+  --vp-c-text-2: #a0a0a0;
+  --vp-c-text-3: #6b6b6b;
+  --vp-c-brand-1: #0af188;
+  --vp-c-brand-2: #3df5a0;
+  --vp-c-brand-3: #0af188;
+  --vp-c-brand-soft: rgba(10, 241, 136, 0.14);
+  --vp-c-signal: #0af188;
+  --vp-c-signal-active: #3df5a0;
+  --vp-c-signal-fg: #0a0a0a;
+  --vp-c-signal-hover: #3df5a0;
+  --vp-c-signal-muted: rgba(10, 241, 136, 0.35);
+  --vp-c-text-code: #c4f9e0;
+  --vp-code-block-bg: #101010;
+  --vp-code-color: #c4f9e0;
+  --vp-code-lang-color: #6b6b6b;
+  --vp-button-brand-bg: #0af188;
+  --vp-button-brand-text: #0a0a0a;
+  --vp-button-brand-border: #0af188;
+  --vp-button-brand-hover-bg: #3df5a0;
+  --vp-button-brand-hover-text: #0a0a0a;
+  --vp-button-brand-hover-border: #3df5a0;
+  --vp-button-brand-active-bg: #09d67a;
+  --vp-button-brand-active-text: #0a0a0a;
+  --vp-button-brand-active-border: #09d67a;
+  --vp-button-alt-bg: #161616;
+  --vp-button-alt-text: #f0f0f0;
+  --vp-button-alt-border: rgba(240, 240, 240, 0.14);
+  --vp-font-family-base: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-mono: 'Geist Mono', ui-monospace, monospace;
+
+  /* branding components (VPTerminal, VPButton, docs pages) */
+  --rs-paper: #0a0a0a;
+  --rs-paper-soft: #111111;
+  --rs-card: #161616;
+  --rs-ink: #f0f0f0;
+  --rs-muted-fg: #a0a0a0;
+  --rs-line: rgba(240, 240, 240, 0.1);
+  --rs-accent: #0af188;
+  --rs-accent-hover: #3df5a0;
+  --rs-accent-dim: rgba(10, 241, 136, 0.2);
+  --rs-purple: #8b5cf6;
+  --rs-blue: #3b82f6;
+  --rs-cyan: #06b6d4;
+  --rs-radius: 0px;
+}

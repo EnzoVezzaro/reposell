@@ -1,0 +1,243 @@
+/* ============================================================
+   CARTOON theme — daylight paper, ink outlines, hard shadows.
+   Scoped to html[data-theme='cartoon'].
+   ============================================================ */
+
+html[data-theme='cartoon'] {
+  --lx-bg: #fffef5;
+  --lx-bg-soft: #fdf6df;
+  --lx-card: #ffffff;
+  --lx-card-hover: #fff3bf;
+  --lx-line: #1a1a1a;
+  --lx-line-strong: #000000;
+  --lx-text: #1a1a1a;
+  --lx-text-2: #444444;
+  --lx-text-3: #777777;
+  --lx-accent: #ffde21;
+  --lx-accent-hover: #ffd000;
+  --lx-accent-ink: #1a1a1a;
+  --lx-purple: #7c3aed;
+  --lx-blue: #2563eb;
+  --lx-cyan: #0891b2;
+  --lx-radius: 14px;
+  --lx-font-body: 'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --lx-font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --lx-hero-tint: #ff3366;
+
+  --vp-c-bg: #fffef5;
+  --vp-c-bg-alt: #fdf6df;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #fdf6df;
+  --vp-c-divider: #1a1a1a;
+  --vp-c-border: #1a1a1a;
+  --vp-c-text-1: #1a1a1a;
+  --vp-c-text-2: #444444;
+  --vp-c-text-3: #777777;
+  --vp-c-brand-1: #e63329;
+  --vp-c-brand-2: #ff3366;
+  --vp-c-brand-3: #e63329;
+  --vp-c-brand-soft: rgba(255, 51, 102, 0.14);
+  --vp-c-text-code: #b3003c;
+  --vp-code-block-bg: #fdf3d8;
+  --vp-code-color: #8a0f38;
+  --vp-code-lang-color: #8a7a3a;
+  --vp-button-brand-bg: #ffde21;
+  --vp-button-brand-text: #1a1a1a;
+  --vp-button-brand-border: #1a1a1a;
+  --vp-button-brand-hover-bg: #ffd000;
+  --vp-button-brand-hover-text: #1a1a1a;
+  --vp-button-brand-hover-border: #1a1a1a;
+  --vp-button-brand-active-bg: #f2c800;
+  --vp-button-brand-active-text: #1a1a1a;
+  --vp-button-brand-active-border: #1a1a1a;
+  --vp-button-alt-bg: #ffffff;
+  --vp-button-alt-text: #1a1a1a;
+  --vp-button-alt-border: #1a1a1a;
+  --vp-font-family-base: 'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --vp-font-family-mono: 'Space Mono', ui-monospace, monospace;
+
+  --rs-paper: #fffef5;
+  --rs-paper-soft: #fdf6df;
+  --rs-card: #ffffff;
+  --rs-ink: #1a1a1a;
+  --rs-muted-fg: #444444;
+  --rs-line: #1a1a1a;
+  --rs-accent: #ffde21;
+  --rs-accent-hover: #ffd000;
+  --rs-accent-dim: rgba(255, 222, 33, 0.35);
+  --rs-purple: #7c3aed;
+  --rs-blue: #2563eb;
+  --rs-cyan: #0891b2;
+  --rs-radius: 14px;
+}
+
+/* cartoon shape language: ink outlines + hard offset shadows everywhere */
+html[data-theme='cartoon'] .lx-cell,
+html[data-theme='cartoon'] .lx-step,
+html[data-theme='cartoon'] .lx-mathcard,
+html[data-theme='cartoon'] .lx-trustcard,
+html[data-theme='cartoon'] .lx-link,
+html[data-theme='cartoon'] .lx-vprop,
+html[data-theme='cartoon'] .lx-cmdchip,
+html[data-theme='cartoon'] .lx-trust li,
+html[data-theme='cartoon'] .lx-chips li,
+html[data-theme='cartoon'] .lx-code,
+html[data-theme='cartoon'] .rs-pill,
+html[data-theme='cartoon'] .rs-navcta,
+html[data-theme='cartoon'] .rs-term {
+  border: 3px solid #1a1a1a;
+  border-radius: var(--lx-radius);
+  clip-path: none;
+  box-shadow: 4px 4px 0 #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-cell:hover,
+html[data-theme='cartoon'] .lx-step:hover,
+html[data-theme='cartoon'] .lx-link:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-btn {
+  border: 3px solid #1a1a1a;
+  border-radius: var(--lx-radius);
+  clip-path: none;
+  box-shadow: 4px 4px 0 #1a1a1a;
+  font-weight: 700;
+}
+html[data-theme='cartoon'] .lx-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-btn--solid {
+  background: var(--lx-accent);
+  color: var(--lx-accent-ink);
+  box-shadow: 4px 4px 0 #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-btn--ghost {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-title {
+  font-weight: 800;
+}
+html[data-theme='cartoon'] .lx-title em {
+  color: #ff3366;
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 5px;
+}
+html[data-theme='cartoon'] .lx-num {
+  color: #ff3366;
+  -webkit-text-stroke: 2px #1a1a1a;
+  opacity: 1;
+  font-weight: 800;
+}
+html[data-theme='cartoon'] .lx-footer {
+  border-top: 4px solid #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-wordmark-img {
+  filter: invert(1) hue-rotate(180deg) saturate(4);
+}
+html[data-theme='cartoon'] .lx-hero {
+  border-bottom: 4px solid #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 254, 245, 0.5) 0%,
+    rgba(255, 254, 245, 0.2) 40%,
+    rgba(255, 254, 245, 0.65) 100%
+  );
+}
+
+/* cartoon: VitePress chrome gets ink outlines too */
+html[data-theme='cartoon'] {
+  --vp-button-brand-radius: 12px;
+  --vp-button-alt-radius: 12px;
+  --vp-custom-block-radius: 12px;
+}
+html[data-theme='cartoon'] .vp-doc div[class*='language-'],
+html[data-theme='cartoon'] .rs-logo-brand,
+html[data-theme='cartoon'] .rs-theme-trigger,
+html[data-theme='cartoon'] .rs-theme-credit,
+html[data-theme='cartoon'] .rs-theme-picker {
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  clip-path: none;
+  box-shadow: 3px 3px 0 #1a1a1a;
+}
+
+/* ------------------------------------------------------------
+   CARTOON HERO — comic: halftone dots, sticker title, bubble
+   ------------------------------------------------------------ */
+html[data-theme='cartoon'] .lx-hero--cartoon {
+  position: relative;
+  padding: 5.5rem 0 4.5rem;
+  background:
+    radial-gradient(#1a1a1a22 1.4px, transparent 1.4px) 0 0 / 18px 18px,
+    var(--lx-bg);
+  border-bottom: 4px solid #1a1a1a;
+  animation: cartoon-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+html[data-theme='cartoon'] .lx-sticker {
+  display: inline-block;
+  background: #ffffff;
+  border: 4px solid #1a1a1a;
+  border-radius: 20px;
+  padding: 1.6rem 2.2rem;
+  transform: rotate(-2deg);
+  box-shadow: 10px 10px 0 #1a1a1a;
+}
+html[data-theme='cartoon'] .lx-title--comic .lx-title,
+html[data-theme='cartoon'] .lx-title--comic {
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+html[data-theme='cartoon'] .lx-title--comic em {
+  color: #ff3366;
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 5px;
+  text-underline-offset: 6px;
+}
+html[data-theme='cartoon'] .lx-bubble {
+  position: relative;
+  display: inline-block;
+  background: #ffffff;
+  border: 3px solid #1a1a1a;
+  border-radius: 16px;
+  padding: 1rem 1.4rem;
+  margin: 2.2rem 0 0.4rem;
+  box-shadow: 5px 5px 0 #1a1a1a;
+  max-width: 56ch;
+}
+html[data-theme='cartoon'] .lx-bubble::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 42px;
+  width: 22px;
+  height: 22px;
+  background: #ffffff;
+  border-left: 3px solid #1a1a1a;
+  border-top: 3px solid #1a1a1a;
+  transform: rotate(45deg);
+}
+html[data-theme='cartoon'] .lx-actions--chunky { margin-top: 1.8rem; }
+html[data-theme='cartoon'] .lx-actions--chunky .lx-btn { padding: 0.9rem 1.8rem; font-size: 1.02rem; }
+html[data-theme='cartoon'] .lx-cartoon-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: 2rem;
+}
+html[data-theme='cartoon'] .lx-cartoon-meta .lx-trust { margin: 0; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+html[data-theme='cartoon'] .lx-cartoon-meta .lx-trust li {
+  list-style: none; background: #ffffff; border: 2px solid #1a1a1a;
+  border-radius: 999px; padding: 0.3rem 0.8rem; font-weight: 600; font-size: 0.8rem;
+  box-shadow: 3px 3px 0 #1a1a1a;
+}
+@keyframes cartoon-pop {
+  from { opacity: 0; transform: scale(0.94) rotate(-1deg); }
+  to { opacity: 1; transform: none; }
+}
