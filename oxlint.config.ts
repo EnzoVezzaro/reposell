@@ -19,7 +19,7 @@ export default defineConfig({
     "build/**",
     "docs/.vitepress/cache/**",
     "docs/docs/.vitepress/cache/**",
-    "docs/branding/canvasui/**",
+    "branding/canvasui/**",
   ],
   jsPlugins: [
     { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },

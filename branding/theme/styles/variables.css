@@ -1,0 +1,233 @@
+/* ============================================================
+   reposell design tokens — Security-template derived
+   Dark-first editorial palette · chamfered UI · corner-plus motif
+   WebGL hero · ASCII accents · muted signal green
+   Fonts: Syne (hero) · Oxanium (headings) · Outfit (body) · Geist Mono
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Oxanium:wght@400..800&family=Syne:wght@400..800&family=Geist:wght@300..700&family=Geist+Mono:wght@300..700&display=swap');
+
+:root {
+  /* ---- Security-template palette (light = muted paper) ---- */
+  --rs-paper: #f5f5f3;
+  --rs-paper-soft: #eaeae7;
+  --rs-card: #ffffff;
+  --rs-ink: #0a0a0a;
+  --rs-muted-fg: #6b6b6b;
+  --rs-line: rgb(10 10 10 / 0.12);
+  --rs-accent: #0af188;
+  --rs-accent-hover: #3df5a0;
+  --rs-accent-dim: rgb(10 241 136 / 0.15);
+  --rs-purple: #8b5cf6;
+  --rs-blue: #3b82f6;
+  --rs-cyan: #06b6d4;
+  --rs-radius: 2px;  /* chamfered: minimal radius, cut corners */
+
+  /* ---- semantic aliases ---- */
+  --color-signal: var(--rs-accent);
+  --color-signal-hover: var(--rs-accent-hover);
+  --color-signal-active: #08d878;
+  --color-signal-muted: var(--rs-accent-dim);
+  --color-signal-fg: #0a0a0a;
+
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Oxanium", ui-sans-serif, system-ui, sans-serif;
+  --font-hero: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-logo: "Oxanium", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ==========================================================
+     Map onto VitePress DefaultTheme primitives
+     ========================================================== */
+  --vp-font-family-base: var(--font-sans);
+  --vp-font-family-base-heading: var(--font-display);
+  --vp-font-family-mono: var(--font-mono);
+
+  /* surfaces */
+  --vp-c-bg: var(--rs-paper);
+  --vp-c-bg-alt: var(--rs-paper-soft);
+  --vp-c-bg-soft: var(--rs-paper-soft);
+  --vp-c-bg-elv: var(--rs-card);
+
+  /* text */
+  --vp-c-text-1: var(--rs-ink);
+  --vp-c-text-2: #555555;
+  --vp-c-text-3: var(--rs-muted-fg);
+
+  /* lines */
+  --vp-c-divider: var(--rs-line);
+  --vp-c-border: var(--rs-line);
+  --vp-c-gutter: transparent;
+
+  /* brand = signal green for links/inline-code/active states */
+  --vp-c-brand-1: var(--rs-accent);
+  --vp-c-brand-2: #08d878;
+  --vp-c-brand-3: #06b86a;
+  --vp-c-brand-soft: var(--rs-accent-dim);
+
+  /* stock buttons: PRIMARY = signal green + dark text */
+  --vp-button-brand-bg: var(--rs-accent);
+  --vp-button-brand-text: #0a0a0a;
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-hover-bg: var(--rs-accent-hover);
+  --vp-button-brand-hover-text: #0a0a0a;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-active-bg: var(--color-signal-active);
+  --vp-button-brand-active-text: #0a0a0a;
+  --vp-button-brand-active-border: transparent;
+
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-text: var(--rs-ink);
+  --vp-button-alt-border: rgb(10 10 10 / 0.25);
+  --vp-button-alt-hover-bg: rgb(10 10 10 / 0.06);
+  --vp-button-alt-hover-text: var(--rs-ink);
+  --vp-button-alt-hover-border: rgb(10 10 10 / 0.4);
+  --vp-button-alt-active-bg: rgb(10 10 10 / 0.1);
+  --vp-button-alt-active-text: var(--rs-ink);
+  --vp-button-alt-active-border: rgb(10 10 10 / 0.4);
+
+  /* nav / sidebar */
+  --vp-nav-bg-color: rgb(245 245 243 / 0.88);
+  --vp-sidebar-bg-color: var(--rs-paper);
+
+  /* hero name gradient — Security editorial style */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #0a0a0a 20%,
+    #0af188 60%,
+    #8b5cf6 90%
+  );
+
+  /* inline + block code */
+  --vp-code-color: #0af188;
+  --vp-code-bg: var(--rs-accent-dim);
+  --vp-code-block-bg: #0a0a0a;
+  --vp-code-lang-color: #6b6b6b;
+  --vp-code-tab-divider: rgb(10 10 10 / 0.12);
+  --vp-code-tab-text-color: #d4d4d4;
+  --vp-code-tab-active-text-color: #0af188;
+  --vp-code-tab-active-bar-color: var(--rs-accent);
+
+  /* custom blocks */
+  --vp-custom-block-tip-bg: var(--rs-accent-dim);
+  --vp-custom-block-tip-border: rgb(10 241 136 / 0.4);
+  --vp-custom-block-tip-text: var(--rs-ink);
+  --vp-custom-block-tip-code-bg: rgb(10 241 136 / 0.12);
+  --vp-custom-block-warning-bg: rgb(251 191 36 / 0.08);
+  --vp-custom-block-warning-border: rgb(251 191 36 / 0.4);
+  --vp-custom-block-warning-text: var(--rs-ink);
+  --vp-custom-block-warning-code-bg: rgb(251 191 36 / 0.12);
+  --vp-custom-block-danger-bg: rgb(239 68 68 / 0.07);
+  --vp-custom-block-danger-border: rgb(239 68 68 / 0.4);
+  --vp-custom-block-danger-text: var(--rs-ink);
+  --vp-custom-block-danger-code-bg: rgb(239 68 68 / 0.1);
+  --vp-custom-block-info-bg: rgb(59 130 246 / 0.07);
+  --vp-custom-block-info-border: rgb(59 130 246 / 0.35);
+  --vp-custom-block-info-text: var(--rs-ink);
+  --vp-custom-block-info-code-bg: rgb(59 130 246 / 0.1);
+
+  /* DefaultTheme feature icon tile */
+  --vp-c-default-soft: var(--rs-accent-dim);
+
+  --vp-c-text-code: #0af188;
+
+  /* local search */
+  --vp-local-search-bg: var(--rs-card);
+  --vp-local-search-result-bg: var(--rs-card);
+
+  /* legacy aliases */
+  --vp-c-signal: var(--rs-accent);
+  --vp-c-signal-hover: var(--rs-accent-hover);
+  --vp-c-signal-active: var(--color-signal-active);
+  --vp-c-signal-muted: var(--color-signal-muted);
+  --vp-c-signal-fg: #0a0a0a;
+  --vp-c-verified: #059669;
+  --vp-c-pending: #f59e0b;
+  --vp-c-invalid: #dc2626;
+  --vp-c-fg: var(--rs-ink);
+  --vp-c-fg-muted: var(--rs-muted-fg);
+  --vp-c-fg-subtle: #999999;
+  --vp-c-focus-ring: rgb(10 241 136 / 0.5);
+}
+
+/* ---- dark = Security template primary mode ---- */
+.dark {
+  --rs-paper: #0a0a0a;
+  --rs-paper-soft: #111111;
+  --rs-card: #161616;
+  --rs-ink: #f0f0f0;
+  --rs-muted-fg: #7a7a7a;
+  --rs-line: rgb(240 240 240 / 0.08);
+  --rs-accent: #0af188;
+  --rs-accent-hover: #3df5a0;
+  --rs-accent-dim: rgb(10 241 136 / 0.12);
+
+  --color-signal: var(--rs-accent);
+  --color-signal-hover: var(--rs-accent-hover);
+  --color-signal-active: #08d878;
+  --color-signal-muted: var(--rs-accent-dim);
+  --color-signal-fg: #0a0a0a;
+
+  /* surfaces */
+  --vp-c-bg: var(--rs-paper);
+  --vp-c-bg-alt: var(--rs-paper-soft);
+  --vp-c-bg-soft: var(--rs-paper-soft);
+  --vp-c-bg-elv: var(--rs-card);
+
+  /* text */
+  --vp-c-text-1: var(--rs-ink);
+  --vp-c-text-2: #b0b0b0;
+  --vp-c-text-3: var(--rs-muted-fg);
+
+  /* lines */
+  --vp-c-divider: var(--rs-line);
+  --vp-c-border: var(--rs-line);
+
+  /* brand = signal green in dark mode too */
+  --vp-c-brand-1: var(--rs-accent);
+  --vp-c-brand-2: #3df5a0;
+  --vp-c-brand-3: #08d878;
+  --vp-c-brand-soft: var(--rs-accent-dim);
+
+  --vp-button-brand-bg: var(--rs-accent);
+  --vp-button-brand-text: #0a0a0a;
+  --vp-button-brand-hover-bg: var(--rs-accent-hover);
+  --vp-button-brand-active-bg: var(--color-signal-active);
+
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-text: var(--rs-ink);
+  --vp-button-alt-border: rgb(240 240 240 / 0.18);
+  --vp-button-alt-hover-bg: rgb(240 240 240 / 0.06);
+  --vp-button-alt-hover-border: rgb(240 240 240 / 0.3);
+  --vp-button-alt-active-bg: rgb(240 240 240 / 0.1);
+
+  --vp-nav-bg-color: rgb(10 10 10 / 0.88);
+  --vp-sidebar-bg-color: var(--rs-paper);
+
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #f0f0f0 10%,
+    #0af188 50%,
+    #8b5cf6 90%
+  );
+
+  --vp-code-color: #0af188;
+  --vp-code-bg: var(--rs-accent-dim);
+
+  --vp-c-default-soft: var(--rs-accent-dim);
+
+  /* legacy aliases */
+  --vp-c-signal: var(--rs-accent);
+  --vp-c-signal-hover: var(--rs-accent-hover);
+  --vp-c-signal-active: var(--color-signal-active);
+  --vp-c-signal-muted: var(--color-signal-muted);
+  --vp-c-signal-fg: var(--color-signal-fg);
+  --vp-c-verified: #34d399;
+  --vp-c-pending: #fbbf24;
+  --vp-c-invalid: #f87171;
+  --vp-c-fg: var(--rs-ink);
+  --vp-c-fg-muted: var(--rs-muted-fg);
+  --vp-c-fg-subtle: #999999;
+  --vp-c-focus-ring: rgb(10 241 136 / 0.5);
+}

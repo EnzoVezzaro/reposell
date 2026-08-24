@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@300..700&family=Fira+Display:wght@300..700&display=swap');
+
+:root {
+  /* Soundcn-inspired warm palette */
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-soft: #f5f5f4;
+  --vp-c-bg-alt: #f5f5f4;
+  --vp-c-surface: #ffffff;
+  --vp-c-surface-elevated: #f5f5f4;
+  --vp-c-border: #e7e5e4;
+  --vp-c-border-strong: #d6d3d1;
+  --vp-c-fg: #0c0a09;
+  --vp-c-fg-muted: #57534e;
+  --vp-c-fg-subtle: #78716c;
+  
+  /* Signal orange - soundcn primary */
+  --vp-c-signal: #c53c00;
+  --vp-c-signal-hover: #b03400;
+  --vp-c-signal-active: #9f2d00;
+  --vp-c-signal-muted: #c53c00 / 0.12;
+  --vp-c-signal-fg: #fff7ed;
+  
+  /* Semantic colors */
+  --vp-c-verified: #166534;
+  --vp-c-verified-muted: #166534 / 0.12;
+  --vp-c-verified-fg: #ffffff;
+  
+  --vp-c-pending: #a16207;
+  --vp-c-pending-muted: #a16207 / 0.12;
+  --vp-c-pending-fg: #ffffff;
+  
+  --vp-c-invalid: #dc2626;
+  --vp-c-invalid-muted: #dc2626 / 0.12;
+  --vp-c-invalid-fg: #ffffff;
+  
+  /* Typo */
+  --vp-font-family-base: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --vp-font-family-display: "Fira Display", ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-logo: "Geist", ui-sans-serif, system-ui, sans-serif;
+  
+  --vp-radius: 0.625rem;
+  --vp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --vp-c-bg: #0c0a09;
+  --vp-c-bg-soft: #292524;
+  --vp-c-bg-alt: #292524;
+  --vp-c-surface: #1c1917;
+  --vp-c-surface-elevated: #292524;
+  --vp-c-border: rgba(255, 255, 255, 0.1);
+  --vp-c-border-strong: rgba(255, 255, 255, 0.2);
+  --vp-c-fg: #fafaf9;
+  --vp-c-fg-muted: #a6a09b;
+  --vp-c-fg-subtle: #78716c;
+  
+  --vp-c-signal: #9f2d00;
+  --vp-c-signal-hover: #c53c00;
+  --vp-c-signal-active: #7a2200;
+  --vp-c-signal-muted: #9f2d00 / 0.15;
+  --vp-c-signal-fg: #fff7ed;
+  
+  --vp-c-verified: #22c55e;
+  --vp-c-verified-muted: #22c55e / 0.15;
+  --vp-c-verified-fg: #0c0a09;
+  
+  --vp-c-pending: #f59e0b;
+  --vp-c-pending-muted: #f59e0b / 0.15;
+  --vp-c-pending-fg: #0c0a09;
+  
+  --vp-c-invalid: #ef4444;
+  --vp-c-invalid-muted: #ef4444 / 0.15;
+  --vp-c-invalid-fg: #fafaf9;
+}
+
+/* Soundcn-style components */
+.vp-card {
+  background: var(--vp-c-surface);
+  border: 1px solid var(--vp-c-border);
+  border-radius: calc(var(--vp-radius) * 1.6);
+  padding: 1.5rem;
+}
+
+.vp-btn-primary {
+  background: var(--vp-c-signal);
+  color: var(--vp-c-signal-fg);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--vp-radius);
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+.vp-btn-primary:hover { opacity: 0.9; }
