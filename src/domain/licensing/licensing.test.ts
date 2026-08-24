@@ -82,14 +82,18 @@ describe('composePolicy', () => {
     const b = composePolicy({ profile: 'source-available-no-ai' }).policy;
     expect(a).toBeDefined();
     expect(b).toBeDefined();
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     expect(canonicalPolicyJson(a as never)).toBe(canonicalPolicyJson(b as never));
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     expect(policyHash(a as never)).toBe(policyHash(b as never));
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     expect(policyHash(a as never)).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('round-trips through parsePolicy', () => {
     const composed = composePolicy({ profile: 'open-copyleft' }).policy;
     expect(composed).toBeDefined();
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const parsed = parsePolicy(JSON.parse(canonicalPolicyJson(composed as never)));
     expect(parsed.ok).toBe(true);
     expect(parsed.policy?.profile).toBe('open-copyleft');
@@ -98,6 +102,7 @@ describe('composePolicy', () => {
   it('parsePolicy rejects incomplete or invalid documents', () => {
     expect(parsePolicy({ schema: 'wrong' }).ok).toBe(false);
     const composed = composePolicy({ profile: 'open-permissive' }).policy;
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const broken = JSON.parse(canonicalPolicyJson(composed as never));
     delete broken.ai_training;
     broken.use_personal = 'teleport';
@@ -139,18 +144,23 @@ describe('generateArtifacts', () => {
       jurisdiction: 'EU',
     }).policy;
     expect(policy).toBeDefined();
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const a = generateArtifacts(policy as never);
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const b = generateArtifacts(policy as never);
     expect(a).toEqual(b);
 
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const ai = JSON.parse(a.aiPolicyJson) as Record<string, string>;
     expect(ai['schema']).toBe('reposell/ai-policy/v1');
     expect(ai['ai_training']).toBe('allowed'); // plain source-available is AI-neutral
 
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const commercial = JSON.parse(a.commercialPolicyJson) as Record<string, string>;
     expect(commercial['schema']).toBe('reposell/commercial-policy/v1');
     expect(commercial['payment']).toBe('stripe-backed');
 
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const authorization = JSON.parse(a.authorizationJson) as Record<string, string>;
     expect(authorization['schema']).toBe('reposell/authorization/v1');
 

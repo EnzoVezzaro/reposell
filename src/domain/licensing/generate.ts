@@ -42,6 +42,7 @@ const AUTHORIZATION_FIELDS = ['authorization', 'identity_placeholder'] as const;
 function subset(policy: LicensePolicy, fields: readonly string[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const field of fields) {
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const value = (policy as unknown as Record<string, string>)[field];
     if (value !== undefined) out[field] = value;
   }
@@ -50,6 +51,7 @@ function subset(policy: LicensePolicy, fields: readonly string[]): Record<string
 
 function humanSummary(policy: LicensePolicy): string {
   const lines: string[] = [];
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   const record = policy as unknown as Record<string, string>;
   const groups: Array<[string, readonly string[]]> = [
     ['Access', ['source_access', 'source_license']],

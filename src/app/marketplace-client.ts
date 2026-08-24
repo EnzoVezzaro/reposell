@@ -67,9 +67,9 @@ async function fetchJson<T>(input: {
 }
 
 function guardObject(value: unknown): Record<string, unknown> | undefined {
+  // SAFETY: the condition above establishes the record shape before this cast.
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? // SAFETY: shape checked on previous line.
-      (value as Record<string, unknown>)
+    ? (value as Record<string, unknown>)
     : undefined;
 }
 

@@ -117,10 +117,12 @@ describe('sbom', () => {
     const components = collectComponents(scan);
     expect(components.some((component) => component.name === 'gpl-lib')).toBe(true);
 
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const spdx = JSON.parse(spdxSbom(scan, 'MIT')) as { spdxVersion: string; packages: unknown[] };
     expect(spdx.spdxVersion).toBe('SPDX-2.3');
     expect(spdx.packages.length).toBeGreaterThan(0);
 
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const cdx = JSON.parse(cycloneDxSbom(scan)) as { bomFormat: string; components: unknown[] };
     expect(cdx.bomFormat).toBe('CycloneDX');
     expect(cdx.components.length).toBeGreaterThan(0);

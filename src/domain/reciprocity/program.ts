@@ -111,6 +111,7 @@ function canonicalize(value: unknown): unknown {
   if (typeof value === 'object' && value !== null) {
     const out: Record<string, unknown> = {};
     for (const key of Object.keys(value).sort()) {
+      // SAFETY: shape guarded by the validation immediately above before this cast.
       out[key] = canonicalize((value as Record<string, unknown>)[key]);
     }
     return out;

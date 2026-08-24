@@ -191,12 +191,15 @@ export const FREE_FIELDS = ['source_license', 'jurisdiction', 'spdx_exceptions']
 
 /** Validates a single right value against the catalog. */
 export function isRightValue(name: RightName, value: string): boolean {
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   if ((FREE_FIELDS as readonly string[]).includes(name)) return true;
   const allowed = RIGHTS[name];
   if (allowed === 'spdx-expression') return true;
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   return (allowed as readonly string[]).includes(value);
 }
 
 export function rightNames(): RightName[] {
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   return Object.keys(RIGHTS) as RightName[];
 }

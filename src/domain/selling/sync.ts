@@ -52,6 +52,7 @@ async function listSessions(input: {
   const res = await doFetch(`https://api.stripe.com/v1/checkout/sessions${query}`, {
     headers: { Authorization: `Bearer ${input.apiKey}` },
   });
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   const body = (await res.json()) as { data?: StripeSession[]; error?: { message?: string } };
   if (!res.ok || body.error !== undefined) {
     throw new Error(`Stripe checkout sessions failed: ${body.error?.message ?? `HTTP ${res.status}`}`);

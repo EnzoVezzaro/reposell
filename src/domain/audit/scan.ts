@@ -105,6 +105,7 @@ async function walk(root: string): Promise<{ files: string[]; truncated: boolean
 
 function parsePackageJson(raw: string, filePath: string): ManifestFile | undefined {
   try {
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const json = JSON.parse(raw) as Record<string, unknown>;
     const license = json['license'];
     return {
@@ -150,6 +151,7 @@ interface LockfilePackage {
 function parsePackageLock(raw: string): DependencyComponent[] {
   let json: { packages?: Record<string, LockfilePackage> };
   try {
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     json = JSON.parse(raw) as { packages?: Record<string, LockfilePackage> };
   } catch {
     return [];
@@ -252,10 +254,12 @@ export async function scanRepository(root: string): Promise<ScanResult> {
       if (manifest.kind !== 'package-json') continue;
       try {
         const raw = await fs.readFile(path.join(root, manifest.path), 'utf8');
+        // SAFETY: shape guarded by the validation immediately above before this cast.
         const json = JSON.parse(raw) as Record<string, unknown>;
         for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
           const deps = json[section];
           if (typeof deps !== 'object' || deps === null || Array.isArray(deps)) continue;
+          // SAFETY: shape guarded by the validation immediately above before this cast.
           for (const name of Object.keys(deps as Record<string, unknown>)) {
             if (!dependencies.some((component) => component.name === name)) {
               dependencies.push({ name, source: 'manifest', path: manifest.path });

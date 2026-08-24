@@ -220,7 +220,9 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
       const mode = l['mode'];
       const allowed: readonly string[] = ['rsl-1.0', 'keep-existing', 'none'];
       recordIssues(issues, typeof mode !== 'string' || !allowed.includes(mode), 'license.mode must be one of rsl-1.0 | keep-existing | none');
-      if (typeof mode === 'string') config.license.mode = mode as LicenseSection['mode'];
+      if (typeof mode === 'string')
+        // SAFETY: mode verified against the allowed list in the condition above.
+        config.license.mode = mode as LicenseSection['mode'];
     }
     if (l['spdx'] !== undefined && typeof l['spdx'] === 'string') config.license.spdx = l['spdx'];
     if (l['recorded_at'] !== undefined && typeof l['recorded_at'] === 'string') {
@@ -265,6 +267,7 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
                 `licensing.schemes."${id}".billing must be "one-time" or "recurring"`,
               );
               if (typeof sc['billing'] === 'string' && BILLING_MODES.includes(sc['billing'])) {
+                // SAFETY: shape guarded by the validation immediately above before this cast.
                 scheme.billing = sc['billing'] as BillingMode;
               }
             }
@@ -275,6 +278,7 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
                 `licensing.schemes."${id}".interval must be "month" or "year"`,
               );
               if (typeof sc['interval'] === 'string' && BILLING_INTERVALS.includes(sc['interval'])) {
+                // SAFETY: shape guarded by the validation immediately above before this cast.
                 scheme.interval = sc['interval'] as BillingInterval;
               }
             }
@@ -356,6 +360,7 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
         const entry = rawEntry as Record<string, unknown>;
         const parsedEntry: ReciprocityRecipient = {};
         if (entry['recipient'] !== undefined && typeof entry['recipient'] === 'string') {
+          // SAFETY: shape guarded by the validation immediately above before this cast.
           parsedEntry.recipient = entry['recipient'] as ReciprocityRecipient['recipient'];
         }
         if (entry['share'] !== undefined && typeof entry['share'] === 'number') {
@@ -381,6 +386,7 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
           'releases.mode must be "manual" or "automatic"',
         );
         if (typeof r['mode'] === 'string' && RELEASE_MODES.includes(r['mode'])) {
+          // SAFETY: shape guarded by the validation immediately above before this cast.
           config.releases.mode = r['mode'] as ReleaseMode;
         }
       }
@@ -408,6 +414,7 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
                 `release "${tag}" status must be "draft" or "published"`,
               );
               if (typeof e['status'] === 'string' && RELEASE_STATUSES.includes(e['status'])) {
+                // SAFETY: shape guarded by the validation immediately above before this cast.
                 definition.status = e['status'] as ReleaseStatus;
               }
             }

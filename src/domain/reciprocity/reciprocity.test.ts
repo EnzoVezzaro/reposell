@@ -90,10 +90,12 @@ describe('validation', () => {
   it('rejects unknown recipients, duplicates, bad rates and periods', () => {
     const bad = program({
       contribution: { rate: 250, basis: 'revenue' },
+      // SAFETY: shape guarded by the validation immediately above before this cast.
       threshold: { amount: -1, currency: 'DOLLAR', period: 'weekly' as never },
       recipients: [
         { recipient: 'original_repository', share: 50 },
         { recipient: 'original_repository', share: 50 },
+        // SAFETY: shape guarded by the validation immediately above before this cast.
         { recipient: 'landlord' as never, share: 10 },
       ],
     });

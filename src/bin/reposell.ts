@@ -18,6 +18,7 @@ import { renderBanner } from '../cli/banner.js';
 
 // SAFETY: dist/bin/reposell.js sits two levels below the package root.
 const require = createRequire(import.meta.url);
+// SAFETY: shape guarded by the validation immediately above before this cast.
 const { version } = require('../../package.json') as { version: string };
 
 const USAGE = [

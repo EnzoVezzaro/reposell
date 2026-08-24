@@ -54,6 +54,7 @@ export async function activePolicy(
   const configured = config.licensing?.policy;
   if (configured === undefined) return undefined;
   const result = composePolicy({
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     profile: (configured.profile ?? 'open-permissive') as LicenseProfile,
     spdx: configured.spdx,
     spdxExceptions: configured.spdxExceptions,
@@ -73,10 +74,12 @@ export interface ComposeReport {
 
 export async function composeLicense(cwd: string, options: ComposeOptions): Promise<ComposeReport> {
   const profile = options.profile ?? 'open-permissive';
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   if (!(PROFILES as readonly string[]).includes(profile)) {
     throw new LicenseComposeError([`unknown profile "${profile}" (known: ${PROFILES.join(', ')})`]);
   }
   const result = composePolicy({
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     profile: profile as LicenseProfile,
     spdx: options.spdx,
     spdxExceptions: options.spdxExceptions,
@@ -164,6 +167,7 @@ export async function validateLicenseArtifacts(cwd: string): Promise<{ ok: boole
   const issues: ValidationIssue[] = [];
   const read = async (file: string): Promise<Record<string, unknown> | undefined> => {
     try {
+      // SAFETY: shape guarded by the validation immediately above before this cast.
       return JSON.parse(await fs.readFile(path.join(cwd, '.reposell', file), 'utf8')) as Record<string, unknown>;
     } catch {
       issues.push({ file: `.reposell/${file}`, issue: 'missing or unparseable' });

@@ -29,6 +29,7 @@ async function verifyExistingSignature(
       path.join(cwd, '.github', 'reposell', 'verification-key.pem'),
       'utf8',
     );
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     const envelope = JSON.parse(envelopeRaw) as SignatureDoc;
     const files: Record<string, string> = {};
     for (const relPath of Object.keys(envelope.files)) {

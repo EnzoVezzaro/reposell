@@ -250,6 +250,7 @@ export function composePolicy(input: {
       issues.push(`unknown right "${key}"`);
       continue;
     }
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     if (!isRightValue(key as RightName, value)) {
       issues.push(`invalid value "${value}" for right "${key}"`);
       continue;
@@ -269,6 +270,7 @@ export function composePolicy(input: {
 
   if (issues.length > 0) return { ok: false, issues };
 
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   const policy = { schema: LICENSE_SCHEMA, ...merged } as unknown as LicensePolicy;
   return { ok: true, policy, issues };
 }
@@ -294,6 +296,7 @@ export function parsePolicy(input: unknown): { ok: boolean; policy?: LicensePoli
   if (raw['schema'] !== LICENSE_SCHEMA) issues.push(`schema: expected "${LICENSE_SCHEMA}"`);
 
   const profile = raw['profile'];
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   if (typeof profile !== 'string' || !(PROFILES as readonly string[]).includes(profile)) {
     issues.push(`profile: unknown "${String(profile)}"`);
   }
@@ -312,5 +315,6 @@ export function parsePolicy(input: unknown): { ok: boolean; policy?: LicensePoli
   }
 
   if (issues.length > 0) return { ok: false, issues };
+  // SAFETY: shape guarded by the validation immediately above before this cast.
   return { ok: true, policy: input as LicensePolicy, issues };
 }

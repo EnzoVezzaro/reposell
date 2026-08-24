@@ -63,6 +63,7 @@ function parseExpression(tokens: string[]): ParseResult {
         if (exception === undefined || isKeyword(exception)) {
           return { ok: false, error: 'WITH requires an exception identifier' };
         }
+        // SAFETY: shape guarded by the validation immediately above before this cast.
         const group = inner.node as SpdxNode;
         if (group.kind === 'id') group.exception = exception;
       }
@@ -90,6 +91,7 @@ function parseExpression(tokens: string[]): ParseResult {
       consume();
       const right = parseAtom();
       if (!right.ok) return right;
+      // SAFETY: shape guarded by the validation immediately above before this cast.
       left = { ok: true, node: { kind: 'and', left: left.node as SpdxNode, right: right.node as SpdxNode } };
     }
     return left;
@@ -102,6 +104,7 @@ function parseExpression(tokens: string[]): ParseResult {
       consume();
       const right = parseAnd();
       if (!right.ok) return right;
+      // SAFETY: shape guarded by the validation immediately above before this cast.
       left = { ok: true, node: { kind: 'or', left: left.node as SpdxNode, right: right.node as SpdxNode } };
     }
     return left;

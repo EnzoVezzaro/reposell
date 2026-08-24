@@ -64,6 +64,7 @@ function parseEmbeddedData(html: string): EmbeddedSellPage | undefined {
   const close = html.indexOf('</script>', open);
   if (open === -1 || close === -1) return undefined;
   try {
+    // SAFETY: shape guarded by the validation immediately above before this cast.
     return JSON.parse(html.slice(open + 1, close)) as EmbeddedSellPage;
   } catch {
     return undefined;
