@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install the reposell CLI globally with npm, verify the install, or build it from source inside the npm-workspaces monorepo.
+description: Install the reposell CLI globally with npm, verify the install, or build it from source.
 ---
 
 # Installation
@@ -13,7 +13,7 @@ description: Install the reposell CLI globally with npm, verify the install, or 
 | npm | bundled with Node | Used for the global install |
 | Git | any recent version | Repository metadata is derived from your `origin` remote |
 
-The monorepo enforces `"engines": { "node": ">=18.0.0" }`, and the generated CI workflow pins Node 20. If you develop with Bun, the published CLI still runs on Node — target repositories need no Bun/TS toolchain.
+The CLI enforces `"engines": { "node": ">=18.0.0" }`, and the generated CI workflow pins Node 20. If you develop with Bun, the published CLI still runs on Node — target repositories need no Bun/TS toolchain.
 
 ## Global install
 
@@ -62,29 +62,31 @@ Head to [Quick Start](/guide/quick-start) and run `reposell init` inside your re
 
 ## Build from source
 
-The reposell ecosystem lives in a single npm-workspaces repository:
+The reposell ecosystem is **three independent Git repositories** (plus local
+tooling folders) — not a monorepo. Each repo versions, builds and deploys on
+its own:
 
 ```
-reposell-all/
-├── reposell/                 # the CLI (this package — npm: @reposell/cli)
-├── reposell-listing/         # official listing instance (registry + CI)
-├── reposell-listing-public/  # community listing frontend
-├── storefront-core/          # storefront document schema + renderer (npm: @reposell/storefront-core)
-└── storefront-studio/        # dev-only visual storefront builder
+github.com/EnzoVezzaro/reposell                  # the CLI (this package — npm: @reposell/cli)
+github.com/EnzoVezzaro/reposell-listing          # official listing instance (registry + CI)
+github.com/EnzoVezzaro/reposell-listing-public   # community listing frontend
 ```
 
-Clone and build:
+Local development may also keep sibling tooling folders alongside them
+(`storefront-core/` — document schema + renderer, npm: `@reposell/storefront-core`;
+`storefront-studio/` — dev-only visual builder). Those are optional and not
+required to build the CLI.
+
+Clone and build the CLI:
 
 ```bash
 git clone https://github.com/EnzoVezzaro/reposell.git
 cd reposell
 
-# workspace-aware install at the ecosystem root also works:
-#   npm install   (from the parent directory)
-
-npm run build      # tsc -> dist/
-npm run lint       # oxlint
-npm run typecheck  # tsc --noEmit
+npm install       # dependencies (no workspace root needed)
+npm run build     # tsc -> dist/
+npm run lint      # oxlint
+npm run typecheck # tsc --noEmit
 npm test           # vitest run
 ```
 
