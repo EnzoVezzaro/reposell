@@ -3,7 +3,7 @@ import { ref, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { useData, withBase } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { initLandingMotion } from './landingMotion'
-import pkg from '../../../../package.json'
+import pkg from '../../../package.json'
 
 const Layout = DefaultTheme.Layout
 

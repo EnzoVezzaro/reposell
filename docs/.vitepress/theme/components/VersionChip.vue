@@ -1,5 +1,5 @@
 <script setup>
-import pkg from '../../../../package.json'
+import pkg from '../../../package.json'
 
 const version = `v${pkg.version}`
 </script>
