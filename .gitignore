@@ -39,4 +39,4 @@ coverage/
 # Temporary
 tmp/
 temp/
-*.tmp
+*.tmp.npmrc

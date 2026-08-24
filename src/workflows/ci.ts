@@ -25,6 +25,9 @@ export function createReposellWorkflow(): Record<string, unknown> {
     on: {
       push: { branches: ['main', 'master'] },
       release: { types: ['published'] },
+      // D13: scheduled re-verification keeps health/payment facts current
+      // without a PR per release.
+      schedule: [{ cron: '0 6 * * 1' }],
       workflow_dispatch: null,
     },
     permissions: {

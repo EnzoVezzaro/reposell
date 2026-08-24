@@ -135,6 +135,12 @@ $ reposell listing status
 - [Security](docs/security.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
+## Support
+
+If reposell helps you, consider [sponsoring @EnzoVezzaro](https://github.com/sponsors/EnzoVezzaro) — the goal is to work on open source full time.
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github&style=flat-square)](https://github.com/sponsors/EnzoVezzaro)
+
 ## License
 
 MIT - see [LICENSE](LICENSE) for details.
