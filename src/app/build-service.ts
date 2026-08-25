@@ -427,6 +427,7 @@ export async function renderCustomStorefront(input: {
     return undefined;
   }
   try {
+    // SAFETY: JSON.parse returns `any`; parseStorefrontDocument narrows unknown internally.
     const parsed = core.parseStorefrontDocument(JSON.parse(raw) as unknown);
     if (!parsed.ok || parsed.document === undefined) {
       console.warn(`storefront.json invalid (${parsed.errors.join('; ')}) — using built-in sell page`);
