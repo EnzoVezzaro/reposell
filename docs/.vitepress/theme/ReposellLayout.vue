@@ -24,7 +24,7 @@ let forcedDark = false
  * .dark/.light class mixes the previous theme's component styles into the
  * newly selected one (the "cartoon UI on security" bug).
  */
-function applyAppearance(): void {
+function applyAppearance() {
   if (typeof document === 'undefined') return
   const el = document.documentElement
   const isHome = page.value.relativePath === 'index.md'
