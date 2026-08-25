@@ -31,6 +31,9 @@
     "listing",
     "stripe"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Enzo Vezzaro",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {

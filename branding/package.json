@@ -1,6 +1,7 @@
 {
   "name": "@reposell/design-system",
   "version": "1.0.0",
+  "private": true,
   "description": "reposell Design System - Shared UI components, tokens, and VitePress theme",
   "type": "module",
   "main": "./tokens/index.ts",
