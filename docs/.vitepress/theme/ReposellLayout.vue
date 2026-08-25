@@ -65,17 +65,6 @@ function applyAppearance() {
   startMotionIfHome()
 }
 
-watchEffect(applyAppearance)
-
-const stars = ref('')
-const version = ref('')
-
-const fallbackVersion = `v${pkg.version}`
-
-function formatStars(n) {
-  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
-}
-
 let stopMotion = null
 
 function startMotionIfHome() {
@@ -86,6 +75,17 @@ function startMotionIfHome() {
   // themes animate via their own CSS.
   if (activeTheme() !== 'security') return
   stopMotion = initLandingMotion()
+}
+
+watchEffect(applyAppearance)
+
+const stars = ref('')
+const version = ref('')
+
+const fallbackVersion = `v${pkg.version}`
+
+function formatStars(n) {
+  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
 }
 
 let themeObserver = null
