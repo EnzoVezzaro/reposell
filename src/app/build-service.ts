@@ -421,9 +421,9 @@ export async function renderCustomStorefront(input: {
   try {
     // SAFETY: optional peer dependency; absence is a supported state.
     // @ts-expect-error — optional peer dependency, not always installed
-    core = (await import('reposell-storefront-core')) as unknown as StorefrontCoreModule;
+    core = (await import('@reposell/storefront-core')) as unknown as StorefrontCoreModule;
   } catch {
-    console.warn('storefront.json found but reposell-storefront-core is not installed — using built-in sell page');
+    console.warn('storefront.json found but @reposell/storefront-core is not installed — using built-in sell page');
     return undefined;
   }
   try {

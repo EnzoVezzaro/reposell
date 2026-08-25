@@ -1,5 +1,5 @@
 {
-  "name": "reposell",
+  "name": "@reposell/cli",
   "version": "0.1.4",
   "description": "reposell CLI - Core developer tool for the reposell protocol",
   "type": "module",
@@ -56,10 +56,10 @@
     "CHANGELOG.md"
   ],
   "peerDependencies": {
-    "reposell-storefront-core": "*"
+    "@reposell/storefront-core": "*"
   },
   "peerDependenciesMeta": {
-    "reposell-storefront-core": {
+    "@reposell/storefront-core": {
       "optional": true
     }
   }
