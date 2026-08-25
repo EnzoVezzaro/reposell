@@ -69,11 +69,11 @@ its own:
 ```
 github.com/EnzoVezzaro/reposell                  # the CLI (this package — npm: @reposell/cli)
 github.com/EnzoVezzaro/reposell-listing          # official listing instance (registry + CI)
-github.com/EnzoVezzaro/reposell-listing-public   # community listing frontend
+github.com/EnzoVezzaro/reposell-community-listing   # community listing frontend
 ```
 
 Local development may also keep sibling tooling folders alongside them
-(`storefront-core/` — document schema + renderer, npm: `@reposell/storefront-core`;
+(`storefront-core/` — document schema + renderer, npm: `reposell-storefront-core`;
 `storefront-studio/` — dev-only visual builder). Those are optional and not
 required to build the CLI.
 

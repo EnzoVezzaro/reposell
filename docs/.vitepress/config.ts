@@ -210,7 +210,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '@reposell/design-system': '../../../../branding',
+        '@reposell/design-system': '../../../../reposell-branding',
       },
     },
   },

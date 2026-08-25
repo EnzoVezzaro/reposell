@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unreferenced `src/utils/guards.ts`
 - `git.ts` fallback now uses `cwd` parameter instead of `process.cwd()`
 - Added `--version`/`-v` flag to CLI
-- `@ts-expect-error` for optional `@reposell/storefront-core` dynamic import
+- `@ts-expect-error` for optional `reposell-storefront-core` dynamic import
 - Removed stale monorepo workspace references from root package.json
 
 ## [0.1.3] - 2026-08-24

@@ -56,10 +56,10 @@
     "CHANGELOG.md"
   ],
   "peerDependencies": {
-    "@reposell/storefront-core": "*"
+    "reposell-storefront-core": "*"
   },
   "peerDependenciesMeta": {
-    "@reposell/storefront-core": {
+    "reposell-storefront-core": {
       "optional": true
     }
   }

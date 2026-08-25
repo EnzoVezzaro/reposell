@@ -35,7 +35,7 @@ const SCENARIOS = {
   deploy: {
     title: 'ops-box',
     lines: [
-      { t: 'cmd', text: 'git clone https://github.com/EnzoVezzaro/reposell-listing-public' },
+      { t: 'cmd', text: 'git clone https://github.com/EnzoVezzaro/reposell-community-listing' },
       { t: 'cmd', text: 'cp .env.example .env && docker compose up -d' },
       { t: 'ok', text: '✓ API healthy · Frontend healthy' },
       { t: 'ok', text: '✓ Official pricing policy verified on startup' },

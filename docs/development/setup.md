@@ -28,7 +28,7 @@ reposell-all/
 │   ├── oxlint.config.ts
 │   └── docs/
 ├── reposell-listing/
-└── reposell-listing-public/
+└── reposell-community-listing/
 ```
 
 ## Install
