@@ -88,7 +88,7 @@ function startMotionIfHome() {
   stopMotion = initLandingMotion()
 }
 
-let themeObserver: MutationObserver | null = null
+let themeObserver = null
 
 onMounted(() => {
   applyAppearance()
