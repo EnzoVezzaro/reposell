@@ -6,6 +6,16 @@ describe('parseLicenseArgs', () => {
     expect(parseLicenseArgs(['check'])).toMatchObject({ action: 'check', force: false });
   });
 
+  it('accepts the rsl flavor positional after use', () => {
+    const args = parseLicenseArgs(['use', 'rsl', '--holder', 'Jane Doe']);
+    expect(args).toMatchObject({ action: 'use', holder: 'Jane Doe' });
+  });
+
+  it('rejects a flavor positional on other actions or unknown flavors', () => {
+    expect(() => parseLicenseArgs(['check', 'rsl'])).toThrow(/unknown argument/);
+    expect(() => parseLicenseArgs(['use', 'mit'])).toThrow(/unknown argument/);
+  });
+
   it('parses use with all flags', () => {
     const args = parseLicenseArgs([
       'use',

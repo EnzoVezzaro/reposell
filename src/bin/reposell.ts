@@ -24,7 +24,7 @@ const { version } = require('../../package.json') as { version: string };
 const USAGE = [
   'usage: reposell <command> [args]',
   '',
-  '  init                        Set up a repository for selling',
+  '  init [--yes] [--wizard]     Guided setup wizard (license, payment, release,\n                              signing key); --yes skips prompts (CI)',
   '  license check               Detect and explain the repository license',
   '  license use rsl             Generate RSL-1.0 LICENSE + ai-policy with your info',
   '  license keep                Keep your existing license',
@@ -102,7 +102,11 @@ async function main(): Promise<void> {
         break;
       }
       case 'init': {
-        console.log(formatInitResult(await initCommand(cwd)));
+        console.log(
+          formatInitResult(
+            await initCommand(cwd, { yes: flags['yes'] === 'true', wizard: flags['wizard'] === 'true' }),
+          ),
+        );
         break;
       }
       case 'license': {

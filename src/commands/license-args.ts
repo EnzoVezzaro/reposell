@@ -11,9 +11,18 @@ export interface LicenseCommandArgs {
 export class LicenseArgsError extends Error {}
 
 export function parseLicenseArgs(argv: string[]): LicenseCommandArgs {
-  const [action, ...rest] = argv;
+  const [action, kind, ...rest] = argv;
   if (action !== 'check' && action !== 'use' && action !== 'keep') {
     throw new LicenseArgsError('usage: reposell license <check|use|keep> [flags]');
+  }
+  // `license use rsl` — the license flavor positional is accepted for rsl
+  // only (the generated license is always RSL-1.0).
+  if (kind !== undefined && !kind.startsWith('--')) {
+    if (action !== 'use' || kind.toLowerCase() !== 'rsl') {
+      throw new LicenseArgsError(`unknown argument: ${kind}`);
+    }
+  } else if (kind !== undefined) {
+    rest.unshift(kind);
   }
 
   const args: LicenseCommandArgs = { action, force: false, noPolicy: false };

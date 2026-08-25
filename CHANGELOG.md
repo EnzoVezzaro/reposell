@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `reposell init` is now a guided wizard (TTY): product name → license policy → Stripe Payment Link → first draft release → signing-key storage via `gh secret set`, ending with a status/next-steps summary and a READY gate check
+- `init --wizard` forces the wizard without a TTY; `init --yes` keeps CI/non-interactive behavior explicit
+- New buffered prompt engine (`src/cli/prompts.ts`) — piped/scripted answers are queued FIFO, so early input is never lost
+
+### Fixed
+- ASCII banner redrawn on a strict grid — the "R" mark no longer renders as misaligned noise
+- `reposell init` config template now includes `licensing.schemes` (reuses `renderDefaultYml`), so fresh repos pass publication gates instead of failing with "licensing.schemes is not configured"
+- `reposell license use rsl --holder …` was rejected with `unknown flag: rsl` — flavor positional now parsed
+- Wizard degrades gracefully when stdin ends early: scaffolding completes and the transcript reports what was skipped
+
 ## [0.1.4] - 2026-08-24
 
 ### Fixed

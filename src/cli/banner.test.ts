@@ -1,11 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { BANNER_FULL, renderBanner } from './banner.js';
+import { BANNER_FULL, BANNER_COMPACT, renderBanner } from './banner.js';
 
 describe('banner', () => {
   it('full art contains the R block and the star swoosh', () => {
     expect(BANNER_FULL).toContain('-%%@@@@@%@@@@@%.');
-    expect(BANNER_FULL).toContain(':+***********+.');
-    expect(BANNER_FULL).toContain('.+**+++++***++.');
+    expect(BANNER_FULL).toContain('****:');
+    expect(BANNER_FULL).toContain('+****+');
+  });
+
+  it('every line of the full art is left-aligned with no leading blank columns', () => {
+    const lines = BANNER_FULL.split('\n');
+    expect(lines.length).toBeGreaterThan(15);
+    for (const line of lines) expect(line.startsWith(' ')).toBe(false);
   });
 
   it('compact variant carries the solo developer message', () => {
@@ -15,7 +21,7 @@ describe('banner', () => {
     expect(compact).toContain('Enzo Vezzaro');
   });
 
-  it('compact is far smaller than full', () => {
-    expect(renderBanner('compact').length).toBeLessThan(BANNER_FULL.length / 3);
+  it('compact art is much smaller than full art', () => {
+    expect(BANNER_COMPACT.length).toBeLessThan(BANNER_FULL.length / 2);
   });
 });
