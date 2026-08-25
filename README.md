@@ -1,83 +1,50 @@
-# reposell CLI
+# reposell
 
-The core developer tool for the reposell repository-to-repository listing protocol. It automates repository initialization, `/sell` endpoint generation, `/listing` manifest creation, release management, CI/CD workflow generation, and cryptographic identity/signature operations.
+The CLI for the reposell repository-to-repository listing protocol. Automates repository initialization, release management, cryptographic signing, and listing publication.
+
+## Install
+
+```bash
+npm install -g reposell
+```
 
 ## Quickstart
 
 ```bash
-npm install -g @reposell/cli
 cd your-repo
-reposell init
+reposell init          # detect repo, generate keys, create reposell.yml
+reposell build         # build + sign the artifact
+reposell release       # publish version to GitHub
+reposell publish       # approve publication after gates pass
 ```
-
-> The npm package is **`@reposell/cli`** (published from the `@reposell` org); the command it installs is **`reposell`**. Zero-install alternative: `npx @reposell/cli <command>`.
-
-Everything possible happens automatically. The developer should NOT have to manually maintain listing manifests, synchronize releases, update listing metadata, calculate listing fees, synchronize pricing, manually verify signatures, manually register every release, or manually maintain GitHub workflows.
-
-The CLI and CI handle these tasks.
-
-## Core Concept
-
-A developer owns a Git repository. That repository can expose:
-
-- `/sell` — Product sales endpoint (owner-owned, always optional)
-- `/listing` — Listing integration (optional, reposell optional)
-
-The repository remains the source of truth for its product.
-
-The listing is OPTIONAL. A repository may:
-
-- **A.** Sell through `/sell` only
-- **B.** Sell through `/sell` and register `/listing`
-- **C.** Register selected releases
-- **D.** Automatically expose all future releases
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `reposell init` | Initialize repository with zero-config defaults |
-| `reposell release <tag>` | Declare a release: offers, pricing, Stripe Payment Link (interactive fallback) |
-| `reposell publish <tag>` | Approve publication after gates pass (manual mode) |
+| `reposell build [--out dist]` | Generate the `/reposell/*` static surface |
+| `reposell release` | Declare a release with pricing and Stripe Payment Link |
+| `reposell publish` | Approve publication after gates pass |
 | `reposell validate` | Run the full publication gate checklist |
-| `reposell build [--out dist]` | Generate the `/reposell/*` static surface (uses your `storefront.json` when present) |
 | `reposell health` | Health report for every configured release |
 | `reposell verify <manifest\|trust\|pricing> [url]` | CI verification entry points |
 | `reposell keys <generate\|show>` | Ed25519 signing identity |
-| **Selling** | |
-| `reposell sell sync [plink_id]` | Pull-based fulfillment: purchases, refunds → revocation, fork artifacts |
-| `reposell reciprocity [--revenue N]` | Show / validate / simulate the Reciprocity Program |
-| `reposell listing status` | Dashboard: repo, license, `/sell` endpoint, live Stripe account |
-| `reposell listing publish <tag>` | Build + verify a Listing publication PR payload |
-| **Licensing** | |
-| `reposell license check` | Detect and explain the repository license |
-| `reposell license use rsl` | Generate RSL-1.0 LICENSE + `.reposell/ai-policy.json` |
-| `reposell license keep` | Keep your existing license |
-| `reposell license compose` | Compose a rights-policy profile into `.reposell/*` machine artifacts |
-| `reposell license explain` | Plain-language summary of the active policy |
-| `reposell license validate` | Validate the machine-readable licensing artifacts |
-| `reposell license compatibility` | SPDX dependency compatibility check |
-| **Compliance** | |
-| `reposell audit` | Full licensing/compliance audit — PASS / WARN / BLOCKED + SBOMs + signed report |
+| `reposell license <check\|use\|keep>` | License management |
+| `reposell listing <status\|publish>` | Listing management |
+| `reposell help` | Show help |
 
-## Key Features
+## How It Works
 
-- **Zero-config**: All values derivable from Git/GitHub/CI are auto-derived
-- **Payment abstraction**: `PaymentProvider` interface with `StripePaymentProvider` implementation
-- **Git abstraction**: `GitProvider` interface with `GitHubProvider` implementation
-- **Cryptographic identity**: Ed25519 keys for signing manifests and policies
-- **Protocol versioning**: All public interfaces versioned (protocol: "reposell", version: "1.0")
-- **CI/CD automation**: Generates GitHub Actions workflows for release detection and listing sync
-- **Licensing framework**: 15 policy profiles, ~45 declarative rights (incl. AI training/inference/agents), machine-readable `.reposell/*` artifacts, SPDX expressions with `LicenseRef-reposell-*` support
-- **Compliance audit**: `reposell audit` scans the repo + dependencies against policy — PASS/WARN/BLOCKED, SPDX & CycloneDX SBOMs, Ed25519-signed reports, CI gate mode
-- **License offers**: multiple licensing schemes per release (perpetual, seats, recurring subscriptions), each with its own verified Stripe Payment Link
-- **Reciprocity Program**: seller-configured, buyer-enforced — purchased forks that become commercially successful give back (original repo / dependencies / contributors), split by configurable shares
+1. **`reposell init`** — Detects your Git repo, generates Ed25519 keys, creates `reposell.yml` and GitHub Actions workflows
+2. **`reposell build`** — Reads `storefront.json` (if present) and generates the static `/reposell/*` surface with signed manifests
+3. **`reposell release`** — Declares a release version with pricing, Stripe Payment Links, and license offers
+4. **`reposell publish`** — Approves publication after validation gates pass
+5. **`reposell verify`** — CI entry points for verifying manifests, trust documents, and pricing
 
-## Payment Integration
+## Configuration
 
-Checkout runs on **Stripe Payment Links** — created in your own Stripe dashboard and declared per release **per license offer** in `reposell.yml`. No backend server, no webhooks, no edge functions. CI verifies each link against its offer's declared pricing (HTTPS, `buy.stripe.com`, amount, currency **and billing mode** — a recurring scheme must point at a Stripe recurring price with the declared interval) before anything is published; mismatches stay BLOCKED.
-
-One release can sell several license schemes at once — e.g. a $29 perpetual Standard license, a $99 10-seat Team license and a $9/month Pro subscription — each with its own verified link:
+All values are auto-derived from Git/GitHub/CI. Optional configuration in `reposell.yml`:
 
 ```yaml
 licensing:
@@ -85,68 +52,21 @@ licensing:
     profile: source-available-commercial
   schemes:
     standard: { name: Standard, billing: one-time, template: rsl-1.0 }
-    team:     { name: Team, billing: one-time, seats: 10 }
-    pro-monthly: { name: Pro, billing: recurring, interval: month }
 
 releases:
   definitions:
-    v1.2.0:
+    v1.0.0:
       status: published
       offers:
         - scheme: standard
           pricing: { amount: 29, currency: USD }
           payment: { provider: stripe, payment_link: https://buy.stripe.com/... }
-        - scheme: team
-          pricing: { amount: 99, currency: USD }
-          payment: { provider: stripe, payment_link: https://buy.stripe.com/... }
-        - scheme: pro-monthly
-          pricing: { amount: 9, currency: USD }
-          payment: { provider: stripe, payment_link: https://buy.stripe.com/... }
 ```
-
-The `/sell` page renders one purchase row per offer; the embedded agent JSON and JSON-LD carry the same facts.
-
-### Account dashboard from the terminal
-
-An optional secret key (`STRIPE_SECRET_KEY`) powers local tooling only:
-```bash
-$ reposell listing status
-┌─ reposell dashboard ─────────────────────
-│ Repository: you/your-repo (github)
-│ ✓ License: MIT
-│ reposell.yml: ✓ present · license mode: rsl-1.0
-│ /sell endpoint: ✓ enabled
-💳 Payments: Stripe (test mode)
-    Account: Enzo Solo Dev · DO
-    Charges: ✓ enabled · Payouts: ✓ enabled
-└──────────────────────────────────────────
-```
-
-**Keys and environments:**
-
-- `reposell` reads `REPOSELL_STRIPE_SECRET_KEY`, then `STRIPE_SECRET_KEY`, from the process environment first, then from a local `.env` file (`KEY=value` lines, `#` comments supported).
-- No key anywhere → `Payments: not configured` with setup guidance. The CLI never crashes on a missing key.
-- Invalid or rejected key → degrades gracefully to `not configured` with the reason available via the API.
-- Test keys (`sk_test_…`) are recommended during development; live keys print an explicit warning.
-- Keys are never logged, committed, or written to any generated file.
 
 ## Documentation
 
-- [CLI Reference](docs/cli-reference.md)
-- [Configuration](docs/configuration.md)
-- [Protocol Specification](docs/protocol.md)
-- [Payment Architecture](docs/payment-architecture.md)
-- [Development](docs/development.md)
-- [Deployment](docs/deployment.md)
-- [Security](docs/security.md)
-- [Troubleshooting](docs/troubleshooting.md)
-
-## Support
-
-If reposell helps you, consider [sponsoring @EnzoVezzaro](https://github.com/sponsors/EnzoVezzaro) — the goal is to work on open source full time.
-
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=github&style=flat-square)](https://github.com/sponsors/EnzoVezzaro)
+Full documentation: https://reposell.dev/docs/
 
 ## License
 
-MIT - see [LICENSE](LICENSE) for details.
+Custom reposell license — see [LICENSE](LICENSE) for details.

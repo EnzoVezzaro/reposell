@@ -1,5 +1,5 @@
 {
-  "name": "@reposell/cli",
+  "name": "reposell",
   "version": "0.1.4",
   "description": "reposell CLI - Core developer tool for the reposell protocol",
   "type": "module",
@@ -32,7 +32,7 @@
     "stripe"
   ],
   "author": "Enzo Vezzaro",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/EnzoVezzaro/reposell/issues"
   },
@@ -43,8 +43,7 @@
     "oxlint": "^1.79.0",
     "typescript": "^5.0.0",
     "vitepress": "1.0.0-alpha.75",
-    "vitest": "^1.0.0",
-    "@reposell/storefront-core": "*"
+    "vitest": "^1.0.0"
   },
   "dependencies": {
     "@noble/ed25519": "^3.1.0",
