@@ -63,6 +63,7 @@ jobs:
         run: |
           mkdir -p site
           cp -r docs/.vitepress/dist/* site/
+          echo "reposell.dev" > site/CNAME
           if [ -d dist-proto/reposell ]; then
             cp -r dist-proto/reposell site/reposell
           fi
