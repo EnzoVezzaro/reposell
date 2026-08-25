@@ -18,7 +18,8 @@ describe('renderRslLicense', () => {
     expect(text).toContain('Copyright (c) 2026 Enzo Vezzaro');
     expect(text).not.toContain('[YEAR]');
     expect(text).not.toContain('[COPYRIGHT HOLDER]');
-    expect(text).not.toContain('[JURISDICTION]');
+    // No silent legal defaults: the placeholder stays until --jurisdiction is set.
+    expect(text).toContain('[JURISDICTION]');
   });
 
   it('contains all 22 sections and the AI prohibitions', () => {

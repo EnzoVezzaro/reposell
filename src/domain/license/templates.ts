@@ -329,8 +329,15 @@ law.
 export function renderRslLicense(input: RslRenderInput): string {
   const text = RSL_BODY.replaceAll('[YEAR]', input.year)
     .replaceAll('[COPYRIGHT HOLDER]', input.holder)
-    .replaceAll('[REPOSITORY]', input.repository ?? 'N/A')
-    .replaceAll('[JURISDICTION]', input.jurisdiction ?? 'the State of Delaware, United States of America');
+    .replaceAll('[REPOSITORY]', input.repository ?? 'N/A');
+  // No silent defaults in legal text: an unspecified governing law keeps
+  // the [JURISDICTION] placeholder until the owner sets it explicitly
+  // (`reposell license use rsl --jurisdiction "..."`).
+  if (input.jurisdiction !== undefined && input.jurisdiction.trim() !== '') {
+    return text.replaceAll('[JURISDICTION]', input.jurisdiction).endsWith('\n')
+      ? text.replaceAll('[JURISDICTION]', input.jurisdiction)
+      : text.replaceAll('[JURISDICTION]', input.jurisdiction) + '\n';
+  }
   return text.endsWith('\n') ? text : text + '\n';
 }
 

@@ -91,9 +91,11 @@ listing protocol.
    of notice.
 
 9. GOVERNING LAW
-   This License shall be governed by the laws of the State of
-   Delaware, United States of America, without regard to
-   conflict-of-law principles.
+   This License shall be governed by the laws specified by the Owner
+   in the applicable Product manifest or license record.
+
+   If no governing law is specified, the laws of [JURISDICTION] shall
+   apply.
 
 10. CONTRIBUTIONS
     Contributions are accepted under the terms of this License.

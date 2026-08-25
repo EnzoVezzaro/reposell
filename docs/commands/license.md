@@ -69,7 +69,7 @@ $ reposell license compose --profile source-available-commercial --spdx LicenseR
 | `--profile` | One of the 15 profiles (see the guide) |
 | `--spdx` | SPDX expression (`MIT`, `MIT OR Apache-2.0`, `LicenseRef-reposell-*`) |
 | `--exception` | SPDX exception id |
-| `--jurisdiction` | Jurisdiction note |
+| `--jurisdiction` | Governing law for the LICENSE. **No silent default** — without it, the license keeps the `[JURISDICTION]` placeholder until you set it |
 | `--set right=value` | Override any single right (repeatable) |
 
 ### `reposell license explain`
