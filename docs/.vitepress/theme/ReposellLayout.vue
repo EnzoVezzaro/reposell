@@ -17,23 +17,37 @@ function activeTheme() {
 }
 
 let forcedDark = false
-watchEffect(() => {
-  if (!('document' in globalThis)) return
+
+/**
+ * Single source of truth for html-level classes. Runs on page change AND on
+ * every theme switch (MutationObserver below) — without this, a stale
+ * .dark/.light class mixes the previous theme's component styles into the
+ * newly selected one (the "cartoon UI on security" bug).
+ */
+function applyAppearance(): void {
+  if (typeof document === 'undefined') return
   const el = document.documentElement
   const isHome = page.value.relativePath === 'index.md'
   el.classList.toggle('rs-home', isHome)
-  // Light themes must run their home in LIGHT mode or dark-styled
-  // components become unreadable (dark text on dark surfaces).
-  const wantsDark = !LIGHT_THEMES.has(activeTheme())
+
+  const theme = activeTheme()
+  const wantsDark = !LIGHT_THEMES.has(theme)
+
   if (isHome) {
-    if (wantsDark && !el.classList.contains('dark')) {
-      el.classList.add('dark')
-      forcedDark = true
-    } else if (!wantsDark) {
+    if (wantsDark) {
+      el.classList.remove('light')
+      if (!el.classList.contains('dark')) {
+        el.classList.add('dark')
+        forcedDark = true
+      }
+    } else {
       el.classList.remove('dark')
       el.classList.add('light')
       forcedDark = false
     }
+    // Non-security themes animate via CSS; the boot-hide class must go or
+    // the hero content stays invisible.
+    if (theme !== 'security') el.classList.remove('lx-boot')
   } else if (forcedDark) {
     forcedDark = false
     el.classList.remove('dark')
@@ -47,7 +61,11 @@ watchEffect(() => {
       /* storage unavailable */
     }
   }
-})
+
+  startMotionIfHome()
+}
+
+watchEffect(applyAppearance)
 
 const stars = ref('')
 const version = ref('')
@@ -65,17 +83,20 @@ function startMotionIfHome() {
   stopMotion = null
   if (page.value.relativePath !== 'index.md') return
   // Landing choreography belongs to the security (lab) theme only; other
-  // themes animate via their own CSS. The boot-hide pre-paint class MUST be
-  // cleared for them or the hero content stays invisible.
-  if (activeTheme() !== 'security') {
-    document.documentElement.classList.remove('lx-boot')
-    return
-  }
+  // themes animate via their own CSS.
+  if (activeTheme() !== 'security') return
   stopMotion = initLandingMotion()
 }
 
+let themeObserver: MutationObserver | null = null
+
 onMounted(() => {
-  startMotionIfHome()
+  applyAppearance()
+  themeObserver = new MutationObserver(applyAppearance)
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
   fetchStars()
   fetchVersion()
 })
@@ -86,6 +107,9 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  themeObserver?.disconnect()
+  themeObserver = null
+
   stopMotion?.()
   stopMotion = null
 })
