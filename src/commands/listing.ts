@@ -6,7 +6,7 @@ export function formatPaymentStatus(payment: ListingStatus['payment']): string {
     return [
       '💳 Payments: not configured',
       '    Set STRIPE_SECRET_KEY=sk_test_… in your environment or a local .env file.',
-      '    Test keys are safe to commit to CI secrets; never commit the key itself.',
+      '    Local tooling only — CI and checkout never need it; never commit the key.',
     ].join('\n');
   }
   // SAFETY: narrowing above guarantees only the two union shapes reach here.

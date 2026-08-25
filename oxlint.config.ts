@@ -18,7 +18,7 @@ export default defineConfig({
     "dist/**",
     "build/**",
     "docs/.vitepress/cache/**",
-    "docs/docs/.vitepress/cache/**",
+    "docs/.vitepress/cache/**",
     "branding/canvasui/**",
   ],
   jsPlugins: [

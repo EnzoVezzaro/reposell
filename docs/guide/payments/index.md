@@ -55,7 +55,7 @@ This is a designed path, not an error state:
 $ reposell listing status
 💳 Payments: not configured
     Set STRIPE_SECRET_KEY=sk_test_… in your environment or a local .env file.
-    Test keys are safe to commit to CI secrets; never commit the key itself.
+    Local tooling only — CI and checkout never need it; never commit the key.
 ```
 
 - Missing key → `not configured`, with guidance. Exit code stays clean.
@@ -67,7 +67,7 @@ $ reposell listing status
 
 - Keys are never logged, never written into generated files, never embedded in manifests.
 - Only the *mode* (`test`/`live`) ever reaches output — derived from the payload, not by printing the key.
-- For CI, put the key in encrypted secrets (`STRIPE_SECRET_KEY`), not in `.env`.
+- The generated GitHub Actions workflow references only `REPOSELL_SIGNING_KEY` — `STRIPE_SECRET_KEY` stays local and never appears in CI.
 
 ## Create your Stripe Payment Link
 

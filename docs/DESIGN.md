@@ -102,7 +102,7 @@ All components use shadcn primitives with soundcn warmth:
 
 ### Landing choreography (anime.js v4)
 
-All landing animations run through `docs/docs/.vitepress/theme/landingMotion.js`
+All landing animations run through `docs/.vitepress/theme/landingMotion.js`
 (`animejs` v4: `animate`, `createTimeline`, `createDrawable`, `stagger`). CSS
 handles only hover micro-interactions; entrances/reveals are JS-driven:
 

@@ -59,7 +59,7 @@ These are specified in the protocol and land in upcoming releases:
 | Variable | Description |
 |----------|-------------|
 | `REPOSELL_SIGNING_KEY` | Ed25519 private seed (base64) — signing builds, CI secret |
-| `REPOSELL_STRIPE_SECRET_KEY` | Stripe secret key (preferred) — local tooling and CI only |
+| `REPOSELL_STRIPE_SECRET_KEY` | Stripe secret key (preferred) — local tooling only |
 | `STRIPE_SECRET_KEY` | Stripe secret key fallback |
 | `REPOSELL_OFFICIAL_VERIFY_KEY` | Official Ed25519 public key for remote verification |
 

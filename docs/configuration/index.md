@@ -64,8 +64,6 @@ ci:
     - "reposell.yml"        # Main CI: validation, manifest generation
     - "reposell-release.yml" # Release automation
   # Required secrets (documented, never in config)
-  # STRIPE_SECRET_KEY
-  # STRIPE_WEBHOOK_SECRET
   # REPOSELL_SIGNING_KEY
   # GITHUB_TOKEN (auto-provided by GitHub Actions)
 
@@ -160,9 +158,6 @@ CI/CD workflow generation.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `STRIPE_SECRET_KEY` | Yes (if payment enabled) | Stripe secret API key |
-| `STRIPE_WEBHOOK_SECRET` | Yes (if payment enabled) | Stripe webhook signing secret |
-| `STRIPE_PUBLISHABLE_KEY` | Yes (if payment enabled) | Stripe publishable key |
 | `REPOSELL_SIGNING_KEY` | Yes (if signing enabled) | Base64-encoded Ed25519 private key |
 | `GITHUB_TOKEN` | Auto | GitHub token (provided by Actions) |
 | `REPOSELL_CONFIG` | No | Path to config file (default: reposell.yml) |

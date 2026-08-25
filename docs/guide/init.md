@@ -57,7 +57,7 @@ A single deterministic workflow covering push to `main`/`master`, GitHub Release
 3. `reposell build --out dist` — generates the `/reposell/*` static surface and signs it when `REPOSELL_SIGNING_KEY` is present
 4. deploy `dist/reposell` to GitHub Pages
 
-The workflow requests only `contents: read`, `pages: write`, `id-token: write`, and reads both secrets (`REPOSELL_SIGNING_KEY`, `STRIPE_SECRET_KEY`) from Actions secrets. This is the one file init regenerates on every run; nothing outside `.github/workflows/reposell.yml` is ever touched.
+The workflow requests only `contents: read`, `pages: write`, `id-token: write`, and reads a single secret (`REPOSELL_SIGNING_KEY`) from Actions secrets. Checkout needs no keys — buyers go through Stripe Payment Links. This is the one file init regenerates on every run; nothing outside `.github/workflows/reposell.yml` is ever touched.
 
 ### 3. `.github/reposell/verification-key.pem` (best effort)
 

@@ -93,9 +93,9 @@ No network, no module mocks — inject fakes. See [/development/testing](/develo
 
 ## 5. Update documentation
 
-1. Create `docs/docs/commands/<name>.md` following the style of `docs/docs/commands/init.md` or `docs/docs/commands/release.md`: usage block, options table, examples, exit behavior.
-2. Add the command to the reference table in `docs/docs/commands/index.md`.
-3. Register the page in the sidebar under `docs/docs/.vitepress/config.ts`.
+1. Create `docs/commands/<name>.md` following the style of `docs/commands/init.md` or `docs/commands/release.md`: usage block, options table, examples, exit behavior.
+2. Add the command to the reference table in `docs/commands/index.md`.
+3. Register the page in the sidebar under `docs/.vitepress/config.ts`.
 
 ## 6. Verify
 
@@ -117,5 +117,5 @@ All four must pass. CI runs the same checks per workspace — see [/development/
 - [ ] Logic delegated to `src/app/` services
 - [ ] Import + `USAGE` line + `switch` case in `src/bin/reposell.ts`
 - [ ] Colocated tests for parser and pure mappers
-- [ ] `docs/docs/commands/foo.md`, reference table, sidebar entry
+- [ ] `docs/commands/foo.md`, reference table, sidebar entry
 - [ ] `typecheck`, `lint`, `test`, `build` all green

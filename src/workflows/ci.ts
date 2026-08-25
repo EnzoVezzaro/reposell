@@ -55,7 +55,6 @@ export function createReposellWorkflow(): Record<string, unknown> {
             run: 'reposell validate',
             env: {
               REPOSELL_SIGNING_KEY: secretRef('REPOSELL_SIGNING_KEY'),
-              STRIPE_SECRET_KEY: secretRef('STRIPE_SECRET_KEY'),
             },
           },
           {
@@ -63,7 +62,6 @@ export function createReposellWorkflow(): Record<string, unknown> {
             run: 'reposell build --out dist',
             env: {
               REPOSELL_SIGNING_KEY: secretRef('REPOSELL_SIGNING_KEY'),
-              STRIPE_SECRET_KEY: secretRef('STRIPE_SECRET_KEY'),
             },
           },
           { uses: 'actions/configure-pages@v5' },

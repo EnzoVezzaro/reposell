@@ -63,19 +63,17 @@ Add these as repository secrets (Settings → Secrets and variables → Actions)
 | Secret | Value |
 | --- | --- |
 | `REPOSELL_SIGNING_KEY` | Base64 Ed25519 private seed |
-| `STRIPE_SECRET_KEY` | `sk_test_…` recommended; `sk_live_…` only if you run live tooling from CI |
 
-The generated workflow references them symbolically:
+The generated workflow references it symbolically:
 
 ```yaml
 env:
   REPOSELL_SIGNING_KEY: ${{ secrets.REPOSELL_SIGNING_KEY }}
-  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 ```
 
 The workflow file itself contains no secret material and is safe to commit. Values are injected into the step environment at run time and inherit the workflow's least-privilege permissions (see [Git Provider Security](/security/git-provider)).
 
-Checkout requires **no keys at all** — buyers go through Payment Links ([Payment Security](/security/payment)).
+Checkout requires **no keys at all** — buyers go through Payment Links ([Payment Security](/security/payment)). `STRIPE_SECRET_KEY` is for local tooling only and never appears in CI.
 
 ## `.env` handling
 

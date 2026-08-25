@@ -199,7 +199,7 @@ export default defineConfig({
       provider: 'local',
     },
     editLink: {
-      pattern: 'https://github.com/EnzoVezzaro/reposell/edit/main/docs/docs/:path',
+      pattern: 'https://github.com/EnzoVezzaro/reposell/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
   },

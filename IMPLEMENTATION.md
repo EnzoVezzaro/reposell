@@ -323,7 +323,7 @@ All documents listed in Section 7 must be created and maintained. Each must be a
 
 ## Protocol Evolution Implementation Plan (2026-08) — Decisions D10–D15
 
-Source specs: `TRACKING.md` (D10–D15) · `docs/docs/protocol/*` (GitHub Pages Integration Specification).
+Source specs: `TRACKING.md` (D10–D15) · `docs/protocol/*` (GitHub Pages Integration Specification).
 Production domains: apex **reposell.dev** (project root) · official listing **listing.reposell.dev**.
 
 ### A. `/reposell/*` generator (D10) — `src/generate/`
@@ -403,7 +403,7 @@ payment-link validator (valid/host mismatch/amount mismatch/currency mismatch) �
 
 ### Docs required
 
-Link new commands from `docs/docs/commands/*`; protocol pages already shipped.
+Link new commands from `docs/commands/*`; protocol pages already shipped.
 
 ---
 
