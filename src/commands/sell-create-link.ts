@@ -81,7 +81,9 @@ export async function createPaymentLink(
   let taxCode: string | undefined;
   try {
     const taxRes = await fetch('https://api.stripe.com/v1/tax_codes?limit=250', { headers });
+    // SAFETY: Stripe tax_codes list response is a well-documented JSON object.
     const taxData = (await taxRes.json()) as Record<string, unknown>;
+    // SAFETY: Stripe list responses have a `data` array — guarded by Array.isArray below.
     const taxList = taxData['data'] as Array<Record<string, unknown>> | undefined;
     if (Array.isArray(taxList)) {
       // Find a suitable digital product / software tax code
@@ -90,7 +92,8 @@ export async function createPaymentLink(
         const id = String(t['id'] ?? '');
         return id === 'txcd_10103001' || name.includes('software') || name.includes('saas');
       });
-      taxCode = (preferred?.['id'] as string) ?? taxList[0]?.['id'] as string | undefined;
+      // SAFETY: Stripe tax code objects have string `id` fields.
+      taxCode = (preferred?.['id'] as string) ?? (taxList[0]?.['id'] as string | undefined);
     }
   } catch {
     // Tax code is optional — Stripe may not have them configured
@@ -109,11 +112,14 @@ export async function createPaymentLink(
     headers,
     body: priceParams.toString(),
   });
+  // SAFETY: Stripe prices API returns a documented JSON object.
   const priceData = (await priceRes.json()) as Record<string, unknown>;
   if (priceData['error'] !== undefined) {
+    // SAFETY: Stripe error objects have a `message` string.
     const err = priceData['error'] as Record<string, string>;
     throw new Error(`Stripe price creation failed: ${err['message'] ?? String(priceData['error'])}`);
   }
+  // SAFETY: Stripe price response always has string `id` on success.
   const priceId = priceData['id'] as string;
 
   // Step 2: Create a Payment Link with the price
@@ -133,12 +139,15 @@ export async function createPaymentLink(
     headers,
     body: linkParams.toString(),
   });
+  // SAFETY: Stripe payment_links API returns a documented JSON object.
   const linkData = (await linkRes.json()) as Record<string, unknown>;
   if (linkData['error'] !== undefined) {
+    // SAFETY: Stripe error objects have a `message` string.
     const err = linkData['error'] as Record<string, string>;
     throw new Error(`Stripe payment link creation failed: ${err['message'] ?? String(linkData['error'])}`);
   }
 
+  // SAFETY: Stripe payment_link response always has string url/id and boolean active on success.
   return {
     url: linkData['url'] as string,
     id: linkData['id'] as string,
