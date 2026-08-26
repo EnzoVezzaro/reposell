@@ -9,7 +9,21 @@ import { spawn } from 'child_process';
 
 export const STUDIO_PORT = 5199;
 export const STUDIO_URL = `http://localhost:${STUDIO_PORT}`;
-const READY_TIMEOUT_MS = 30_000;
+// Cold npx installs the package (GrapesJS is large) — allow a slow first run.
+const READY_TIMEOUT_MS = 90_000;
+
+/** Opens the URL in the user's browser (best effort, all platforms). */
+function openBrowser(): void {
+  try {
+    const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open';
+    const args = process.platform === 'win32' ? ['/c', 'start', '', STUDIO_URL] : [STUDIO_URL];
+    const child = spawn(opener, args, { stdio: 'ignore', detached: true });
+    child.unref();
+    child.on('error', () => {});
+  } catch {
+    // Opening is cosmetic; the URL is printed in the transcript regardless.
+  }
+}
 
 export interface StudioLaunch {
   started: boolean;
@@ -40,6 +54,9 @@ async function waitForReady(): Promise<boolean> {
  */
 export async function launchStudio(cwd: string): Promise<StudioLaunch> {
   if (await isReady()) {
+    // Already running (e.g. a previous wizard session) — the bin only opens
+    // the browser on fresh starts, so open it here too.
+    openBrowser();
     return { started: false, ready: true };
   }
 
@@ -61,7 +78,10 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
   }
 
   const ready = await waitForReady();
-  return ready
-    ? { started: true, ready: true }
-    : { started: true, ready: false, detail: `builder did not become ready at ${STUDIO_URL} within ${READY_TIMEOUT_MS / 1000}s` };
+  if (!ready) {
+    return { started: true, ready: false, detail: `builder did not become ready at ${STUDIO_URL} within ${READY_TIMEOUT_MS / 1000}s` };
+  }
+  // Fresh start: give Vite's first compile a beat, then open.
+  setTimeout(openBrowser, 1_500);
+  return { started: true, ready: true };
 }

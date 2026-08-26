@@ -46,7 +46,8 @@ const USAGE = [
   '                              Attach to a GitHub release (interactive picker when\n' +
   '                              omitted); flags override recorded pricing',
   '                              Declare a release (interactive when flags omitted)',
-  '  publish <tag>               Approve publication after gates pass (manual mode)',
+  '  publish [tag]               Approve publication after gates pass (picks a\n' +
+  '                              recorded release when omitted)',
   '  validate                    Run the full publication gate checklist',
   '  build [--out dist]          Generate the /reposell/* static surface',
   '  health                      Health report for every configured release',
@@ -249,11 +250,8 @@ async function main(): Promise<void> {
       }
       case 'publish': {
         const tag = positionals[0];
-        if (tag === undefined) {
-          console.error('usage: reposell publish <tag>');
-          process.exitCode = 1;
-          break;
-        }
+        // No tag → interactive selection over recorded releases (or a
+        // guided `reposell release` walkthrough when none exist).
         const result = await publishCommand(cwd, tag, { env: process.env });
         console.log(result.report);
         if (!result.ok) process.exitCode = 1;

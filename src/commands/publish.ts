@@ -1,29 +1,125 @@
 /**
- * `reposell publish <tag>` — manual-mode publication approval (spec §32).
+ * `reposell publish [tag]` — manual-mode publication approval (spec §32).
  *
  * Runs the full publication checklist; only a passing release is marked
  * `status: published` in reposell.yml. Committing that change and pushing
  * lets CI build + deploy the purchasable surface (§51: maintain via Git).
+ *
+ * Without a tag (TTY), the command picks a recorded release for you — or
+ * walks through `reposell release` first when nothing is recorded yet.
  */
 
-import { ConfigInvalidError, ConfigNotFoundError, setReleaseStatus } from '../app/config-service.js';
+import { createInterface } from 'readline/promises';
+import { stdin as input, stdout as output } from 'process';
+
+import {
+  ConfigInvalidError,
+  ConfigNotFoundError,
+  setReleaseStatus,
+  loadConfigFile,
+} from '../app/config-service.js';
 import { evaluateRepository, type BuildOptions } from '../app/build-service.js';
 import { formatEvaluation } from './evaluation-format.js';
+import { releaseCommand } from './release.js';
 
 export interface PublishResult {
   ok: boolean;
   report: string;
 }
 
-export async function publishCommand(cwd: string, tag: string, options: BuildOptions = {}): Promise<PublishResult> {
+/**
+ * Pure ordering for publication candidates: drafts first (they are the ones
+ * awaiting approval), everything else after, stable within each group.
+ */
+export function publishCandidates(tags: string[], isDraft: (tag: string) => boolean): string[] {
+  const drafts = tags.filter((tag) => isDraft(tag));
+  const rest = tags.filter((tag) => !isDraft(tag));
+  return [...drafts, ...rest];
+}
+
+async function readRecordedTags(
+  cwd: string,
+): Promise<{ tags: string[]; statusOf: Map<string, 'draft' | 'published'> } | undefined> {
   try {
+    const { config } = await loadConfigFile(cwd);
+    const definitions = config.releases?.definitions ?? {};
+    const entries = Object.keys(definitions);
+    const statusOf = new Map(entries.map((tag) => [tag, definitions[tag]?.status ?? 'draft']));
+    return { tags: entries, statusOf };
+  } catch {
+    return undefined;
+  }
+}
+
+export async function publishCommand(
+  cwd: string,
+  tag?: string,
+  options: BuildOptions = {},
+): Promise<PublishResult> {
+  try {
+    let target = tag;
+
+    if (target === undefined) {
+      if (input.isTTY !== true) {
+        return {
+          ok: false,
+          report: '✗ usage: reposell publish <tag>  (non-interactive runs need an explicit tag)',
+        };
+      }
+
+      const rl = createInterface({ input, output });
+      try {
+        let recorded = await readRecordedTags(cwd);
+
+        if (recorded === undefined || recorded.tags.length === 0) {
+          console.log("No releases are configured yet — let's declare one first.");
+          await releaseCommand(cwd, {});
+          recorded = await readRecordedTags(cwd);
+          if (recorded === undefined || recorded.tags.length === 0) {
+            return { ok: false, report: '✗ Still no releases recorded — run `reposell release <tag>`.' };
+          }
+        }
+
+        const ordered = publishCandidates(recorded.tags, (t) => recorded.statusOf.get(t) !== 'published');
+        if (ordered.length === 1) {
+          target = ordered[0];
+          console.log(`✓ Publishing the recorded release: ${target}`);
+        } else {
+          console.log('Recorded releases:');
+          ordered.forEach((entry, index) => {
+            const status = recorded.statusOf.get(entry) ?? 'draft';
+            console.log(`  ${index + 1}. ${entry} (${status})`);
+          });
+          for (;;) {
+            const answer = await rl.question(`Publish which one? 1-${ordered.length} [1]: `);
+            const trimmed = answer.trim();
+            const index = trimmed.length === 0 ? 1 : Number(trimmed);
+            if (Number.isInteger(index) && index >= 1 && index <= ordered.length) {
+              target = ordered[index - 1];
+              break;
+            }
+            if (ordered.includes(trimmed)) {
+              target = trimmed;
+              break;
+            }
+          }
+        }
+      } finally {
+        rl.close();
+      }
+    }
+
+    if (target === undefined) {
+      return { ok: false, report: '✗ No release selected — nothing published.' };
+    }
+
     const evaluation = await evaluateRepository(cwd, options);
-    const mine = evaluation.evaluations.find((item) => item.tag === tag);
+    const mine = evaluation.evaluations.find((item) => item.tag === target);
 
     if (mine === undefined) {
       return {
         ok: false,
-        report: `✗ Release "${tag}" is not defined in reposell.yml. Declare it first with \`reposell release ${tag}\`.`,
+        report: `✗ Release "${target}" is not defined in reposell.yml. Declare it first with \`reposell release ${target}\`.`,
       };
     }
 
@@ -31,7 +127,7 @@ export async function publishCommand(cwd: string, tag: string, options: BuildOpt
       return {
         ok: false,
         report: [
-          `BLOCKED — "${tag}" failed the publication checklist (spec §8):`,
+          `BLOCKED — "${target}" failed the publication checklist (spec §8):`,
           formatEvaluation(mine),
           '',
           'Nothing was published. Fix the failures and re-run.',
@@ -39,17 +135,17 @@ export async function publishCommand(cwd: string, tag: string, options: BuildOpt
       };
     }
 
-    await setReleaseStatus({ cwd, tag, status: 'published' });
+    await setReleaseStatus({ cwd, tag: target, status: 'published' });
 
     return {
       ok: true,
       report: [
-      `✓ Published ${tag} with ${mine.gates.offers.length} offer(s): ${mine.gates.offers.map((o) => o.scheme).join(', ')}`,
+      `✓ Published ${target} with ${mine.gates.offers.length} offer(s): ${mine.gates.offers.map((o) => o.scheme).join(', ')}`,
       '  Payment link verified structurally' +
         (mine.offerDeepLinks.some((d) => d.outcome.kind === 'verified') ? ' and against Stripe price authority' : ''),
       '',
       'Next steps:',
-      '  git add reposell.yml && git commit -m "reposell: publish ' + tag + '" && git push',
+      '  git add reposell.yml && git commit -m "reposell: publish ' + target + '" && git push',
       'CI will validate, sign, build /reposell/* and deploy GitHub Pages.',
     ].join('\n'),
     };

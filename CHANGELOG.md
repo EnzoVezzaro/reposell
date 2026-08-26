@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-08-26
+
+### Added
+- `reposell publish` with no tag now **picks a recorded release for you** (drafts first; menu when several) and **walks through `reposell release` automatically when nothing is recorded yet**
+
+### Fixed
+- The /sell builder now opens reliably after init: cold npx installs get a 90s readiness window, and the browser also opens when the builder was already running
+- Studio canvas shows the real layout again (shell wrapper preserved) — `@reposell/storefront-studio@0.2.1`
+
 ## [0.1.12] - 2026-08-26
 
 ### Added
