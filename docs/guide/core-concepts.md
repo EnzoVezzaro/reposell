@@ -141,20 +141,12 @@ All public interfaces versioned:
 From signed pricing policy (example):
 ```
 Product Price:        $50.00
-Listing Fee:       $5.00
+Listing Fee:       $5.00  (buyer-paid, on top of seller's price)
 ─────────────────────────────────────
-Net to Distribute:    $45.00
+Total Buyer Pays:    $55.00
 
-Main Listing:     $2.50  (50%)
-Public Listing:   $2.50  (50%)
-Repository Owner:     $40.50 (remainder)
-```
-
-Formula:
-```
-Owner = Price - Fee
-Main = Fee × Main% / 100
-Public = Fee × Public% / 100
+Seller Keeps:        $50.00  (100% of their price)
+Reposell Gets:        $5.00  (the listing fee)
 ```
 
 **Current implementation:** The listing fee (discovery contribution) is paid by the buyer ON TOP of the seller's price. The seller keeps 100% of their `/sell` revenue. The contribution is a separate transaction to reposell's Stripe account. Community referral economics are not yet implemented — the `Main%` and `Public%` splits are reserved for future use.

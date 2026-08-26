@@ -92,11 +92,10 @@ The contribution amount is the discovery fee buyers pay to reposell. The seller 
 Product Price:        $50.00
 Listing Fee:       $5.00  (buyer-paid, on top of seller's price)
 ─────────────────────────────────────
-Net to Distribute:    $45.00
+Total Buyer Pays:    $55.00
 
-Main Listing:     $2.50  (50% of fee)  — reserved for future use
-Public Listing:   $2.50  (50% of fee)  — reserved for future use
-Repository Owner:     $40.50 (remainder)
+Seller Keeps:        $50.00  (100% of their price)
+Reposell Gets:        $5.00  (the listing fee)
 ```
 
 **Note:** Community referral economics are not yet implemented. Currently, the listing fee goes entirely to reposell. The Main/Public splits are reserved for future use.
