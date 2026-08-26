@@ -394,6 +394,11 @@ async function initWizard(cwd: string): Promise<InitResult> {
 
     // 5. private key handling
     if (signingKeySecret !== undefined) {
+      // Local signing: save to .env (gitignored) so this machine's own
+      // builds/validates sign correctly — independent of the gh choice.
+      await upsertEnvValue(cwd, 'REPOSELL_SIGNING_KEY', signingKeySecret);
+      await ensureGitignored(cwd);
+      transcript.push('✓ Signing key saved to .env (gitignored) — local builds sign automatically.');
       transcript.push('');
       transcript.push('PRIVATE KEY — shown once, never stored locally:');
       transcript.push(`  ${signingKeySecret}`);

@@ -12,7 +12,7 @@ import { listingCommand } from '../commands/listing.js';
 import { validateCommand } from '../commands/validate.js';
 import { buildCommand } from '../commands/build.js';
 import { healthCommand } from '../commands/health.js';
-import { releaseCommand, ReleaseCommandError, type ReleaseArgs } from '../commands/release.js';
+import { releaseCommand, type ReleaseArgs } from '../commands/release.js';
 import { publishCommand } from '../commands/publish.js';
 import { verifyCommand } from '../commands/verify.js';
 import { keysCommand } from '../commands/keys.js';
@@ -42,7 +42,9 @@ const USAGE = [
   '                              to your Stripe Payment Link)\n' +
   '  sell sync [payment_link_id] Pull-based fulfillment: purchases, refunds, fork artifacts',
   '  reciprocity [--revenue N]   Show/validate/simulate the Reciprocity Program',
-  '  release <tag> [--price N] [--currency USD] [--link URL] [--link-id plink_…]',
+  '  release [tag] [--price N] [--currency USD] [--link URL]\n' +
+  '                              Attach to a GitHub release (interactive picker when\n' +
+  '                              omitted); flags override recorded pricing',
   '                              Declare a release (interactive when flags omitted)',
   '  publish <tag>               Approve publication after gates pass (manual mode)',
   '  validate                    Run the full publication gate checklist',
@@ -234,15 +236,15 @@ async function main(): Promise<void> {
       }
       case 'release': {
         const tag = positionals[0];
-        if (tag === undefined) throw new ReleaseCommandError('TAG_REQUIRED', 'usage: reposell release <tag> [--price N] [--currency USD] [--link URL]');
-        const args: ReleaseArgs = {
-          tag,
+        // No tag → interactive picker over the repository's GitHub releases.
+        const releaseArgs: ReleaseArgs = {
+          ...(tag !== undefined ? { tag } : {}),
           ...(flags['price'] !== undefined ? { price: Number(flags['price']) } : {}),
           ...(flags['currency'] !== undefined ? { currency: flags['currency'] } : {}),
           ...(flags['link'] !== undefined ? { link: flags['link'] } : {}),
           ...(flags['link-id'] !== undefined ? { linkId: flags['link-id'] } : {}),
         };
-        console.log(await releaseCommand(cwd, args));
+        console.log(await releaseCommand(cwd, releaseArgs));
         break;
       }
       case 'publish': {
