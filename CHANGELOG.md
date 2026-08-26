@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.29] - 2026-08-26
+
+### Added
+- **Payment link validation everywhere**: all 4 surfaces now validate Stripe payment links before allowing any purchase
+  - Seller CI (`reposell build`): validates `payment_link_id` against Stripe API when `REPOSELL_STRIPE_SECRET_KEY` is set; blocks releases with inactive links
+  - Seller frontend (`/sell` page): runtime CORS check on page load disables Buy button and shows warning for dead payment links
+  - Listing CI (`discovery-sync`): validates discovery payment links, writes `payment_link_active` flag to registry record
+  - Listing frontend (`ListingDetail.vue`): blocks Pay + storefront buttons when payment link is invalid
+- **Auto-store Stripe key during init**: `reposell init` now asks to store `REPOSELL_STRIPE_SECRET_KEY` as a GitHub Actions secret for CI validation
+- **CI workflow template** includes `REPOSELL_STRIPE_SECRET_KEY` for automatic payment link validation
+- **GitHub Device Flow** on listing detail page — connect GitHub before payment
+- **Stripe redirect after payment** — both discovery contribution and seller payment redirect back to the appropriate page
+- **README displayed on listing detail** — full markdown README shown from listing record (no API calls)
+
+### Changed
+- Listing detail page rewritten: no GitHub API calls, all data from listing record
+- Payment button changes to "Paid ✓" with disabled style after Stripe redirect
+- Storefront button properly opens /sell in new tab after payment
+- GitHub login persisted in sessionStorage (survives page refresh)
+
+### Fixed
+- Storefront button `@click.prevent` always called `preventDefault()` — fixed to only prevent when not paid
+- Listing CI workflow now has `discussions: write` permission for Discussion creation
+- `listings.json` unignored so CI can commit it
+
 ## [0.1.25] - 2026-08-26
 
 ### Changed

@@ -19,6 +19,14 @@ reposell release          # declare a release with pricing + Stripe Payment Link
 reposell publish          # approve publication after gates pass
 ```
 
+During `reposell init`, the wizard will:
+1. Create `reposell.yml` with your product config
+2. Generate Ed25519 signing keys
+3. Ask for your Stripe Payment Link and secret key
+4. **Auto-store `REPOSELL_STRIPE_SECRET_KEY` as a GitHub Actions secret** for CI payment link validation
+5. Build the `/sell` storefront page
+6. Generate the CI workflow
+
 ## Commands
 
 | Command | Description |
@@ -51,6 +59,15 @@ Buyer pays TWO separate transactions:
 2. LICENSE PURCHASE → seller's own Stripe account
    (seller-created Payment Link on /sell, seller keeps 100%)
 ```
+
+### Payment Link Validation
+
+All payment links are validated before any purchase:
+
+- **Seller CI**: `reposell build` validates `payment_link_id` against Stripe API — inactive links block the release
+- **Seller frontend**: `/sell` page runtime check disables Buy button for dead links
+- **Listing CI**: `discovery-sync` validates discovery links — inactive links block the Pay button
+- **Listing frontend**: listing detail page blocks both Pay and storefront buttons for invalid links
 
 ### Workflow
 

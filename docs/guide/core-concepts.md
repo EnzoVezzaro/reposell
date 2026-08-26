@@ -47,6 +47,15 @@ Whenever a value can be derived automatically, derive it.
 
 Checkout uses **Stripe Payment Links** — no servers, no webhooks, no SDK secrets in the buy path. The provider layer validates links structurally (HTTPS, Stripe domain) and, when a `payment_link_id` is present, deeply (amount/currency match via the Stripe API).
 
+### Payment Link Validation
+
+All payment links are validated before any purchase:
+
+- **Seller CI** (`reposell build`): validates `payment_link_id` against Stripe API when `REPOSELL_STRIPE_SECRET_KEY` is set — inactive links block the release
+- **Seller frontend** (`/sell` page): runtime CORS check on page load disables Buy button for dead links
+- **Listing CI** (`discovery-sync`): validates discovery payment links — inactive links block the Pay button
+- **Listing frontend** (listing detail page): blocks both Pay and storefront buttons for invalid links
+
 ```typescript
 // Conceptual shape — see src/domain/payment/
 StripePaymentProvider
