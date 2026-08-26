@@ -11,9 +11,10 @@
  * The template uses the reposell landing identity (signal green on ink,
  * Syne/Oxanium/Outfit/Geist Mono, chamfered edges) and is fork-centric:
  * buyers purchase a fork of the signed release — the page never links to,
- * names or exposes the source repository. The Stripe Payment Link captured
- * during the wizard is wired into the buy CTA; without a link it renders
- * disabled with guidance instead.
+ * names or exposes the source repository. The buy CTA starts disabled and
+ * activates on the deployed /reposell/* surface once a release publishes;
+ * the Stripe Payment Link captured during the wizard is kept on record
+ * (comment + storefront document) for that hand-off.
  */
 
 import { promises as fs } from 'fs';
@@ -186,22 +187,23 @@ export interface SellTemplateFiles {
 
 /**
  * Renders the standalone sell/index.html template. Fork-centric: buyers get
- * a fork of the signed release and never see the source repository. Buy CTAs
- * point at the wizard's Stripe Payment Link; without one it stays disabled
- * and the page explains how to wire it.
+ * a fork of the signed release and never see the source repository. The buy
+ * CTA starts disabled — it activates on the deployed page once a release is
+ * available; the wizard's Payment Link stays on record for that hand-off.
  */
 export function renderSellTemplate(options: SellSiteOptions): SellTemplateFiles {
   const name = escapeHtml(options.productName);
   const linked = options.paymentLink !== undefined && options.paymentLink.length > 0;
-  const buyHref = escapeHtml(linked ? (options.paymentLink ?? '#') : '#');
-  const buy =
+  // The starter page has no published release yet, so checkout stays
+  // disabled — the deployed /reposell/* page resolves live verified offers
+  // after `reposell publish` + CI build.
+  const buy = `<span class="rs-btn rs-btn--disabled" data-rs-available="false">Buy latest release</span>`;
+  const linkComment =
     linked === true
-      ? `<a class="rs-btn" href="${buyHref}" rel="nofollow">Buy latest release</a>`
-      : `<span class="rs-btn rs-btn--disabled">Buy latest release</span>`;
+      ? `\n<!-- Payment Link on record: ${escapeHtml(options.paymentLink ?? '')} — wired automatically once a release publishes. -->`
+      : '';
   const linkNote =
-    linked === true
-      ? ''
-      : `\n      <p class="rs-note">Wire your checkout: create a Stripe Payment Link, then run <code>reposell sell init --link https://buy.stripe.com/…</code>.</p>`;
+    `\n      <p class="rs-note">Checkout activates when your first release is available — run <code>reposell publish v0.1.0</code> and push; CI rebuilds this page with live offers.</p>`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -214,7 +216,7 @@ export function renderSellTemplate(options: SellSiteOptions): SellTemplateFiles 
 </head>
 <body>
 <main class="rs-shell">
-
+${linkComment}
   <section class="rs-section" data-rs-section-id="hero">
     <div class="rs-hero">
       <span class="rs-eyebrow">Official /sell</span>

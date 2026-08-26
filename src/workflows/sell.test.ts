@@ -23,15 +23,17 @@ describe('generateSellSite', () => {
     expect(html).toContain('acme-tool');
   });
 
-  it('wires the wizard payment link into buy CTAs', async () => {
+  it('keeps the buy CTA disabled until a release is available, link on record', async () => {
     const result = await generateSellSite(cwd, {
       productName: 'acme-tool',
       paymentLink: 'https://buy.stripe.com/test_wizard',
     });
     expect(result.paymentLinkWired).toBe(true);
     const html = await fs.readFile(path.join(cwd, 'sell', 'index.html'), 'utf8');
-    expect(html).toContain('href="https://buy.stripe.com/test_wizard"');
-    expect(html).not.toContain('rs-btn--disabled');
+    // No published release yet — checkout must not be live.
+    expect(html).toContain('rs-btn--disabled');
+    expect(html).not.toMatch(/href="https:\/\/buy\.stripe\.com/);
+    expect(html).toContain('Payment Link on record: https://buy.stripe.com/test_wizard');
   });
 
   it('never exposes the source repository to buyers', async () => {
@@ -53,12 +55,12 @@ describe('generateSellSite', () => {
     expect(css).toContain('"Geist Mono"');
   });
 
-  it('renders a disabled CTA with guidance when no link is known', async () => {
+  it('renders a disabled CTA with publish guidance when no link is known', async () => {
     const result = await generateSellSite(cwd, { productName: 'acme-tool' });
     expect(result.paymentLinkWired).toBe(false);
     const html = await fs.readFile(path.join(cwd, 'sell', 'index.html'), 'utf8');
     expect(html).toContain('rs-btn--disabled');
-    expect(html).toContain('reposell sell init --link');
+    expect(html).toContain('reposell publish v0.1.0');
   });
 
   it('personalizes .reposell/storefront.json for the Studio', async () => {

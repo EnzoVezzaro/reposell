@@ -97,7 +97,35 @@ async function promptForMissing(args: ReleaseArgs): Promise<ReleaseArgs> {
 }
 
 export async function releaseCommand(cwd: string, args: ReleaseArgs): Promise<string> {
-  const filled = await promptForMissing({ ...args });
+  // A tag already recorded (e.g. by the init wizard) carries its pricing —
+  // reuse it instead of asking again. Flags still override.
+  const filled = { ...args };
+  let reused = false;
+  try {
+    const existing = await loadReleaseDefinition(cwd, filled.tag);
+    const offer = existing?.offers?.[0];
+    if (offer !== undefined) {
+      if (filled.price === undefined && offer.pricing?.amount !== undefined) {
+        filled.price = offer.pricing.amount;
+        reused = true;
+      }
+      if (filled.currency === undefined && offer.pricing?.currency !== undefined) {
+        filled.currency = offer.pricing.currency;
+        reused = true;
+      }
+      if (filled.link === undefined && offer.payment?.payment_link !== undefined) {
+        filled.link = offer.payment.payment_link;
+        reused = true;
+      }
+    }
+  } catch {
+    // No config yet — first declaration proceeds through the prompts.
+  }
+
+  await promptForMissing(filled);
+  if (reused && input.isTTY === true) {
+    console.log(`✓ Reusing recorded pricing for ${filled.tag} — no prompts needed.`);
+  }
 
   if (!(await configExists(cwd))) {
     await writeConfig(cwd, renderDefaultYml({ productName: cwd.split('/').pop() ?? 'product' }));

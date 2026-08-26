@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-08-25
+
+### Fixed
+- `reposell release <tag>` no longer re-asks the price when the tag already carries a recorded offer (e.g. from the wizard) — it reuses the recorded pricing/link silently; flags still override
+- The starter `/sell` page ships with a **disabled buy CTA**: checkout activates only on the deployed `/reposell/*` surface once a release is available (the Payment Link stays on record in `.reposell/storefront.json` for that hand-off)
+
 ## [0.1.8] - 2026-08-25
 
 ### Added
