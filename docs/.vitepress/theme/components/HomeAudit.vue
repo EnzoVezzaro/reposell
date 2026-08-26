@@ -213,7 +213,7 @@ async function ghJson(path) {
 function connect() {
   connectState.value = 'connecting'
   connectError.value = ''
-  const redirectUri = window.location.origin + window.location.pathname;
+  const redirectUri = window.location.origin + '/auth/github/callback';
   const state = Math.random().toString(36).slice(2);
   sessionStorage.setItem('rs-gh-oauth-state', state);
   const params = new URLSearchParams({
@@ -426,16 +426,30 @@ onBeforeMount(() => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   const state = params.get('state');
+  const error = params.get('error');
+
+  if (error) {
+    connectState.value = 'error'
+    connectError.value = error === 'access_denied'
+      ? 'GitHub authorization was denied — try again.'
+      : 'GitHub authorization failed: ' + error;
+    // Clean the URL
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
   if (code) {
     const savedState = sessionStorage.getItem('rs-gh-oauth-state');
     if (!state || state !== savedState) {
       connectState.value = 'error'
       connectError.value = 'OAuth state mismatch — try again.'
+      window.history.replaceState({}, '', window.location.pathname);
       return;
     }
     void exchangeCode(code);
     return;
   }
+
   // Restore saved token
   try {
     const saved = sessionStorage.getItem(TOKEN_KEY)
