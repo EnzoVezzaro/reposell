@@ -1,7 +1,5 @@
 <script setup>
-import pkg from '../../../package.json'
-
-const version = `v${pkg.version}`
+const version = 'v0.1.24'
 </script>
 
 <template>

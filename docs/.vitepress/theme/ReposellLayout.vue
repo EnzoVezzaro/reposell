@@ -3,7 +3,6 @@ import { ref, watch, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { useData, withBase } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { initLandingMotion } from './landingMotion'
-import pkg from '../../../package.json'
 
 const Layout = DefaultTheme.Layout
 
@@ -64,7 +63,7 @@ watchEffect(applyAppearance)
 const stars = ref('')
 const version = ref('')
 
-const fallbackVersion = `v${pkg.version}`
+const fallbackVersion = 'v0.1.24'
 
 function formatStars(n) {
   return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
