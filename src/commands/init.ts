@@ -246,6 +246,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
   let sellSiteLinked = false;
   let listedContribution: number | undefined;
   let pagesNote: string | undefined;
+  let stripeApiKey: string | undefined;
 
   try {
     output.write(`${banner}\n\n`);
@@ -320,6 +321,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
               await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
               await ensureGitignored(cwd);
               apiKey = trimmed;
+              stripeApiKey = trimmed;
               transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
             } else {
               transcript.push(
@@ -330,6 +332,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
         }
 
         if (apiKey !== undefined && apiKey.startsWith('sk_')) {
+          stripeApiKey = apiKey;
           transcript.push('  Reading price and currency from your Payment Link…');
           detected = await fetchPaymentLinkDetailsByUrl({ apiKey, linkUrl: paymentLink });
           if (detected !== undefined) {
@@ -475,6 +478,31 @@ async function initWizard(cwd: string): Promise<InitResult> {
         transcript.push('Add it as the repository secret REPOSELL_SIGNING_KEY:');
         transcript.push('  gh secret set REPOSELL_SIGNING_KEY --body "<key above>"');
       }
+    }
+
+    // 5b. Stripe secret key — store as GitHub secret for CI payment link validation
+    if (stripeApiKey !== undefined && stripeApiKey.startsWith('sk_') && hasGhCli()) {
+      const storeStripe = await prompter.confirm(
+        `Store Stripe secret key as REPOSELL_STRIPE_SECRET_KEY on ${gitInfo.owner}/${gitInfo.repo} for CI payment link validation?`,
+        true,
+      );
+      if (storeStripe) {
+        try {
+          execFileSync(
+            'gh',
+            ['secret', 'set', 'REPOSELL_STRIPE_SECRET_KEY', '--repo', `${gitInfo.owner}/${gitInfo.repo}`],
+            { input: stripeApiKey, stdio: ['pipe', 'ignore', 'pipe'] },
+          );
+          transcript.push('✓ Secret REPOSELL_STRIPE_SECRET_KEY stored on GitHub — CI will validate payment links.');
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          transcript.push(`! Could not store Stripe key automatically (${message.split('\n')[0]}).`);
+          transcript.push('  Add it manually: gh secret set REPOSELL_STRIPE_SECRET_KEY --body "sk_test_…"');
+        }
+      }
+    } else if (stripeApiKey !== undefined && stripeApiKey.startsWith('sk_')) {
+      transcript.push('Add REPOSELL_STRIPE_SECRET_KEY as a GitHub Actions secret for CI validation:');
+      transcript.push(`  gh secret set REPOSELL_STRIPE_SECRET_KEY --repo ${gitInfo.owner}/${gitInfo.repo} --body "${stripeApiKey.slice(0, 12)}…"`);
     }
 
     // 6. /sell builder — scaffold an editable storefront wired to the link

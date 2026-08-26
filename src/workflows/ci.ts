@@ -62,6 +62,7 @@ export function createReposellWorkflow(): Record<string, unknown> {
             run: 'reposell build --out dist',
             env: {
               REPOSELL_SIGNING_KEY: secretRef('REPOSELL_SIGNING_KEY'),
+              REPOSELL_STRIPE_SECRET_KEY: secretRef('REPOSELL_STRIPE_SECRET_KEY'),
             },
           },
           // The Pages site itself is created once by `reposell init` via gh
