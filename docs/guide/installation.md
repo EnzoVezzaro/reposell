@@ -73,9 +73,11 @@ github.com/EnzoVezzaro/reposell-community-listing   # community listing frontend
 ```
 
 Local development may also keep sibling tooling folders alongside them
-(`storefront-core/` — document schema + renderer, npm: `reposell-storefront-core`;
-`storefront-studio/` — dev-only visual builder). Those are optional and not
-required to build the CLI.
+(`storefront-core/` — document schema + renderer, npm: `@reposell/storefront-core`;
+`storefront-studio/` — visual /sell builder, npm: `@reposell/storefront-studio`,
+built on GrapesJS). Those are optional and not required to build the CLI;
+the Studio runs from anywhere with `npx @reposell/storefront-studio`
+(`reposell init` launches it automatically at the end).
 
 Clone and build the CLI:
 
