@@ -3,9 +3,12 @@
  * the current repository. Fetched from npm at run time via npx — zero
  * configuration: the Studio operates on <cwd>/.reposell/storefront.json
  * and renders into <cwd>/sell/ by convention.
+ *
+ * Port 5199 belongs to the builder: a stale or half-dead previous instance
+ * is detected and terminated automatically, so users never clean up by hand.
  */
 
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 
 export const STUDIO_PORT = 5199;
 export const STUDIO_URL = `http://localhost:${STUDIO_PORT}`;
@@ -23,6 +26,41 @@ function openBrowser(): void {
   } catch {
     // Opening is cosmetic; the URL is printed in the transcript regardless.
   }
+}
+
+/** Pure: extracts numeric PIDs from `lsof -ti` output. Exported for tests. */
+export function parsePids(text: string): number[] {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /^\d+$/.test(line))
+    .map((line) => Number(line))
+    // PID 0 is not a process — kill(0) would signal the whole group.
+    .filter((pid) => pid > 0);
+}
+
+/** Best-effort: PIDs listening on the builder port (empty when unknown). */
+function pidsOnPort(): number[] {
+  if (process.platform === 'win32') return []; // lsof unavailable; skip silently
+  try {
+    const result = spawnSync('lsof', ['-ti', `tcp:${STUDIO_PORT}`], { encoding: 'utf8' });
+    return parsePids(result.stdout ?? '');
+  } catch {
+    return [];
+  }
+}
+
+function killStalePortHolders(): boolean {
+  const pids = pidsOnPort();
+  if (pids.length === 0) return false;
+  for (const pid of pids) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // Already gone or owned by another user — nothing to do.
+    }
+  }
+  return true;
 }
 
 export interface StudioLaunch {
@@ -60,8 +98,15 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
     return { started: false, ready: true };
   }
 
+  // Port 5199 is the builder's dedicated port: anything listening that does
+  // not answer the health probe is stale (crashed run, old code, foreign
+  // process). Terminate it so the user never has to.
+  if (killStalePortHolders()) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  try {
+  const spawnOnce = (): void => {
     const child = spawn(command, ['-y', '@reposell/storefront-studio@latest'], {
       cwd,
       detached: true,
@@ -69,6 +114,10 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
     });
     child.unref();
     child.on('error', () => {});
+  };
+
+  try {
+    spawnOnce();
   } catch (error) {
     return {
       started: false,
@@ -77,7 +126,13 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
     };
   }
 
-  const ready = await waitForReady();
+  let ready = await waitForReady();
+  if (!ready && killStalePortHolders()) {
+    // The fresh instance died against a zombie we only now could see
+    // (race between probe and listen) — clear and retry exactly once.
+    spawnOnce();
+    ready = await waitForReady();
+  }
   if (!ready) {
     return { started: true, ready: false, detail: `builder did not become ready at ${STUDIO_URL} within ${READY_TIMEOUT_MS / 1000}s` };
   }
