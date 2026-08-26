@@ -73,7 +73,7 @@ export function renderPage(input: PageShellInput): string {
 <body>
 <main>
 ${input.body}
-<div class="links"><a href="/reposell/">index.json</a><a href="/reposell/manifest.json">manifest.json</a><a href="/reposell/health.json">health.json</a><a href="/reposell/releases/index.json">releases/index.json</a></div>
+<div class="links"><a href="./">index.json</a><a href="./manifest.json">manifest.json</a><a href="./health.json">health.json</a><a href="./releases/index.json">releases/index.json</a></div>
 </main>
 <footer><div><span>RepoSell protocol v1</span><span>payments by Stripe</span></div></footer>
 <script type="application/json" id="reposell-data">${data}</script>
@@ -206,8 +206,8 @@ ${rows}
 </tbody>
 </table>
 <div class="grid">
-${model.sellEnabled ? '<div class="card"><div><div class="ver">Buy a release</div><div class="meta">verified Stripe Payment Links, per-release pricing</div></div><a class="buy" href="/reposell/sell/">Open store</a></div>' : ''}
-<div class="card"><div><div class="ver">Marketplace listing</div><div class="meta">discovery metadata for marketplaces and agents</div></div><a class="buy off" href="/reposell/marketplace/">View</a></div>
+${model.sellEnabled ? '<div class="card"><div><div class="ver">Buy a release</div><div class="meta">verified Stripe Payment Links, per-release pricing</div></div><a class="buy" href="./sell/">Open store</a></div>' : ''}
+<div class="card"><div><div class="ver">Marketplace listing</div><div class="meta">discovery metadata for marketplaces and agents</div></div><a class="buy off" href="./marketplace/">View</a></div>
 </div>`;
 
   const jsonLd = {

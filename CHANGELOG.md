@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-08-26
+
+### Fixed
+- Generated pages now use **relative links** (`./sell/`, `./manifest.json`) — absolute `/reposell/*` paths 404'd on GitHub project Pages (`/<repo>/` subpath hosting). Works identically on custom domains
+- `reposell init` **enables GitHub Pages for you** via `gh` (Source: GitHub Actions, idempotent) — first push deploys; CI stays least-privilege (the `administration` permission is not grantable to workflow tokens, so enablement happens at init where admin rights exist)
+
+## [0.1.15] - 2026-08-26
+
+### Fixed
+- Generated workflow: `configure-pages` could not create the Pages site on fresh repos — enablement moved to init (see 0.1.16); workflow permissions stay minimal
+
 ## [0.1.14] - 2026-08-26
 
 ### Fixed

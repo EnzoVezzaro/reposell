@@ -36,6 +36,7 @@ export interface InitResult {
   license: LicenseCheckResult | undefined;
   configCreated: boolean;
   workflowWritten: boolean;
+  pagesNote?: string;
   verificationKeyPath: string | undefined;
   signingKeySecret: string | undefined;
   /** Pre-rendered wizard transcript; overrides the default summary when set. */
@@ -122,11 +123,43 @@ function hasGhCli(): boolean {
   }
 }
 
+/**
+ * Creates the GitHub Pages site (build_type=workflow) so the generated CI
+ * can deploy on the very first push. Uses the user's authenticated gh —
+ * creating a site needs repo administration rights that CI tokens must
+ * never hold. Idempotent: 409 (already exists) is success. Returns a
+ * transcript line, or undefined when nothing needs saying.
+ */
+async function ensurePagesSite(cwd: string): Promise<string | undefined> {
+  if (!hasGhCli()) return undefined;
+  let gitInfo: Awaited<ReturnType<typeof detectGitInfo>>;
+  try {
+    gitInfo = await detectGitInfo(cwd, 'github');
+  } catch {
+    return undefined;
+  }
+  try {
+    execFileSync(
+      'gh',
+      ['api', '--method', 'POST', `repos/${gitInfo.owner}/${gitInfo.repo}/pages`, '-f', 'build_type=workflow'],
+      { stdio: 'pipe' },
+    );
+    return '✓ Enabled GitHub Pages (Source: GitHub Actions) — your first push deploys automatically.';
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('409') || message.toLowerCase().includes('already exists')) {
+      return '• GitHub Pages already enabled.';
+    }
+    return `! Could not enable GitHub Pages (${message.split('\n')[0]}) — do it once via repo Settings → Pages → Source: GitHub Actions.`;
+  }
+}
+
 /** Workflow + signing identity scaffolding shared by both modes. */
 async function scaffold(
   cwd: string,
-): Promise<{ workflowWritten: boolean; verificationKeyPath?: string; signingKeySecret?: string }> {
+): Promise<{ workflowWritten: boolean; verificationKeyPath?: string; signingKeySecret?: string; pagesNote?: string }> {
   const workflow = await generateWorkflows(cwd);
+  const pagesLine = await ensurePagesSite(cwd);
   let verificationKeyPath: string | undefined;
   let signingKeySecret: string | undefined;
   try {
@@ -139,7 +172,7 @@ async function scaffold(
   } catch {
     // Identity generation is best-effort at init time; `reposell keys generate` retries.
   }
-  return { workflowWritten: workflow.written.length > 0, verificationKeyPath, signingKeySecret };
+  return { workflowWritten: workflow.written.length > 0, verificationKeyPath, signingKeySecret, pagesNote: pagesLine };
 }
 
 export async function initCommand(cwd: string, options: InitOptions = {}): Promise<InitResult> {
@@ -163,7 +196,7 @@ async function initPlain(cwd: string): Promise<InitResult> {
   }
 
   const license = await new LicenseService(cwd).check();
-  const { workflowWritten, verificationKeyPath, signingKeySecret } = await scaffold(cwd);
+  const { workflowWritten, verificationKeyPath, signingKeySecret, pagesNote } = await scaffold(cwd);
 
   return {
     banner: renderBanner('full'),
@@ -173,6 +206,7 @@ async function initPlain(cwd: string): Promise<InitResult> {
     workflowWritten,
     verificationKeyPath,
     signingKeySecret,
+    pagesNote,
   };
 }
 
@@ -203,6 +237,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
   let sellSiteFiles: string[] = [];
   let sellSiteLinked = false;
   let listedContribution: number | undefined;
+  let pagesNote: string | undefined;
 
   try {
     output.write(`${banner}\n\n`);
@@ -388,6 +423,10 @@ async function initWizard(cwd: string): Promise<InitResult> {
         ? '✓ Generated .github/workflows/reposell.yml (validate → build → GitHub Pages)'
         : '• Workflow unchanged',
     );
+    if (files.pagesNote !== undefined) {
+      pagesNote = files.pagesNote;
+      transcript.push(pagesNote);
+    }
     if (verificationKeyPath !== undefined) {
       transcript.push(`✓ Public verification key: ${path.relative(cwd, verificationKeyPath)} (safe to commit)`);
     }
@@ -478,8 +517,8 @@ async function initWizard(cwd: string): Promise<InitResult> {
     workflowWritten = files.workflowWritten;
     verificationKeyPath = files.verificationKeyPath;
     signingKeySecret = files.signingKeySecret;
-    const sellSite = await generateSellSite(cwd, { productName });
-    sellSiteFiles = sellSite.written;
+    pagesNote = files.pagesNote;
+    const sellSite = await generateSellSite(cwd, { productName });    sellSiteFiles = sellSite.written;
     sellSiteLinked = sellSite.paymentLinkWired;
   }
 
@@ -494,6 +533,11 @@ async function initWizard(cwd: string): Promise<InitResult> {
     verificationKeyPath,
     signingKeySecret,
   };
+
+  if (pagesNote !== undefined) {
+    result.pagesNote = pagesNote;
+    transcript.push(pagesNote);
+  }
 
   result.report = [
     '',
@@ -580,6 +624,7 @@ export function formatInitResult(result: InitResult): string {
     `✓ Detected ${result.gitInfo.provider} repository: ${result.gitInfo.owner}/${result.gitInfo.repo}`,
     result.configCreated ? '✓ Created reposell.yml (zero-config defaults)' : '• reposell.yml already exists',
     result.workflowWritten ? '✓ Generated .github/workflows/reposell.yml (validate → build → GitHub Pages)' : '• Workflow unchanged',
+    ...(result.pagesNote !== undefined ? [result.pagesNote] : []),
   ];
   if (result.verificationKeyPath !== undefined && result.signingKeySecret !== undefined) {
     lines.push(
