@@ -12,6 +12,7 @@ import path from 'path';
 import { execFileSync } from 'child_process';
 import { detectGitInfo } from '../utils/git.js';
 import { loadEnvSource, resolveValue } from '../utils/env.js';
+import { upsertEnvValue, ensureGitignored } from '../utils/project-env.js';
 import {
   fetchPaymentLinkDetailsByUrl,
   type PaymentLinkDetails,
@@ -239,8 +240,10 @@ async function initWizard(cwd: string): Promise<InitResult> {
       }
     }
 
-    // 2. payment link — price/currency are auto-detected from the link
-    //    whenever a Stripe secret key is available (env or local .env)
+    // 2. payment link — price/currency are read from the link. Detection
+    //    needs a Stripe secret key: use the configured one, or offer to save
+    //    it now (persisted to .env, gitignored). Never asked when already
+    //    configured or when no link is provided.
     const linkAnswer = await prompter.ask(
       '\nStripe Payment Link (create at dashboard.stripe.com/payment-links, leave blank to add later)',
     );
@@ -259,14 +262,38 @@ async function initWizard(cwd: string): Promise<InitResult> {
             return undefined;
           }
         });
-        const apiKey =
+        let apiKey =
           resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
+
+        if (apiKey === undefined || apiKey.startsWith('sk_') !== true) {
+          const keyAnswer = await prompter.ask(
+            '\nStripe secret key (sk_test_…) so the wizard can read your price from this link — saved locally to .env and never committed. Leave blank to type the price manually instead:',
+          );
+          const trimmed = keyAnswer.trim();
+          if (trimmed.length > 0) {
+            if (/^sk_(test|live)_/.test(trimmed)) {
+              await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
+              await ensureGitignored(cwd);
+              apiKey = trimmed;
+              transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
+            } else {
+              transcript.push(
+                `! That does not look like a Stripe secret key (expected sk_test_…/sk_live_…) — continuing without it.`,
+              );
+            }
+          }
+        }
+
         if (apiKey !== undefined && apiKey.startsWith('sk_')) {
           transcript.push('  Reading price and currency from your Payment Link…');
           detected = await fetchPaymentLinkDetailsByUrl({ apiKey, linkUrl: paymentLink });
           if (detected !== undefined) {
             transcript.push(
               `✓ Detected ${detected.amount} ${detected.currency}${detected.recurring !== undefined ? ` (${detected.recurring.interval}ly)` : ''} from your Payment Link`,
+            );
+          } else {
+            transcript.push(
+              '! Could not read this Payment Link with that key (different account or mode?) — enter the price manually.',
             );
           }
         }
