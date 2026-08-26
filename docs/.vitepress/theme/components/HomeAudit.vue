@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue'
+
+const GITHUB_CLIENT_ID = 'Iv23lidhennqrdpdFUAT';
+const TOKEN_EXCHANGE_URL = 'https://github-auth.reposell.dev/exchange';
 
 const url = ref('')
 const token = ref('')
-const tokenDraft = ref('')
-const showTokenInput = ref(false)
-const connectState = ref('idle') // idle | validating | connected | error
+const connectState = ref('idle') // idle | connecting | connected | error
 const connectError = ref('')
 const state = ref('idle') // idle | running | done | error | blocked
 const errorNote = ref('')
@@ -209,59 +210,54 @@ async function ghJson(path) {
   return { ok: res.ok, status: res.status, rateLimited, body }
 }
 
-async function validateToken() {
-  const candidate = tokenDraft.value.trim()
-  if (!candidate) return
-  connectState.value = 'validating'
+function connect() {
+  connectState.value = 'connecting'
   connectError.value = ''
-  const saved = token.value
-  token.value = candidate
-  try {
-    const res = await ghFetch('/user')
-    if (res.status === 401) {
-      token.value = saved
-      connectState.value = saved ? 'connected' : 'error'
-      connectError.value = 'GitHub rejected that token — copy it whole, it is shown only once.'
-      return
-    }
-    if (res.status === 403 && res.headers.get('x-ratelimit-remaining') === '0') {
-      token.value = saved
-      connectState.value = saved ? 'connected' : 'error'
-      connectError.value = 'GitHub API rate limit hit. Wait an hour, then try again.'
-      return
-    }
-    if (!res.ok) throw new Error('network')
-    const user = await res.json()
-    // SAFETY: /user answers with a plain object whose login is the handle.
-    connectState.value = 'connected'
-    connectError.value = ''
-    sessionStorage.setItem(TOKEN_KEY, token.value)
-    showTokenInput.value = false
-    tokenDraft.value = ''
-    void user.login
-    void loadRepos()
-  } catch {
-    token.value = saved
-    connectState.value = saved ? 'connected' : 'error'
-    connectError.value = networkMessage()
-  }
+  const redirectUri = window.location.origin + window.location.pathname;
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('rs-gh-oauth-state', state);
+  const params = new URLSearchParams({
+    client_id: GITHUB_CLIENT_ID,
+    scope: 'repo',
+    redirect_uri: redirectUri,
+    state,
+  });
+  window.location.href = `https://github.com/login/oauth/authorize?${params}`;
 }
 
-function connect() {
-  window.open(
-    'https://github.com/settings/tokens/new?scopes=repo&description=reposell%20sell-readiness%20audit',
-    '_blank',
-    'noopener',
-  )
-  showTokenInput.value = true
+async function exchangeCode(code) {
+  connectState.value = 'connecting'
+  connectError.value = ''
+  try {
+    const res = await fetch(TOKEN_EXCHANGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      connectState.value = 'error'
+      connectError.value = data.error || 'GitHub rejected the authorization — try again.'
+      return;
+    }
+    token.value = data.access_token;
+    connectState.value = 'connected'
+    sessionStorage.setItem(TOKEN_KEY, token.value);
+    sessionStorage.removeItem('rs-gh-oauth-state');
+    // Clean the URL
+    const clean = window.location.pathname;
+    window.history.replaceState({}, '', clean);
+    void loadRepos();
+  } catch {
+    connectState.value = 'error'
+    connectError.value = 'Could not reach the token exchange service — try again.'
+  }
 }
 
 function disconnect() {
   token.value = ''
   sessionStorage.removeItem(TOKEN_KEY)
   connectState.value = 'idle'
-  tokenDraft.value = ''
-  showTokenInput.value = false
   repos.value = []
   reposState.value = 'idle'
   ddOpen.value = false
@@ -425,16 +421,33 @@ async function run() {
 
 onBeforeUnmount(clearTimers)
 
-try {
-  const saved = sessionStorage.getItem(TOKEN_KEY)
-  if (saved) {
-    token.value = saved
-    connectState.value = 'connected'
-    void loadRepos()
+// Handle OAuth callback on mount
+onBeforeMount(() => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  if (code) {
+    const savedState = sessionStorage.getItem('rs-gh-oauth-state');
+    if (!state || state !== savedState) {
+      connectState.value = 'error'
+      connectError.value = 'OAuth state mismatch — try again.'
+      return;
+    }
+    void exchangeCode(code);
+    return;
   }
-} catch {
-  // storage unavailable — stay unauthenticated
-}
+  // Restore saved token
+  try {
+    const saved = sessionStorage.getItem(TOKEN_KEY)
+    if (saved) {
+      token.value = saved
+      connectState.value = 'connected'
+      void loadRepos()
+    }
+  } catch {
+    // storage unavailable — stay unauthenticated
+  }
+});
 </script>
 
 <template>
@@ -453,22 +466,13 @@ try {
         <button type="button" class="audit-unlink" @click="disconnect">Disconnect</button>
       </template>
       <template v-else>
-        <button type="button" class="audit-link-btn" @click="connect">Connect GitHub</button>
-        <span class="audit-connect-hint">to audit private repos — nothing leaves this tab except api.github.com calls</span>
+        <button type="button" class="audit-link-btn" :disabled="connectState === 'connecting'" @click="connect">
+          {{ connectState === 'connecting' ? 'Connecting…' : 'Connect GitHub' }}
+        </button>
+        <span class="audit-connect-hint">sign in with your GitHub account to audit private repos</span>
       </template>
     </div>
 
-    <form v-if="showTokenInput && !connected" class="audit-tokenrow" @submit.prevent="validateToken">
-      <input
-        v-model="tokenDraft"
-        type="password"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="paste the token GitHub shows you"
-        aria-label="GitHub personal access token"
-      />
-      <button type="submit" class="audit-run audit-run--ghost" :disabled="!tokenDraft.trim()">Verify</button>
-    </form>
     <p v-if="connectError" class="audit-connecterr" role="alert">{{ connectError }}</p>
 
     <form class="audit-form" @submit.prevent="run">
@@ -555,8 +559,8 @@ try {
     </div>
 
     <p class="audit-note">
-      Read-only checks straight from GitHub's public API. Private repos need a token with
-      <code>repo</code> scope — revoke it whenever you like.
+      Read-only checks straight from GitHub's API. Connect GitHub to securely inspect
+      repositories you can access — nothing leaves your browser except api.github.com calls.
     </p>
   </div>
 </template>
@@ -650,9 +654,14 @@ try {
   transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.audit-link-btn:hover {
+.audit-link-btn:hover:not(:disabled) {
   background: rgb(10 241 136 / 0.16);
   border-color: rgb(10 241 136 / 0.75);
+}
+
+.audit-link-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .audit-unlink {
@@ -674,30 +683,6 @@ try {
 .audit-connect-hint {
   font-size: 11.5px;
   color: #7d8496;
-}
-
-.audit-tokenrow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.audit-tokenrow input {
-  flex: 1;
-  min-width: 200px;
-  background: #0b0d12;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 10px;
-  color: #f2f4f8;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 11px 12px;
-  outline: none;
-}
-
-.audit-tokenrow input:focus {
-  border-color: rgb(10 241 136 / 0.55);
-  box-shadow: 0 0 0 3px rgb(10 241 136 / 0.12);
 }
 
 .audit-connecterr {
