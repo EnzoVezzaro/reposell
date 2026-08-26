@@ -67,6 +67,8 @@ export async function fetchPaymentLinkDetailsByUrl(input: {
     let body: StripeListResponse<StripePaymentLink>;
     try {
       const res = await doFetch(`https://api.stripe.com/v1/payment_links?${query.toString()}`, { headers });
+      // SAFETY: network JSON is projected onto the documented Payment Link
+      // list schema; every consumed field is guarded below before use.
       body = (await res.json()) as StripeListResponse<StripePaymentLink>;
     } catch {
       return undefined;
@@ -92,6 +94,8 @@ export async function fetchPaymentLinkDetailsByUrl(input: {
       `https://api.stripe.com/v1/payment_links/${encodeURIComponent(linkId)}/line_items`,
       { headers },
     );
+    // SAFETY: network JSON is projected onto the documented line_items
+    // schema; price fields are guarded before any value is consumed.
     items = (await res.json()) as StripeListResponse<NonNullable<StripeLineItemPage['data']>[number]>;
   } catch {
     return undefined;
