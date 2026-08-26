@@ -67,10 +67,11 @@ async function deepLinkOutcome(input: {
   envSource: EnvSource;
   fetchImpl?: FetchLike;
 }): Promise<DeepLinkOutcome | undefined> {
-  const linkId = input.offer.paymentLinkId;
+  let linkId = input.offer.paymentLinkId;
   const amount = input.offer.amount;
   const currency = input.offer.currency;
-  if (linkId === undefined || amount === undefined || currency === undefined) return undefined;
+  const paymentUrl = input.offer.paymentLink;
+  if (amount === undefined || currency === undefined) return undefined;
 
   const apiKey =
     resolveValue(input.envSource, 'REPOSELL_STRIPE_SECRET_KEY') ??
@@ -78,6 +79,40 @@ async function deepLinkOutcome(input: {
   if (apiKey === undefined || !apiKey.startsWith('sk_')) {
     return { kind: 'not-configured' };
   }
+
+  // If payment_link_id is not set but payment_link URL is, look up the ID from Stripe.
+  if (linkId === undefined && paymentUrl !== undefined && paymentUrl.includes('stripe.com')) {
+    try {
+      const doFetch = input.fetchImpl ?? globalThis.fetch;
+      // Fetch all payment links (active and inactive) to find the match.
+      const allLinks: Array<{ id: string; url: string; active?: boolean }> = [];
+      let startingAfter: string | undefined;
+      for (let page = 0; page < 5; page++) {
+        const qs = startingAfter !== undefined ? `?limit=100&starting_after=${startingAfter}` : '?limit=100';
+        const res = await doFetch(`https://api.stripe.com/v1/payment_links${qs}`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        const data = await res.json() as { data?: Array<{ id: string; url: string; active?: boolean }>; has_more?: boolean };
+        if (data.data !== undefined) allLinks.push(...data.data);
+        if (data.has_more !== true || data.data === undefined || data.data.length === 0) break;
+        startingAfter = data.data!.at(-1)!.id;
+      }
+      const match = allLinks.find((pl) => pl.url === paymentUrl);
+      if (match !== undefined) {
+        linkId = match.id;
+        if (match.active === false) {
+          return { kind: 'failed', detail: 'Payment link is deactivated in Stripe' };
+        }
+      } else {
+        // URL provided but not found in Stripe — the link was deleted or is invalid.
+        return { kind: 'failed', detail: 'Payment link URL not found in Stripe — link may have been deleted' };
+      }
+    } catch {
+      // Could not look up — continue without validation.
+    }
+  }
+
+  if (linkId === undefined) return undefined;
 
   const result = await verifyPaymentLinkAgainstPricing({
     apiKey,
