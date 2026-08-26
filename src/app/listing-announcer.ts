@@ -155,25 +155,25 @@ export async function announceListing(payload: ListingPrPayload): Promise<Announ
       // 404 → genuinely new listing.
     }
 
-    const args = [
-      'api', '--method', 'POST',
-      `repos/${LISTING_REGISTRY}/dispatches`,
-      '-F', `event_type=${event}`,
-      '-f', 'client_payload[schema]=reposell.event/v1',
-      '-F', 'client_payload[version]=1.0',
-      '-f', `client_payload[event]=${event}`,
-      '-f', `client_payload[listing][id]=${record.id}`,
-      '-f', `client_payload[source][repository]=${record.product.repository}`,
-      '-f', 'client_payload[source][sell_path]=/sell',
-      '-f', `client_payload[record][schema]=${record.schema}`,
-      '-f', `client_payload[record][product][repository]=${record.product.repository}`,
-      '-f', `client_payload[record][product][release]=${record.product.release}`,
-      '-f', `client_payload[record][seller][sell_url]=${record.seller.sell_url}`,
-      '-f', `client_payload[record][seller][payment_link]=${record.seller.payment_link}`,
-      '-f', `client_payload[record][listing][discovery_price][amount]=${record.listing.discovery_price.amount}`,
-      '-f', `client_payload[record][listing][discovery_price][currency]=${record.listing.discovery_price.currency}`,
-    ];
-    gh(args);
+    // Numeric fields must survive the wire: send a JSON body (gh -f would
+    // flatten amounts into strings).
+    const dispatchBody = JSON.stringify({
+      event_type: event,
+      client_payload: {
+        schema: 'reposell.event/v1',
+        version: '1.0',
+        event,
+        listing: { id: record.id },
+        source: { repository: record.product.repository, sell_path: '/sell' },
+        record: {
+          schema: record.schema,
+          product: record.product,
+          seller: record.seller,
+          listing: { discovery_price: record.listing.discovery_price },
+        },
+      },
+    });
+    gh(['api', '--method', 'POST', `repos/${LISTING_REGISTRY}/dispatches`, '--input', '-'], dispatchBody);
 
     return { dispatched: true, event, id: record.id };
   } catch (error) {
