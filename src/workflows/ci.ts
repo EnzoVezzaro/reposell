@@ -34,6 +34,9 @@ export function createReposellWorkflow(): Record<string, unknown> {
       contents: 'read',
       pages: 'write',
       'id-token': 'write',
+      // Creating the Pages site on first run (configure-pages enablement)
+      // requires repo administration rights.
+      administration: 'write',
     },
     concurrency: {
       group: 'pages',
@@ -64,7 +67,9 @@ export function createReposellWorkflow(): Record<string, unknown> {
               REPOSELL_SIGNING_KEY: secretRef('REPOSELL_SIGNING_KEY'),
             },
           },
-          { uses: 'actions/configure-pages@v5' },
+          // enablement: true creates the Pages site on first run — fresh
+          // repos have none yet, and without it configure-pages/deploy fail.
+          { uses: 'actions/configure-pages@v5', with: { enablement: true } },
           { uses: 'actions/upload-pages-artifact@v3', with: { path: 'dist/reposell' } },
           { id: 'deployment', uses: 'actions/deploy-pages@v4' },
         ],
