@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.22] - 2026-08-26
+## [0.1.23] - 2026-08-26
+
+### Fixed
+- **Zero-config init**: `reposell init --yes` now saves the signing key to `.env` and enables listing with $5 contribution — no manual workspace setup needed
+- **Payment link chaining**: `reposell sell init --link` persists the link so `reposell release` picks it up automatically
+- `release` reads payment link from `.reposell/payment-link` even without a Stripe key configured
 
 ### Added
 - **Contributor listing fallback**: if the publisher has no write access to the canonical listing registry (external contributors), `reposell publish` automatically opens a fork + pointer PR instead of failing

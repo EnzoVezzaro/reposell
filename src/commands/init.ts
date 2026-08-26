@@ -198,6 +198,15 @@ async function initPlain(cwd: string): Promise<InitResult> {
   const license = await new LicenseService(cwd).check();
   const { workflowWritten, verificationKeyPath, signingKeySecret, pagesNote } = await scaffold(cwd);
 
+  // Non-interactive: save signing key to .env so local builds sign automatically.
+  if (signingKeySecret !== undefined) {
+    await upsertEnvValue(cwd, 'REPOSELL_SIGNING_KEY', signingKeySecret);
+    await ensureGitignored(cwd);
+  }
+
+  // Non-interactive: enable listing with $5 discovery contribution by default.
+  await updateListingOptIn({ cwd, enabled: true, contribution: { amount: 5, currency: 'USD' } });
+
   return {
     banner: renderBanner('full'),
     gitInfo,

@@ -10,6 +10,7 @@ import { createInterface } from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 import { execFileSync } from 'child_process';
 import { promises as fs } from 'fs';
+import path from 'node:path';
 import {
   configExists,
   renderDefaultYml,
@@ -286,8 +287,19 @@ export async function releaseCommand(cwd: string, args: ReleaseArgs): Promise<st
       Object.values(config.releases?.definitions ?? {})
         .flatMap((definition) => definition.offers ?? [])
         .map((offer) => offer.payment?.payment_link)
-        .find((link): link is string => typeof link === 'string' && link.length > 0);
+        .find((link): link is string => typeof link === 'string' && link.length > 0) ??
+      // Fallback: payment link saved by `reposell sell init --link`.
+      await (async () => {
+        try {
+          const content = await fs.readFile(path.join(cwd, '.reposell', 'payment-link'), 'utf8');
+          return content.trim() || undefined;
+        } catch {
+          return undefined;
+        }
+      })();
     if (priorLink !== undefined) {
+      // Always carry the link forward, even if Stripe key is unavailable.
+      if (filled.link === undefined) filled.link = priorLink;
       try {
         const apiKey =
           resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
@@ -296,7 +308,6 @@ export async function releaseCommand(cwd: string, args: ReleaseArgs): Promise<st
           if (details !== undefined) {
             if (filled.price === undefined) filled.price = details.amount;
             if (filled.currency === undefined) filled.currency = details.currency;
-            if (filled.link === undefined) filled.link = priorLink;
             console.log(`✓ Read ${details.amount} ${details.currency} from your Payment Link.`);
           }
         }

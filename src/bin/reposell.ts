@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { createRequire } from 'module';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import { detectGitInfo } from '../utils/git.js';
 import { generateSellSite } from '../workflows/sell.js';
 import { initCommand, formatInitResult } from '../commands/init.js';
@@ -14,6 +16,7 @@ import { buildCommand } from '../commands/build.js';
 import { healthCommand } from '../commands/health.js';
 import { releaseCommand, type ReleaseArgs } from '../commands/release.js';
 import { publishCommand } from '../commands/publish.js';
+import { loadConfigFile } from '../app/config-service.js';
 import { verifyCommand } from '../commands/verify.js';
 import { keysCommand } from '../commands/keys.js';
 import { renderBanner } from '../cli/banner.js';
@@ -155,6 +158,15 @@ async function main(): Promise<void> {
             productName,
             ...(link !== undefined ? { paymentLink: link } : {}),
           });
+
+          // Persist the payment link so `reposell release` can pick it up
+          // without the user re-typing it.
+          if (link !== undefined && link.length > 0) {
+            const linkFile = path.join(cwd, '.reposell', 'payment-link');
+            await fs.mkdir(path.dirname(linkFile), { recursive: true });
+            await fs.writeFile(linkFile, `${link}\n`);
+          }
+
           console.log([
             report.written.length > 0
               ? `✓ /sell site ready${report.paymentLinkWired ? ' — Stripe Payment Link wired into every buy CTA' : ''}`
