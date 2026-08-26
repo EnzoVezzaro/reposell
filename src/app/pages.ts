@@ -92,6 +92,8 @@ export interface SellPageModel {
   repositorySlug: string;
   /** Seller-configured discovery contribution (buyer-paid at the listing). */
   listingContribution?: { amount: number; currency: string };
+  /** License info embedded from the repo during build. */
+  license?: { type: string; spdx?: string; name?: string; url?: string };
 }
 
 function money(amount: number, currency: string): string {
@@ -118,6 +120,9 @@ export function renderSellPage(model: SellPageModel): string {
     releases: model.entries.map((e) => ({
       version: e.version,
       status: e.status,
+      licenseType: model.license?.type,
+      licenseName: model.license?.name ?? model.license?.spdx,
+      licenseUrl: model.license?.url,
       offers: (e.offers ?? []).map((o) => ({
         scheme: o.scheme,
         name: o.name,

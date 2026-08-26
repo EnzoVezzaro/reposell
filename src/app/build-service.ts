@@ -333,6 +333,12 @@ export async function buildSite(cwd: string, options: BuildOptions = {}): Promis
       description: evaluation.description,
       entries: catalogEntries,
       repositorySlug: evaluation.repositorySlug,
+      license: {
+        type: evaluation.licenseType,
+        ...(evaluation.licenseSpdx !== undefined ? { spdx: evaluation.licenseSpdx } : {}),
+        name: evaluation.config?.license?.mode === 'rsl-1.0' ? 'RepoSell Source License' : undefined,
+        url: `https://github.com/${evaluation.owner}/${evaluation.repo}/blob/main/LICENSE`,
+      },
       ...(evaluation.config?.listing?.contribution?.amount !== undefined &&
       evaluation.config.listing.contribution.currency !== undefined
         ? {
