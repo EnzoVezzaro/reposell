@@ -192,7 +192,7 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/EnzoVezzaro/reposell' },
     ],
     footer: {
-      message: 'Made with ☕ and 🎧 by a solo developer from the Dominican Republic.',
+      message: 'Built by Enzo Vezzaro — from the Dominican Republic, for the world.',
       copyright: '© 2026 Enzo Vezzaro · MIT License',
     },
     search: {

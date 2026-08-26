@@ -228,7 +228,7 @@ description: Your repo, your keys, your revenue. Turn any Git repository into so
       <div class="lx-fcol lx-fbrand">
         <h4>reposell</h4>
         <p class="lx-fblurb">Your repo, your keys, your revenue. Turn any Git repository into something people can buy.</p>
-        <p>Made with ☕ and 🎧 by Enzo Vezzaro — a solo developer from the Dominican Republic, building for a team tomorrow.</p>
+        <p>Built by Enzo Vezzaro — from the Dominican Republic, for the world.</p>
       </div>
       <nav class="lx-fcol" aria-label="Product">
         <h4>Product</h4>

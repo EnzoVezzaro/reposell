@@ -15,11 +15,11 @@ describe('banner', () => {
     }
   });
 
-  it('compact variant carries the solo developer message', () => {
+  it('compact variant carries the author message', () => {
     const compact = renderBanner('compact');
-    expect(compact).toContain('solo developer');
-    expect(compact).toContain('Help me grow into a team');
     expect(compact).toContain('Enzo Vezzaro');
+    expect(compact).toContain('Dominican Republic');
+    expect(compact).toContain('github.com/EnzoVezzaro/reposell');
   });
 
   it('uses one canonical mark for both variants', () => {

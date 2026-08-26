@@ -31,8 +31,8 @@ export function renderBanner(variant: 'full' | 'compact' = 'compact'): string {
   return [
     BANNER_COMPACT,
     '',
-    '  Made with \u2615 by Enzo Vezzaro \u2014 solo developer, Dominican Republic.',
-    '  Help me grow into a team \u2192 github.com/EnzoVezzaro/reposell/issues',
+    '  Built by Enzo Vezzaro \u2014 from the Dominican Republic, for the world.',
+    '  github.com/EnzoVezzaro/reposell',
     '',
   ].join('\n');
 }
