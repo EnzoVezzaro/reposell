@@ -1,13 +1,17 @@
 <script setup>
-import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const GITHUB_CLIENT_ID = 'Iv23lidhennqrdpdFUAT';
-const TOKEN_EXCHANGE_URL = 'https://github-auth.reposell.dev/exchange';
+const GITHUB_CLIENT_ID = 'Iv23lidhennqrdpdFUAT'
 
 const url = ref('')
 const token = ref('')
-const connectState = ref('idle') // idle | connecting | connected | error
+const connectState = ref('idle') // idle | device | polling | connected | error
 const connectError = ref('')
+const deviceCode = ref('')
+const userCode = ref('')
+const verificationUri = ref('')
+const polling = ref(false)
+const countdown = ref(0)
 const state = ref('idle') // idle | running | done | error | blocked
 const errorNote = ref('')
 const visibleChecks = ref(0)
@@ -53,7 +57,6 @@ async function loadRepos() {
         return
       }
       const batch = await res.json()
-      // SAFETY: /user/repos answers with an array of repo objects.
       if (!Array.isArray(batch)) break
       for (const r of batch) {
         if (r?.full_name) {
@@ -114,6 +117,7 @@ function onInputKeydown(e) {
     ddActive.value = -1
   }
 }
+
 const runLabel = computed(() =>
   state.value === 'running' ? 'Auditing…' : state.value === 'done' || state.value === 'error' ? 'Run again' : 'Audit my repo',
 )
@@ -176,9 +180,7 @@ async function ghFetch(path, attempt = 0) {
       signal: controller.signal,
     })
   } catch (err) {
-    // SAFETY: fetch failures surface as TypeError; aborts surface as AbortError — both mean "no path to GitHub".
     const name = err?.name === 'AbortError' ? 'timeout' : 'network'
-    // Transient failures (VPN handshake, DNS hiccup, sleeping tab) get exactly one silent retry.
     if (attempt < 1 && name !== 'offline') {
       await new Promise((r) => setTimeout(r, 900))
       return ghFetch(path, attempt + 1)
@@ -210,47 +212,146 @@ async function ghJson(path) {
   return { ok: res.ok, status: res.status, rateLimited, body }
 }
 
-function connect() {
-  connectState.value = 'connecting'
-  connectError.value = ''
-  const redirectUri = window.location.origin + '/auth/github/callback';
-  const state = Math.random().toString(36).slice(2);
-  sessionStorage.setItem('rs-gh-oauth-state', state);
-  const params = new URLSearchParams({
-    client_id: GITHUB_CLIENT_ID,
-    scope: 'repo',
-    redirect_uri: redirectUri,
-    state,
-  });
-  window.location.href = `https://github.com/login/oauth/authorize?${params}`;
-}
+// ── GitHub Device Flow (zero-server) ──────────────────────────────────
 
-async function exchangeCode(code) {
-  connectState.value = 'connecting'
+async function connect() {
+  connectState.value = 'device'
   connectError.value = ''
+  deviceCode.value = ''
+  userCode.value = ''
+  verificationUri.value = ''
+
   try {
-    const res = await fetch(TOKEN_EXCHANGE_URL, {
+    const res = await fetch('https://github.com/login/device/code', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: GITHUB_CLIENT_ID,
+        scope: 'repo',
+      }),
+    })
+    const data = await res.json()
+
+    if (data.error) {
       connectState.value = 'error'
-      connectError.value = data.error || 'GitHub rejected the authorization — try again.'
-      return;
+      connectError.value = data.error_description || 'GitHub rejected the device code request — try again.'
+      return
     }
-    token.value = data.access_token;
-    connectState.value = 'connected'
-    sessionStorage.setItem(TOKEN_KEY, token.value);
-    sessionStorage.removeItem('rs-gh-oauth-state');
-    // Clean the URL
-    const clean = window.location.pathname;
-    window.history.replaceState({}, '', clean);
-    void loadRepos();
+
+    deviceCode.value = data.device_code
+    userCode.value = data.user_code
+    verificationUri.value = data.verification_uri
+    connectState.value = 'device'
+
+    // Open the verification page
+    window.open(data.verification_uri, '_blank', 'noopener')
+
+    // Start polling for the token
+    startPolling(data.device_code, data.interval || 5, data.expires_in || 900)
   } catch {
     connectState.value = 'error'
-    connectError.value = 'Could not reach the token exchange service — try again.'
+    connectError.value = 'Could not reach GitHub — check your connection and try again.'
+  }
+}
+
+let pollTimer = null
+
+function startPolling(code, interval, expiresIn) {
+  polling.value = true
+  countdown.value = expiresIn
+  const deadline = Date.now() + expiresIn * 1000
+
+  // Decrement countdown every second
+  pollTimer = setInterval(() => {
+    countdown.value = Math.max(0, Math.ceil((deadline - Date.now()) / 1000))
+    if (countdown.value <= 0) {
+      stopPolling()
+      connectState.value = 'error'
+      connectError.value = 'Device code expired — try again.'
+    }
+  }, 1000)
+
+  // Poll for token
+  pollForToken(code, interval * 1000, deadline)
+}
+
+async function pollForToken(code, intervalMs, deadline) {
+  if (Date.now() >= deadline) {
+    stopPolling()
+    connectState.value = 'error'
+    connectError.value = 'Device code expired — try again.'
+    return
+  }
+
+  await new Promise((r) => setTimeout(r, intervalMs))
+
+  try {
+    const res = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: GITHUB_CLIENT_ID,
+        device_code: code,
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+      }),
+    })
+    const data = await res.json()
+
+    if (data.access_token) {
+      // Success!
+      stopPolling()
+      token.value = data.access_token
+      connectState.value = 'connected'
+      sessionStorage.setItem(TOKEN_KEY, token.value)
+      void loadRepos()
+      return
+    }
+
+    if (data.error === 'authorization_pending') {
+      // Keep polling
+      pollForToken(code, intervalMs, deadline)
+      return
+    }
+
+    if (data.error === 'slow_down') {
+      // GitHub is asking us to slow down — add 5 seconds
+      pollForToken(code, intervalMs + 5000, deadline)
+      return
+    }
+
+    if (data.error === 'expired_token') {
+      stopPolling()
+      connectState.value = 'error'
+      connectError.value = 'Device code expired — try again.'
+      return
+    }
+
+    if (data.error === 'access_denied') {
+      stopPolling()
+      connectState.value = 'error'
+      connectError.value = 'GitHub authorization was denied — try again.'
+      return
+    }
+
+    // Unknown error — keep polling
+    pollForToken(code, intervalMs, deadline)
+  } catch {
+    // Network error — retry
+    pollForToken(code, intervalMs, deadline)
+  }
+}
+
+function stopPolling() {
+  polling.value = false
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
 }
 
@@ -261,6 +362,11 @@ function disconnect() {
   repos.value = []
   reposState.value = 'idle'
   ddOpen.value = false
+  stopPolling()
+  deviceCode.value = ''
+  userCode.value = ''
+  verificationUri.value = ''
+  countdown.value = 0
 }
 
 function mark(key, status, detail, href = '') {
@@ -325,7 +431,7 @@ async function run() {
     }
     if (meta.rateLimited) {
       state.value = 'blocked'
-      errorNote.value = 'GitHub API rate limit hit. Try again in an hour — or connect a token for 5,000 requests/hour.'
+      errorNote.value = 'GitHub API rate limit hit. Try again in an hour — or connect GitHub for 5,000 requests/hour.'
       return
     }
     if (!meta.ok) throw new Error('network')
@@ -419,37 +525,12 @@ async function run() {
   }
 }
 
-onBeforeUnmount(clearTimers)
+onBeforeUnmount(() => {
+  clearTimers()
+  stopPolling()
+})
 
-// Handle OAuth callback on mount
-onBeforeMount(() => {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const state = params.get('state');
-  const error = params.get('error');
-
-  if (error) {
-    connectState.value = 'error'
-    connectError.value = error === 'access_denied'
-      ? 'GitHub authorization was denied — try again.'
-      : 'GitHub authorization failed: ' + error;
-    // Clean the URL
-    window.history.replaceState({}, '', window.location.pathname);
-    return;
-  }
-
-  if (code) {
-    const savedState = sessionStorage.getItem('rs-gh-oauth-state');
-    if (!state || state !== savedState) {
-      connectState.value = 'error'
-      connectError.value = 'OAuth state mismatch — try again.'
-      window.history.replaceState({}, '', window.location.pathname);
-      return;
-    }
-    void exchangeCode(code);
-    return;
-  }
-
+onMounted(() => {
   // Restore saved token
   try {
     const saved = sessionStorage.getItem(TOKEN_KEY)
@@ -461,7 +542,7 @@ onBeforeMount(() => {
   } catch {
     // storage unavailable — stay unauthenticated
   }
-});
+})
 </script>
 
 <template>
@@ -479,10 +560,23 @@ onBeforeMount(() => {
         <span class="audit-connect-label">GitHub connected · private repos enabled · token lives in this tab only</span>
         <button type="button" class="audit-unlink" @click="disconnect">Disconnect</button>
       </template>
+      <template v-else-if="connectState === 'device' || connectState === 'polling'">
+        <div class="audit-device">
+          <p class="audit-device-instruction">
+            Go to
+            <a :href="verificationUri" target="_blank" rel="noopener" class="audit-device-link">{{ verificationUri }}</a>
+            and enter:
+          </p>
+          <code class="audit-device-code">{{ userCode }}</code>
+          <p class="audit-device-status" v-if="polling">
+            Waiting for authorization…
+            <span class="audit-device-countdown">{{ countdown }}s</span>
+          </p>
+          <button type="button" class="audit-unlink" @click="disconnect">Cancel</button>
+        </div>
+      </template>
       <template v-else>
-        <button type="button" class="audit-link-btn" :disabled="connectState === 'connecting'" @click="connect">
-          {{ connectState === 'connecting' ? 'Connecting…' : 'Connect GitHub' }}
-        </button>
+        <button type="button" class="audit-link-btn" @click="connect">Connect GitHub</button>
         <span class="audit-connect-hint">sign in with your GitHub account to audit private repos</span>
       </template>
     </div>
@@ -697,6 +791,57 @@ onBeforeMount(() => {
 .audit-connect-hint {
   font-size: 11.5px;
   color: #7d8496;
+}
+
+/* device flow */
+.audit-device {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.audit-device-instruction {
+  margin: 0;
+  font-size: 13px;
+  color: #c9cdd6;
+}
+
+.audit-device-link {
+  color: #0af188;
+  text-decoration: none;
+}
+
+.audit-device-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.audit-device-code {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #0af188;
+  background: rgb(10 241 136 / 0.08);
+  border: 1px solid rgb(10 241 136 / 0.3);
+  border-radius: 10px;
+  padding: 12px 20px;
+  text-align: center;
+  user-select: all;
+  text-shadow: 0 0 20px rgb(10 241 136 / 0.3);
+}
+
+.audit-device-status {
+  margin: 0;
+  font-size: 12.5px;
+  color: #7d8496;
+}
+
+.audit-device-countdown {
+  font-family: var(--font-mono);
+  color: #fbbf24;
 }
 
 .audit-connecterr {
