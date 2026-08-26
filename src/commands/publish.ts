@@ -22,7 +22,7 @@ import { evaluateRepository, type BuildOptions } from '../app/build-service.js';
 import { formatEvaluation } from './evaluation-format.js';
 import { releaseCommand } from './release.js';
 import { listingPublishCommand, ListingPublishError, formatListingPublish } from './listing-publish.js';
-import { openListingPr } from '../app/listing-pr-submitter.js';
+import { announceListing } from '../app/listing-announcer.js';
 
 export interface PublishResult {
   ok: boolean;
@@ -151,15 +151,18 @@ export async function publishCommand(
     if (listingEnabled) {
       try {
         const listingReport = await listingPublishCommand(cwd, { tag: target });
-        const pr = openListingPr(listingReport.payload);
+        const announcement = await announceListing(listingReport.payload);
         listingLines = formatListingPublish(listingReport).split('\n');
         listingLines = listingLines.filter((line) => !line.startsWith('! Open the Listing PR'));
-        if (pr.opened) {
-          listingLines.push(`✓ Listing PR opened: ${pr.url ?? 'created'}`, '  CI verifies it fail-closed; PASS auto-merges → you are listed.');
+        if (announcement.dispatched) {
+          listingLines.push(
+            `✓ Announced to the registry (${announcement.event}, ${announcement.id}) — applying now.`,
+            '  Your store goes live on listing.reposell.dev within a minute.',
+          );
         } else {
           listingLines.push(
-            `! Could not open the Listing PR (${pr.detail ?? 'unknown'}).`,
-            `  .reposell/listing-pr.json is ready — open one on ${'EnzoVezzaro/reposell-listing'} manually.`,
+            `! Could not announce to the registry (${announcement.detail ?? 'unknown'}).`,
+            `  Retry with \`reposell listing publish ${target}\` — your release stays published.`,
           );
         }
       } catch (error) {
