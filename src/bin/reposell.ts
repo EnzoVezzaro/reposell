@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { createRequire } from 'module';
+import { detectGitInfo } from '../utils/git.js';
+import { generateSellSite } from '../workflows/sell.js';
 import { initCommand, formatInitResult } from '../commands/init.js';
 import { licenseCommand } from '../commands/license.js';
 import { auditCommand } from '../commands/audit.js';
@@ -35,6 +37,9 @@ const USAGE = [
   '  audit                       Full licensing/compliance audit (PASS/WARN/BLOCKED)',
   '  listing status              Dashboard: repo, license, /sell endpoint, payments',
   '  listing publish <tag>       Build + verify a Listing publication PR payload',
+  '  sell init [--link URL] [--name NAME]\n' +
+  '                              Scaffold the /sell storefront (HTML template wired\n' +
+  '                              to your Stripe Payment Link)\n' +
   '  sell sync [payment_link_id] Pull-based fulfillment: purchases, refunds, fork artifacts',
   '  reciprocity [--revenue N]   Show/validate/simulate the Reciprocity Program',
   '  release <tag> [--price N] [--currency USD] [--link URL] [--link-id plink_…]',
@@ -132,7 +137,32 @@ async function main(): Promise<void> {
           ].join('\n'));
           break;
         }
-        console.log('usage: reposell sell sync [payment_link_id]');
+        if (rest[0] === 'init') {
+          const name = flags['name'];
+          const link = flags['link'];
+          let productName = name;
+          if (productName === undefined || productName.length === 0) {
+            try {
+              productName = (await detectGitInfo(cwd, 'github')).repo;
+            } catch {
+              productName = 'My Project';
+            }
+          }
+          const report = await generateSellSite(cwd, {
+            productName,
+            ...(link !== undefined ? { paymentLink: link } : {}),
+          });
+          console.log([
+            report.written.length > 0
+              ? `✓ /sell site ready${report.paymentLinkWired ? ' — Stripe Payment Link wired into every buy CTA' : ''}`
+              : '• sell/ and .reposell/storefront.json already exist (left untouched)',
+            ...report.written.map((file) => `  ${file}`),
+            '',
+            'Open sell/index.html to customize, or edit .reposell/storefront.json in the Studio.',
+          ].join('\n'));
+          break;
+        }
+        console.log('usage: reposell sell <init|sync> [--link URL] [payment_link_id]');
         break;
       }
       case 'listing': {

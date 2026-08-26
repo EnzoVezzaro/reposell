@@ -15,6 +15,7 @@ import { LicenseService, type LicenseCheckResult } from '../app/license-service.
 import { formatCheckResult, licenseCommand } from './license.js';
 import { renderBanner } from '../cli/banner.js';
 import { generateWorkflows } from '../workflows/ci.js';
+import { generateSellSite } from '../workflows/sell.js';
 import { createIdentity } from '../app/signing-service.js';
 import { Prompter } from '../cli/prompts.js';
 import { releaseCommand } from './release.js';
@@ -191,6 +192,8 @@ async function initWizard(cwd: string): Promise<InitResult> {
   let workflowWritten = false;
   let verificationKeyPath: string | undefined;
   let signingKeySecret: string | undefined;
+  let sellSiteFiles: string[] = [];
+  let sellSiteLinked = false;
 
   try {
     output.write(`${banner}\n\n`);
@@ -305,6 +308,21 @@ async function initWizard(cwd: string): Promise<InitResult> {
         transcript.push('  gh secret set REPOSELL_SIGNING_KEY --body "<key above>"');
       }
     }
+
+    // 6. /sell builder — scaffold an editable storefront wired to the link
+    const sellOptions = {
+      productName,
+      repositoryUrl: `https://github.com/${gitInfo.owner}/${gitInfo.repo}`,
+    };
+    const sellSite = await generateSellSite(cwd, paymentLink === undefined ? sellOptions : { ...sellOptions, paymentLink });
+    sellSiteFiles = sellSite.written;
+    sellSiteLinked = sellSite.paymentLinkWired;
+    if (sellSiteFiles.length > 0) {
+      transcript.push(
+        `✓ Built your /sell site${sellSiteLinked ? ' with your Stripe Payment Link' : ' (buy button disabled — no Stripe link yet)'}:`,
+        ...sellSiteFiles.map((file) => `    ${file}`),
+      );
+    }
   } catch (wizardError) {
     // stdin ended early or a step failed — finish scaffolding, tell the user.
     interrupted = true;
@@ -325,6 +343,12 @@ async function initWizard(cwd: string): Promise<InitResult> {
     workflowWritten = files.workflowWritten;
     verificationKeyPath = files.verificationKeyPath;
     signingKeySecret = files.signingKeySecret;
+    const sellSite = await generateSellSite(cwd, {
+      productName,
+      repositoryUrl: `https://github.com/${gitInfo.owner}/${gitInfo.repo}`,
+    });
+    sellSiteFiles = sellSite.written;
+    sellSiteLinked = sellSite.paymentLinkWired;
   }
 
   const licenseAfter = await new LicenseService(cwd).check();
@@ -339,8 +363,17 @@ async function initWizard(cwd: string): Promise<InitResult> {
     signingKeySecret,
   };
 
-  result.report = ['', ...transcript, summarizeNextSteps(result, { paymentLink, releaseTag, secretStoredViaGh })]
-    .join('\n');
+  result.report = [
+    '',
+    ...transcript,
+    summarizeNextSteps(result, {
+      paymentLink,
+      releaseTag,
+      secretStoredViaGh,
+      sellSiteFiles,
+      sellSiteLinked,
+    }),
+  ].join('\n');
 
   return result;
 }
@@ -353,6 +386,8 @@ interface WizardState {
   paymentLink?: string;
   releaseTag?: string;
   secretStoredViaGh?: boolean;
+  sellSiteFiles?: string[];
+  sellSiteLinked?: boolean;
 }
 
 /** Only list what is actually still missing. */
@@ -363,19 +398,29 @@ function summarizeNextSteps(result: InitResult, state: WizardState): string {
     state.paymentLink !== undefined
       ? '✓ Stripe Payment Link configured'
       : '○ Stripe Payment Link missing — create one at dashboard.stripe.com/payment-links',
+    state.sellSiteFiles !== undefined && state.sellSiteFiles.length > 0
+      ? state.sellSiteLinked === true
+        ? '✓ /sell site built with your Payment Link (sell/)'
+        : '○ /sell site scaffolded (sell/) — buy button disabled until a link is wired'
+      : null,
     licensed ? '✓ License terms configured' : '○ License missing',
     state.secretStoredViaGh === true
       ? '✓ Signing key stored as GitHub secret'
       : '○ Signing key not stored yet — see PRIVATE KEY above',
-  ];
+  ].filter((entry): entry is string => entry !== null);
 
   const pending: string[] = [];
   if (!licensed) pending.push('reposell license compose');
+  if (!state.sellSiteLinked) {
+    pending.push(
+      'Create a Stripe Payment Link, then wire it in: reposell sell init --link https://buy.stripe.com/…',
+    );
+  }
   if (state.releaseTag === undefined) {
     pending.push(
       state.paymentLink !== undefined
         ? `reposell release v0.1.0 --price 10 --link ${state.paymentLink}`
-        : 'Create a Stripe Payment Link, then: reposell release v0.1.0 --price 10 --link https://buy.stripe.com/…',
+        : 'reposell release v0.1.0 --price 10 --link https://buy.stripe.com/…',
     );
   }
   if (state.secretStoredViaGh !== true) pending.push('Store REPOSELL_SIGNING_KEY (see key above)');
