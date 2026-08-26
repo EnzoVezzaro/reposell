@@ -213,6 +213,13 @@ async function ghJson(path) {
 }
 
 // ── GitHub Device Flow (zero-server) ──────────────────────────────────
+// GitHub's OAuth endpoints don't support CORS, so we route through a
+// public proxy. The proxy only forwards the request — no secrets involved.
+const CORS_PROXY = 'https://corsproxy.io/?url='
+
+function proxyFetch(url, options) {
+  return fetch(`${CORS_PROXY}${encodeURIComponent(url)}`, options)
+}
 
 async function connect() {
   connectState.value = 'device'
@@ -222,7 +229,7 @@ async function connect() {
   verificationUri.value = ''
 
   try {
-    const res = await fetch('https://github.com/login/device/code', {
+    const res = await proxyFetch('https://github.com/login/device/code', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -289,7 +296,7 @@ async function pollForToken(code, intervalMs, deadline) {
   await new Promise((r) => setTimeout(r, intervalMs))
 
   try {
-    const res = await fetch('https://github.com/login/oauth/access_token', {
+    const res = await proxyFetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
