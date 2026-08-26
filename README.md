@@ -65,7 +65,16 @@ releases:
 
 ## Documentation
 
-Full documentation: https://reposell.dev/docs/
+Full documentation: https://reposell.dev/
+
+## Ecosystem
+
+| Product | Description | Link |
+|---------|-------------|------|
+| **reposell CLI** | Repository initialization, release management, and listing publication | [reposell.dev](https://reposell.dev/) |
+| **reposell listing** | Official discovery directory — verified listings, discussion, and discovery payments | [listing.reposell.dev](https://listing.reposell.dev/) |
+| **reposell community listing** | Self-hosted federated discovery directory — community-operated | [community.reposell.dev](https://community.reposell.dev/) |
+| **reposell storefront studio** | Visual storefront builder for /sell pages | [GitHub](https://github.com/EnzoVezzaro/reposell-storefront-studio) |
 
 ## License
 
