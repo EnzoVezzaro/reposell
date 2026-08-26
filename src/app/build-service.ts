@@ -92,6 +92,7 @@ async function deepLinkOutcome(input: {
         const res = await doFetch(`https://api.stripe.com/v1/payment_links${qs}`, {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
+        // SAFETY: Stripe API returns Payment Link list schema; fields are guarded before use.
         const data = await res.json() as { data?: Array<{ id: string; url: string; active?: boolean }>; has_more?: boolean };
         if (data.data !== undefined) allLinks.push(...data.data);
         if (data.has_more !== true || data.data === undefined || data.data.length === 0) break;
