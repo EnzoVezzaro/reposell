@@ -173,7 +173,7 @@ description: Your repo, your keys, your revenue. Turn any Git repository into so
         <p class="kick">optional: listing contribution</p>
         <table class="lx-math">
           <tr><td>Your price</td><td>$50.00</td></tr>
-          <tr><td>Your contribution</td><td>you choose — $0 / $5 / $10…</td></tr>
+          <tr><td>Buyer's contribution</td><td>you choose — $0 / $5 / $10…</td></tr>
           <tr><td>Sale revenue</td><td class="ok"><b>still 100% yours</b></td></tr>
         </table>
         <p class="lx-math-note">Listing discovery runs on a separate voluntary contribution link — flat amount, per release, immutable forever. Skip it and nothing changes.</p>
