@@ -286,66 +286,126 @@ async function initWizard(cwd: string): Promise<InitResult> {
       }
     }
 
-    // 2. payment link — price/currency are read from the link. Detection
-    //    needs a Stripe secret key: use the configured one, or offer to save
-    //    it now (persisted to .env, gitignored). Never asked when already
-    //    configured or when no link is provided.
-    const linkAnswer = await prompter.ask(
-      '\nStripe Payment Link (create at dashboard.stripe.com/payment-links, leave blank to add later)',
+    // 2. payment link — offer to create one automatically (needs Stripe key)
+    //    or paste an existing one. Detection needs a Stripe secret key.
+    const createChoice = await prompter.choose(
+      '\nStripe Payment Link — how would you like to set it up?',
+      [
+        { label: 'Create automatically', hint: 'CLI creates a Payment Link with correct redirect for buyer forking', value: 'create' },
+        { label: 'Paste existing link', hint: 'I already have a buy.stripe.com/… link', value: 'paste' },
+        { label: 'Skip for now', hint: 'add a Payment Link later', value: 'skip' },
+      ],
     );
+
     let detected: PaymentLinkDetails | undefined;
-    if (linkAnswer.length > 0) {
-      if (!/^https:\/\/(buy|checkout)\.stripe\.com\//.test(linkAnswer)) {
-        transcript.push(`! "${linkAnswer}" does not look like a Stripe Payment Link URL — skipped.`);
+    if (createChoice === 'create') {
+      // Need a Stripe key first
+      const envSource = await loadEnvSource(cwd, process.env, async (filePath) => {
+        try {
+          return await fs.readFile(filePath, 'utf8');
+        } catch {
+          return undefined;
+        }
+      });
+      let apiKey =
+        resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
+
+      if (apiKey === undefined || apiKey.startsWith('sk_') !== true) {
+        const keyAnswer = await prompter.ask(
+          '\nStripe secret key (sk_test_…/sk_live_…) — needed to create the Payment Link. Saved to .env (gitignored).',
+        );
+        const trimmed = keyAnswer.trim();
+        if (trimmed.length > 0 && /^sk_(test|live)_/.test(trimmed)) {
+          await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
+          await ensureGitignored(cwd);
+          apiKey = trimmed;
+          stripeApiKey = trimmed;
+          transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
+        } else {
+          transcript.push('! Invalid Stripe key — skipping Payment Link creation.');
+        }
       } else {
-        paymentLink = linkAnswer;
-        transcript.push(`✓ Payment link recorded: ${paymentLink}`);
+        stripeApiKey = apiKey;
+      }
 
-        const envSource = await loadEnvSource(cwd, process.env, async (filePath) => {
+      if (apiKey !== undefined && apiKey.startsWith('sk_')) {
+        const priceAnswer = await prompter.ask('Price (USD)', '10');
+        const price = Number(priceAnswer);
+        if (Number.isFinite(price) && price > 0) {
+          transcript.push(`  Creating Stripe Payment Link for ${price} USD…`);
           try {
-            return await fs.readFile(filePath, 'utf8');
-          } catch {
-            return undefined;
+            const { createPaymentLink } = await import('./sell-create-link.js');
+            const result = await createPaymentLink(cwd, {
+              productName,
+              price,
+              currency: 'USD',
+            });
+            paymentLink = result.url;
+            detected = { amount: price, currency: 'USD' };
+            transcript.push(`✓ Payment Link created: ${paymentLink}`);
+            transcript.push(`  Redirect configured: buyers return to /sell with session ID for forking`);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            transcript.push(`! Could not create Payment Link: ${message.split('\n')[0]}`);
+            transcript.push('  Create one manually at dashboard.stripe.com/payment-links');
           }
-        });
-        let apiKey =
-          resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
+        } else {
+          transcript.push('! Invalid price — skipping Payment Link creation.');
+        }
+      }
+    } else if (createChoice === 'paste') {
+      const linkAnswer = await prompter.ask(
+        'Stripe Payment Link URL (buy.stripe.com/…)',
+      );
+      if (linkAnswer.length > 0) {
+        if (!/^https:\/\/(buy|checkout)\.stripe\.com\//.test(linkAnswer)) {
+          transcript.push(`! "${linkAnswer}" does not look like a Stripe Payment Link URL — skipped.`);
+        } else {
+          paymentLink = linkAnswer;
+          transcript.push(`✓ Payment link recorded: ${paymentLink}`);
 
-        if (apiKey === undefined || apiKey.startsWith('sk_') !== true) {
-          const keyAnswer = await prompter.ask(
-            '\nStripe secret key (sk_test_…) so the wizard can read your price from this link — saved locally to .env and never committed. Leave blank to type the price manually instead:',
-          );
-          const trimmed = keyAnswer.trim();
-          if (trimmed.length > 0) {
-            if (/^sk_(test|live)_/.test(trimmed)) {
+          const envSource = await loadEnvSource(cwd, process.env, async (filePath) => {
+            try {
+              return await fs.readFile(filePath, 'utf8');
+            } catch {
+              return undefined;
+            }
+          });
+          let apiKey =
+            resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
+
+          if (apiKey === undefined || apiKey.startsWith('sk_') !== true) {
+            const keyAnswer = await prompter.ask(
+              '\nStripe secret key (sk_test_…) so the wizard can read your price from this link — saved locally to .env. Leave blank to type the price manually:',
+            );
+            const trimmed = keyAnswer.trim();
+            if (trimmed.length > 0 && /^sk_(test|live)_/.test(trimmed)) {
               await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
               await ensureGitignored(cwd);
               apiKey = trimmed;
               stripeApiKey = trimmed;
               transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
             } else {
+              transcript.push('! Invalid key — continuing without Stripe verification.');
+            }
+          }
+
+          if (apiKey !== undefined && apiKey.startsWith('sk_')) {
+            stripeApiKey = apiKey;
+            transcript.push('  Reading price and currency from your Payment Link…');
+            detected = await fetchPaymentLinkDetailsByUrl({ apiKey, linkUrl: paymentLink });
+            if (detected !== undefined) {
               transcript.push(
-                `! That does not look like a Stripe secret key (expected sk_test_…/sk_live_…) — continuing without it.`,
+                `✓ Detected ${detected.amount} ${detected.currency}${detected.recurring !== undefined ? ` (${detected.recurring.interval}ly)` : ''} from your Payment Link`,
               );
+            } else {
+              transcript.push('! Could not read this Payment Link — enter the price manually.');
             }
           }
         }
-
-        if (apiKey !== undefined && apiKey.startsWith('sk_')) {
-          stripeApiKey = apiKey;
-          transcript.push('  Reading price and currency from your Payment Link…');
-          detected = await fetchPaymentLinkDetailsByUrl({ apiKey, linkUrl: paymentLink });
-          if (detected !== undefined) {
-            transcript.push(
-              `✓ Detected ${detected.amount} ${detected.currency}${detected.recurring !== undefined ? ` (${detected.recurring.interval}ly)` : ''} from your Payment Link`,
-            );
-          } else {
-            transcript.push(
-              '! Could not read this Payment Link with that key (different account or mode?) — enter the price manually.',
-            );
-          }
-        }
       }
+    } else {
+      transcript.push('• Payment Link skipped — you can add it later with `reposell sell create-link` or `reposell sell init --link`');
     }
 
     // 3. first release

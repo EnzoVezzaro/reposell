@@ -19,6 +19,7 @@ import { publishCommand } from '../commands/publish.js';
 import { loadConfigFile } from '../app/config-service.js';
 import { verifyCommand } from '../commands/verify.js';
 import { keysCommand } from '../commands/keys.js';
+import { createPaymentLink } from '../commands/sell-create-link.js';
 import { renderBanner } from '../cli/banner.js';
 
 // SAFETY: dist/bin/reposell.js sits two levels below the package root.
@@ -43,6 +44,9 @@ const USAGE = [
   '  sell init [--link URL] [--name NAME]\n' +
   '                              Scaffold the /sell storefront (HTML template wired\n' +
   '                              to your Stripe Payment Link)\n' +
+  '  sell create-link --price N [--currency USD]\n' +
+  '                              Create a Stripe Payment Link with correct redirect\n' +
+  '                              (returns buyers to /sell with session ID for forking)\n' +
   '  sell sync [payment_link_id] Pull-based fulfillment: purchases, refunds, fork artifacts',
   '  reciprocity [--revenue N]   Show/validate/simulate the Reciprocity Program',
   '  release [tag] [--price N] [--currency USD] [--link URL]\n' +
@@ -177,23 +181,57 @@ async function main(): Promise<void> {
           ].join('\n'));
           break;
         }
-        console.log('usage: reposell sell <init|sync> [--link URL] [payment_link_id]');
+        if (rest[0] === 'create-link') {
+          const price = Number(flags['price'] ?? flags['amount']);
+          if (!Number.isFinite(price) || price <= 0) {
+            console.error('Usage: reposell sell create-link --price <amount> [--currency USD] [--name "Product Name"] [--success-url URL]');
+            process.exitCode = 1;
+            break;
+          }
+          const result = await createPaymentLink(cwd, {
+            productName: flags['name'],
+            price,
+            currency: flags['currency'],
+            successUrl: flags['success-url'],
+          });
+          console.log([
+            '✓ Payment Link created successfully!',
+            '',
+            `  Link URL:   ${result.url}`,
+            `  Link ID:    ${result.id}`,
+            `  Active:     ${result.active}`,
+            `  Redirect:   ${result.successUrl}`,
+            '',
+            'Next steps:',
+            '1. Copy the Link URL into your reposell.yml:',
+            `     payment_link: ${result.url}`,
+            '2. Or wire it into your /sell page:',
+            `     reposell sell init --link ${result.url}`,
+            '3. Or record it for a release:',
+            `     reposell release v0.1.0 --price ${price} --link ${result.url}`,
+            '',
+            'The link automatically redirects buyers back to your /sell page',
+            'with their session ID so they can fork after payment.',
+          ].join('\n'));
+          break;
+        }
+        console.log('usage: reposell sell <init|sync|create-link> [--link URL] [--price N] [payment_link_id]');
         break;
       }
       case 'listing': {
         if (rest[0] === 'publish') {
           try {
-            const flags = rest.slice(1);
+            const publishFlags = rest.slice(1);
             const getFlag = (name: string): string | undefined => {
-              const index = flags.indexOf(name);
-              return index === -1 ? undefined : flags[index + 1];
+              const index = publishFlags.indexOf(name);
+              return index === -1 ? undefined : publishFlags[index + 1];
             };
             const report = await listingPublishCommand(cwd, {
-              tag: flags[0] ?? '',
+              tag: publishFlags[0] ?? '',
               sellUrl: getFlag('--sell-url'),
               discoveryAmount: getFlag('--discovery-amount') === undefined ? undefined : Number(getFlag('--discovery-amount')),
               discoveryCurrency: getFlag('--discovery-currency'),
-              skipVerify: flags.includes('--skip-verify'),
+              skipVerify: publishFlags.includes('--skip-verify'),
             });
             console.log(formatListingPublish(report));
           } catch (error) {
@@ -203,28 +241,6 @@ async function main(): Promise<void> {
           }
           break;
         }
-        console.log(await listingCommand(cwd, rest));
-        break;
-      }
-      case 'reciprocity': {
-        console.log(await reciprocityCommand(cwd, rest));
-        break;
-      }
-      case 'sell': {
-        if (rest[0] === 'sync') {
-          const report = await sellSyncCommand(cwd, {
-            paymentLinkId: rest[1] !== undefined && !rest[1].startsWith('--') ? rest[1] : undefined,
-          });
-          console.log([
-            `✓ sell sync complete — ${report.purchased} purchase(s), ${report.refunded} refund(s), ${report.alreadyEntitled} already entitled`,
-            ...report.written.map((file) => `  ${file}`),
-          ].join('\n'));
-          break;
-        }
-        console.log('usage: reposell sell sync [payment_link_id]');
-        break;
-      }
-      case 'listing': {
         console.log(await listingCommand(cwd, rest));
         break;
       }

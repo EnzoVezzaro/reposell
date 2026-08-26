@@ -36,7 +36,8 @@ h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:.9rem 0 .5rem;letter-
 .buy{display:inline-block;background:var(--accent);color:#111;font-weight:700;text-decoration:none;border-radius:10px;padding:.65rem 1.4rem;transition:transform .15s ease,box-shadow .15s ease}
 .buy:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,217,10,.25)}
 @media (prefers-reduced-motion: reduce){.buy{transition:none}}
-.buy.off{background:var(--line);color:var(--muted);pointer-events:none}
+.buy.off{background:var(--line);color:var(--muted);pointer-events:none;opacity:.5}
+.gh-connected .buy.off{opacity:1}
 .release{flex-direction:column;align-items:stretch;gap:.8rem}
 .offers{display:grid;gap:.6rem}
 .offer{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid var(--line);padding-top:.6rem}
@@ -145,7 +146,13 @@ export function renderSellPage(model: SellPageModel): string {
   const body = `<span class="badge">Direct sale</span>
 <h1>${escapeHtml(model.productName)}</h1>
 <p class="desc">${escapeHtml(model.description || 'Buy directly from the source repository.')}</p>
-<div class="grid">
+<div class="card" id="gh-section" style="flex-direction:column;align-items:stretch;gap:.8rem;margin-bottom:1.2rem;">
+  <div class="ver">GitHub</div>
+  <div class="meta">Connect your GitHub account to buy and fork this repository.</div>
+  <div id="gh-status" style="font-size:.85rem;color:var(--muted)">Waiting for connection…</div>
+  <div id="gh-actions"></div>
+</div>
+<div class="grid" id="sell-grid">
 ${cards.length > 0 ? cards : '<p class="empty">No releases are currently available for purchase.</p>'}
 ${blockedCards}
 </div>`;
@@ -169,66 +176,74 @@ ${blockedCards}
       ),
   };
 
-  // Fork flow script — runs after Stripe payment redirect
+  // Full flow script: GitHub login first → Buy buttons enabled → Payment → Fork
   const forkScript = `
 <script>
 (function(){
+  var GITHUB_CLIENT_ID='Iv23lidhennqrdpdFUAT';
   var params=new URLSearchParams(location.search);
   var sid=params.get('session_id');
-  if(!sid)return;
-  // Payment confirmed — show fork section
-  var grid=document.querySelector('.grid');
-  if(!grid)return;
-  var forkDiv=document.createElement('div');
-  forkDiv.className='card fork-section';
-  forkDiv.style.cssText='flex-direction:column;align-items:stretch;gap:1rem;border:2px solid var(--accent);';
-  forkDiv.innerHTML='<div class="ver" style="color:var(--ok)">&#10003; Payment confirmed</div>'+
-    '<div class="meta">Connecting to GitHub to fork the repository...</div>'+
-    '<div id="fork-status" style="font-size:.85rem;color:var(--muted)"></div>'+
-    '<div id="fork-actions"></div>';
-  grid.appendChild(forkDiv);
 
-  var CLIENT_ID='${model.repositorySlug ? model.repositorySlug.split('/')[0] : ''}';
-  // Extract owner/repo from embedded JSON
+  // Parse repo info from embedded JSON
   var dataEl=document.getElementById('reposell-data');
   var repoSlug='';
   if(dataEl){try{var d=JSON.parse(dataEl.textContent);repoSlug=d.repository||''}catch(e){}}
   var parts=repoSlug.split('/');
   var owner=parts[0]||'';var repo=parts[1]||'';
 
-  var status=document.getElementById('fork-status');
-  var actions=document.getElementById('fork-actions');
-
-  // Check for stored GitHub token
+  var ghStatus=document.getElementById('gh-status');
+  var ghActions=document.getElementById('gh-actions');
+  var sellGrid=document.getElementById('sell-grid');
   var token=sessionStorage.getItem('rs-sell-gh-token');
   var ghUser=sessionStorage.getItem('rs-sell-gh-user');
 
-  function showForkButton(){
-    status.innerHTML='Connected as <strong>'+JSON.parse(ghUser).login+'</strong>';
-    actions.innerHTML='<button class="buy" id="fork-btn" style="margin-top:.5rem">Fork '+repo+' to your GitHub</button>';
-    document.getElementById('fork-btn').onclick=forkRepo;
+  // Disable all buy buttons until GitHub is connected
+  function disableBuyButtons(){
+    var btns=sellGrid.querySelectorAll('a.buy');
+    for(var i=0;i<btns.length;i++){btns[i].classList.add('off');btns[i].setAttribute('aria-disabled','true')}
+  }
+  function enableBuyButtons(){
+    var btns=sellGrid.querySelectorAll('a.buy');
+    for(var i=0;i<btns.length;i++){btns[i].classList.remove('off');btns[i].removeAttribute('aria-disabled')}
+  }
+  disableBuyButtons();
+
+  function showConnected(login){
+    ghStatus.innerHTML='\u2713 Connected as <strong>'+login+'</strong>';
+    ghActions.innerHTML='<button id="gh-disconnect" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer">Disconnect</button>';
+    document.getElementById('gh-disconnect').onclick=function(){
+      sessionStorage.removeItem('rs-sell-gh-token');
+      sessionStorage.removeItem('rs-sell-gh-user');
+      token=null;ghUser=null;
+      disableBuyButtons();
+      startDeviceFlow();
+    };
+    enableBuyButtons();
+    sellGrid.classList.add('gh-connected');
   }
 
   function startDeviceFlow(){
-    status.innerHTML='Opening GitHub authorization...';
+    ghStatus.innerHTML='Connecting to GitHub...';
+    ghActions.innerHTML='';
     fetch('https://corsproxy.io/?url='+encodeURIComponent('https://github.com/login/device/code'),{
       method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body:JSON.stringify({client_id:'Iv23lidhennqrdpdFUAT',scope:'repo'})
+      body:JSON.stringify({client_id:GITHUB_CLIENT_ID,scope:'repo'})
     }).then(function(r){return r.json()}).then(function(data){
-      if(data.error){status.innerHTML='Error: '+data.error_description;return}
+      if(data.error){ghStatus.innerHTML='Error: '+(data.error_description||data.error);return}
       window.open(data.verification_uri,'_blank');
-      status.innerHTML='Enter code: <strong style="font-size:1.2rem;letter-spacing:.1em">'+data.user_code+'</strong> at '+data.verification_uri;
+      ghStatus.innerHTML='Enter code: <strong style="font-size:1.15rem;letter-spacing:.1em">'+data.user_code+'</strong>';
+      ghActions.innerHTML='<div class="meta">at <a href="'+data.verification_uri+'" target="_blank" rel="noopener">'+data.verification_uri+'</a></div>';
       pollToken(data.device_code,data.interval||5,data.expires_in||900);
-    }).catch(function(){status.innerHTML='Could not reach GitHub'});
+    }).catch(function(){ghStatus.innerHTML='Could not reach GitHub — check your connection'});
   }
 
   function pollToken(code,interval,expiresIn){
     var deadline=Date.now()+expiresIn*1000;
     var timer=setInterval(function(){
-      if(Date.now()>=deadline){clearInterval(timer);status.innerHTML='Expired — try again';return}
+      if(Date.now()>=deadline){clearInterval(timer);ghStatus.innerHTML='Code expired — ';var r=document.createElement('a');r.href='#';r.textContent='try again';r.onclick=function(e){e.preventDefault();startDeviceFlow()};ghStatus.appendChild(r);return}
       fetch('https://corsproxy.io/?url='+encodeURIComponent('https://github.com/login/oauth/access_token'),{
         method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
-        body:JSON.stringify({client_id:'Iv23lidhennqrdpdFUAT',device_code:code,grant_type:'urn:ietf:params:oauth:grant-type:device_code'})
+        body:JSON.stringify({client_id:GITHUB_CLIENT_ID,device_code:code,grant_type:'urn:ietf:params:oauth:grant-type:device_code'})
       }).then(function(r){return r.json()}).then(function(data){
         if(data.access_token){
           clearInterval(timer);
@@ -238,43 +253,63 @@ ${blockedCards}
             .then(function(r){return r.json()}).then(function(u){
               ghUser=JSON.stringify({login:u.login,id:u.id});
               sessionStorage.setItem('rs-sell-gh-user',ghUser);
-              showForkButton();
+              showConnected(u.login);
+              // If we just connected after payment, fork now
+              if(sid)forkRepo();
             });
         }else if(data.error==='authorization_pending'){
           // keep polling
         }else if(data.error==='slow_down'){
           interval+=5;
         }else{
-          clearInterval(timer);status.innerHTML='Authorization failed: '+(data.error_description||data.error);
+          clearInterval(timer);ghStatus.innerHTML='Authorization failed: '+(data.error_description||data.error);
         }
       }).catch(function(){});
     },interval*1000);
   }
 
   function forkRepo(){
-    var btn=document.getElementById('fork-btn');
-    btn.disabled=true;btn.textContent='Forking...';
-    status.innerHTML='Forking <strong>'+owner+'/'+repo+'</strong> to your GitHub...';
+    if(!token||!owner||!repo)return;
+    // Show fork section in the grid
+    var forkDiv=document.createElement('div');
+    forkDiv.className='card fork-section';
+    forkDiv.style.cssText='flex-direction:column;align-items:stretch;gap:1rem;border:2px solid var(--ok);';
+    forkDiv.innerHTML='<div class="ver" style="color:var(--ok)">&#10003; Payment confirmed</div>'+
+      '<div id="fork-status" style="font-size:.85rem;color:var(--muted)">Forking <strong>'+owner+'/'+repo+'</strong> to your GitHub...</div>'+
+      '<div id="fork-actions"></div>';
+    sellGrid.appendChild(forkDiv);
+    var forkStatus=document.getElementById('fork-status');
+    var forkActions=document.getElementById('fork-actions');
 
     fetch('https://api.github.com/repos/'+owner+'/'+repo+'/forks',{method:'POST',headers:{Authorization:'Bearer '+token,'Accept':'application/vnd.github+json'}})
       .then(function(r){
-        if(!r.ok)throw new Error('Fork failed: HTTP '+r.status);
+        if(!r.ok)return r.json().then(function(b){throw new Error(b.message||'Fork failed: HTTP '+r.status)});
         return r.json();
       })
       .then(function(fork){
-        status.innerHTML='<span style="color:var(--ok)">&#10003; Fork created!</span>';
-        actions.innerHTML='<a href="'+fork.html_url+'" target="_blank" rel="noopener" class="buy" style="margin-top:.5rem">Open forked repository &#8599;</a>'+
+        forkStatus.innerHTML='<span style="color:var(--ok)">&#10003; Fork created!</span>';
+        forkActions.innerHTML='<a href="'+fork.html_url+'" target="_blank" rel="noopener" class="buy">Open forked repository &#8599;</a>'+
           '<div class="meta" style="margin-top:.5rem">'+fork.full_name+'</div>';
       })
       .catch(function(e){
-        status.innerHTML='<span style="color:var(--bad)">Fork failed: '+e.message+'</span>';
-        actions.innerHTML='<button class="buy" id="fork-btn" style="margin-top:.5rem">Try again</button>';
-        document.getElementById('fork-btn').onclick=forkRepo;
+        forkStatus.innerHTML='<span style="color:var(--bad)">Fork failed: '+e.message+'</span>';
+        forkActions.innerHTML='<button class="buy" id="retry-fork">Try again</button>';
+        document.getElementById('retry-fork').onclick=forkRepo;
       });
   }
 
-  // Start: check token or begin Device Flow
-  if(token&&ghUser){showForkButton()}else{startDeviceFlow()}
+  // INIT: check stored token or start Device Flow
+  if(token&&ghUser){
+    try{showConnected(JSON.parse(ghUser).login)}catch(e){startDeviceFlow()}
+  }else{
+    startDeviceFlow();
+  }
+
+  // If returning from Stripe with session_id, auto-fork after GitHub is connected
+  if(sid){
+    if(token)forkRepo();
+    // If not connected yet, forkRepo will be called after pollToken succeeds
+  }
 })();
 </script>`;
 
