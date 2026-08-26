@@ -124,8 +124,23 @@ export interface ReposellYml {
   reciprocity?: ReciprocitySection;
   releases?: ReleasesSection;
   sell?: SellSection;
+  listing?: ListingSection;
   marketplace?: MarketplaceSection;
   license?: LicenseSection;
+}
+
+/**
+ * Discovery-listing opt-in: whether the seller wants to be listed on the
+ * official listing and the voluntary per-sale discovery contribution their
+ * buyers may add there. Sellers keep 100% of their own /sell revenue —
+ * the contribution is a separate, buyer-paid flow on the Listing.
+ */
+export interface ListingSection {
+  enabled?: boolean;
+  contribution?: {
+    amount?: number;
+    currency?: string;
+  };
 }
 
 export interface ParsedRelease {
@@ -190,6 +205,45 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
     if (s['enabled'] !== undefined) {
       recordIssues(issues, typeof s['enabled'] !== 'boolean', 'sell.enabled must be a boolean');
       if (typeof s['enabled'] === 'boolean') config.sell.enabled = s['enabled'];
+    }
+  }
+
+  if (
+    raw['listing'] !== undefined &&
+    typeof raw['listing'] === 'object' &&
+    raw['listing'] !== null &&
+    !Array.isArray(raw['listing'])
+  ) {
+    // SAFETY: shape checked on previous lines.
+    const l = raw['listing'] as Record<string, unknown>;
+    config.listing = {};
+    if (l['enabled'] !== undefined) {
+      recordIssues(issues, typeof l['enabled'] !== 'boolean', 'listing.enabled must be a boolean');
+      if (typeof l['enabled'] === 'boolean') config.listing.enabled = l['enabled'];
+    }
+    if (
+      l['contribution'] !== undefined &&
+      typeof l['contribution'] === 'object' &&
+      l['contribution'] !== null &&
+      !Array.isArray(l['contribution'])
+    ) {
+      // SAFETY: shape checked on previous lines.
+      const c = l['contribution'] as Record<string, unknown>;
+      config.listing.contribution = {};
+      if (c['amount'] !== undefined) {
+        recordIssues(
+          issues,
+          typeof c['amount'] !== 'number' || !Number.isFinite(c['amount']) || c['amount'] <= 0,
+          'listing.contribution.amount must be a positive number',
+        );
+        if (typeof c['amount'] === 'number' && Number.isFinite(c['amount']) && c['amount'] > 0) {
+          config.listing.contribution.amount = c['amount'];
+        }
+      }
+      if (c['currency'] !== undefined) {
+        recordIssues(issues, typeof c['currency'] !== 'string', 'listing.contribution.currency must be a string');
+        if (typeof c['currency'] === 'string') config.listing.contribution.currency = c['currency'].toUpperCase();
+      }
     }
   }
 

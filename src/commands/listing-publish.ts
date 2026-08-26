@@ -71,8 +71,12 @@ export async function listingPublishCommand(
   }
 
   const sellUrl = args.sellUrl ?? `https://${git.owner}.github.io/${git.repo}/reposell/sell/`;
-  const discoveryAmount = args.discoveryAmount ?? 5;
-  const discoveryCurrency = (args.discoveryCurrency ?? 'USD').toUpperCase();
+  // Contribution preference recorded by the init wizard wins over the $5
+  // default (D16); explicit flags win over both.
+  const wizardAmount = config.listing?.contribution?.amount;
+  const wizardCurrency = config.listing?.contribution?.currency;
+  const discoveryAmount = args.discoveryAmount ?? wizardAmount ?? 5;
+  const discoveryCurrency = (args.discoveryCurrency ?? wizardCurrency ?? 'USD').toUpperCase();
 
   const payload = buildListingPr({
     repositoryUrl: `https://github.com/${git.owner}/${git.repo}`,

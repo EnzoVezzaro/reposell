@@ -116,6 +116,24 @@ export async function updateReleaseDefinition(input: {
   await fs.writeFile(ymlPath, doc.toString());
 }
 
+/**
+ * Persists the discovery-listing opt-in from the init wizard. Comments in
+ * untouched parts of the document survive round-tripping.
+ */
+export async function updateListingOptIn(input: {
+  cwd: string;
+  enabled: boolean;
+  contribution?: { amount: number; currency: string };
+}): Promise<void> {
+  const { ymlPath, doc } = await loadDocument(input.cwd);
+  doc.setIn(['listing', 'enabled'], input.enabled);
+  if (input.contribution !== undefined) {
+    doc.setIn(['listing', 'contribution', 'amount'], input.contribution.amount);
+    doc.setIn(['listing', 'contribution', 'currency'], input.contribution.currency);
+  }
+  await fs.writeFile(ymlPath, doc.toString());
+}
+
 /** Marks a release published/draft without touching its commercial fields. */
 export async function setReleaseStatus(input: {
   cwd: string;

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-08-26
+
+### Added
+- The init wizard now asks **"List this tool on listing.reposell.dev?"** with the funding pitch (one-person project; buyers may add a voluntary contribution; you keep 100% of your /sell revenue — a contribution costs you nothing), then offers $5/$10/$25/$50/custom
+- Choice persisted to `reposell.yml` (`listing.enabled` + `listing.contribution`, validated); `reposell listing publish` uses it as the discovery-price default
+- Listing CI (reposell-listing) now **auto-merges verified Listing PRs** — PASS → squash-merge → discovery link provisioned → listed
+
 ## [0.1.9] - 2026-08-25
 
 ### Fixed

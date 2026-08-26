@@ -23,6 +23,7 @@ import { renderBanner } from '../cli/banner.js';
 import { generateWorkflows } from '../workflows/ci.js';
 import { generateSellSite } from '../workflows/sell.js';
 import { launchStudio, STUDIO_URL } from '../workflows/studio.js';
+import { updateListingOptIn } from '../app/config-service.js';
 import { createIdentity } from '../app/signing-service.js';
 import { Prompter } from '../cli/prompts.js';
 import { releaseCommand } from './release.js';
@@ -201,6 +202,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
   let signingKeySecret: string | undefined;
   let sellSiteFiles: string[] = [];
   let sellSiteLinked = false;
+  let listedContribution: number | undefined;
 
   try {
     output.write(`${banner}\n\n`);
@@ -322,6 +324,56 @@ async function initWizard(cwd: string): Promise<InitResult> {
           link: paymentLink,
         }),
       );
+    }
+
+    // 3b. discovery listing opt-in — voluntary, buyer-paid contribution
+    output.write(
+      [
+        '',
+        'reposell is a one-person, self-funded project that needs funding to keep going.',
+        'The official listing (listing.reposell.dev) is how buyers discover your tool. When',
+        'you are listed, buyers can add a small voluntary discovery contribution on top of',
+        'their purchase — paid to reposell, never taken from you:',
+        '',
+        '  • You keep 100% of your /sell revenue. Always.',
+        '  • A contribution costs the buyer pennies on top and costs you nothing.',
+        '  • Every dollar keeps development alive — hugely appreciated.',
+        '',
+      ].join('\n'),
+    );
+    if (await prompter.confirm('List this tool on listing.reposell.dev?', true)) {
+      const amountChoice = await prompter.choose(
+        'Suggested discovery contribution per sale (buyers may add it at checkout):',
+        [
+          { label: '$5', hint: 'buy the dev a coffee', value: '5' },
+          { label: '$10', hint: 'most helpful', value: '10' },
+          { label: '$25', hint: 'goes a long way for a solo dev', value: '25' },
+          { label: '$50', hint: 'superhero tier', value: '50' },
+          { label: 'Custom', hint: 'type your own amount', value: 'custom' },
+        ],
+      );
+      let contributionAmount = 5;
+      let contributionCurrency = 'USD';
+      if (amountChoice === 'custom') {
+        const customAnswer = await prompter.ask('Contribution amount (USD)', '5');
+        const parsed = Number(customAnswer);
+        if (Number.isFinite(parsed) && parsed > 0) contributionAmount = parsed;
+      } else {
+        const parsed = Number(amountChoice);
+        if (Number.isFinite(parsed) && parsed > 0) contributionAmount = parsed;
+      }
+      await updateListingOptIn({ cwd,
+        enabled: true,
+        contribution: { amount: contributionAmount, currency: contributionCurrency },
+      });
+      listedContribution = contributionAmount;
+      transcript.push(
+        `✓ Listing enabled — suggested contribution ${contributionAmount} ${contributionCurrency} per sale`,
+        '  You keep 100% of your /sell price; the contribution is a separate buyer-paid flow.',
+      );
+    } else {
+      await updateListingOptIn({ cwd, enabled: false });
+      transcript.push('• Listing skipped — you can enable it any time with `reposell listing publish <tag>`.');
     }
 
     // 4. CI workflow + signing identity
@@ -446,6 +498,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
       secretStoredViaGh,
       sellSiteFiles,
       sellSiteLinked,
+      listedContribution,
     }),
   ].join('\n');
 
@@ -462,6 +515,7 @@ interface WizardState {
   secretStoredViaGh?: boolean;
   sellSiteFiles?: string[];
   sellSiteLinked?: boolean;
+  listedContribution?: number;
 }
 
 /** Only list what is actually still missing. */
@@ -481,6 +535,9 @@ function summarizeNextSteps(result: InitResult, state: WizardState): string {
     state.secretStoredViaGh === true
       ? '✓ Signing key stored as GitHub secret'
       : '○ Signing key not stored yet — see PRIVATE KEY above',
+    state.listedContribution !== undefined
+      ? `✓ Listed on listing.reposell.dev (suggested contribution: $${state.listedContribution}/sale — you keep 100% of your revenue)`
+      : null,
   ].filter((entry): entry is string => entry !== null);
 
   const pending: string[] = [];
@@ -499,6 +556,11 @@ function summarizeNextSteps(result: InitResult, state: WizardState): string {
   }
   if (state.secretStoredViaGh !== true) pending.push('Store REPOSELL_SIGNING_KEY (see key above)');
   pending.push('reposell publish <tag>', 'git push — CI validates, signs, builds and deploys /reposell/*');
+  if (state.listedContribution !== undefined && state.releaseTag !== undefined) {
+    pending.push(
+      `After publishing: reposell listing publish ${state.releaseTag} — opens your Listing PR on EnzoVezzaro/reposell-listing`,
+    );
+  }
 
   return ['', 'Status:', ...status.map((entry) => `  ${entry}`), '', 'Next:', ...pending.map((step, index) => `${index + 1}. ${step}`)].join('\n');
 }
