@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.5] - 2026-08-25
 
 ### Added
 - `reposell init` is now a guided wizard (TTY): product name → license policy → Stripe Payment Link → first draft release → signing-key storage via `gh secret set`, ending with a status/next-steps summary and a READY gate check
+- `/sell builder` — runs automatically at the end of the init wizard (also standalone: `reposell sell init [--link URL] [--name NAME]`); scaffolds an editable storefront (`sell/index.html`, `styles.css`, `scripts.js`) with the wizard's Stripe Payment Link wired into every buy CTA, plus `.reposell/storefront.json` for the Studio; never overwrites existing files
+- Sell template uses the reposell landing identity (signal green on ink, Syne/Oxanium/Outfit/Geist Mono, chamfered edges) and is fork-centric — buyers get a fork of the signed release and the page never exposes the source repository
 - `init --wizard` forces the wizard without a TTY; `init --yes` keeps CI/non-interactive behavior explicit
 - New buffered prompt engine (`src/cli/prompts.ts`) — piped/scripted answers are queued FIFO, so early input is never lost
 

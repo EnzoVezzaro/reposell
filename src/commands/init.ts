@@ -310,11 +310,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
     }
 
     // 6. /sell builder — scaffold an editable storefront wired to the link
-    const sellOptions = {
-      productName,
-      repositoryUrl: `https://github.com/${gitInfo.owner}/${gitInfo.repo}`,
-    };
-    const sellSite = await generateSellSite(cwd, paymentLink === undefined ? sellOptions : { ...sellOptions, paymentLink });
+    const sellSite = await generateSellSite(cwd, paymentLink === undefined ? { productName } : { productName, paymentLink });
     sellSiteFiles = sellSite.written;
     sellSiteLinked = sellSite.paymentLinkWired;
     if (sellSiteFiles.length > 0) {
@@ -343,10 +339,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
     workflowWritten = files.workflowWritten;
     verificationKeyPath = files.verificationKeyPath;
     signingKeySecret = files.signingKeySecret;
-    const sellSite = await generateSellSite(cwd, {
-      productName,
-      repositoryUrl: `https://github.com/${gitInfo.owner}/${gitInfo.repo}`,
-    });
+    const sellSite = await generateSellSite(cwd, { productName });
     sellSiteFiles = sellSite.written;
     sellSiteLinked = sellSite.paymentLinkWired;
   }

@@ -34,6 +34,25 @@ describe('generateSellSite', () => {
     expect(html).not.toContain('rs-btn--disabled');
   });
 
+  it('never exposes the source repository to buyers', async () => {
+    const { html } = renderSellTemplate({ productName: 'acme-tool' });
+    expect(html).not.toContain('github.com');
+    expect(html).not.toContain('View repository');
+    expect(html).not.toContain('See repository');
+    expect(html.toLowerCase()).toContain('fork');
+  });
+
+  it('matches the reposell landing identity', async () => {
+    const result = await generateSellSite(cwd, { productName: 'acme-tool' });
+    expect(result.written).toContain('sell/styles.css');
+    const css = await fs.readFile(path.join(cwd, 'sell', 'styles.css'), 'utf8');
+    expect(css).toContain('#0af188'); // signal green
+    expect(css).toContain('#0a0a0a'); // ink background
+    expect(css).toContain('Syne');
+    expect(css).toContain('Oxanium');
+    expect(css).toContain('"Geist Mono"');
+  });
+
   it('renders a disabled CTA with guidance when no link is known', async () => {
     const result = await generateSellSite(cwd, { productName: 'acme-tool' });
     expect(result.paymentLinkWired).toBe(false);
