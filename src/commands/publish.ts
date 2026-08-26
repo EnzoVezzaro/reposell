@@ -159,6 +159,12 @@ export async function publishCommand(
             `✓ Announced to the registry (${announcement.event}, ${announcement.id}) — applying now.`,
             '  Your store goes live on listing.reposell.dev within a minute.',
           );
+        } else if (announcement.prUrl !== undefined) {
+          listingLines.push(
+            `✓ PR opened to the registry (${announcement.event}, ${announcement.id}):`,
+            `  ${announcement.prUrl}`,
+            '  Merging the PR lists your tool on listing.reposell.dev.',
+          );
         } else {
           listingLines.push(
             `! Could not announce to the registry (${announcement.detail ?? 'unknown'}).`,

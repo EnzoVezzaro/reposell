@@ -39,7 +39,9 @@ describe('ensureGitignored', () => {
   it('creates a .gitignore containing the entry when missing', async () => {
     const changed = await ensureGitignored(cwd);
     expect(changed).toBe(true);
-    expect(await fs.readFile(path.join(cwd, '.gitignore'), 'utf8')).toContain('.env');
+    const text = await fs.readFile(path.join(cwd, '.gitignore'), 'utf8');
+    expect(text).toContain('.env');
+    expect(text).toContain('.reposell/purchases/');
   });
 
   it('appends to an existing .gitignore exactly once', async () => {
@@ -48,8 +50,10 @@ describe('ensureGitignored', () => {
     const text = await fs.readFile(path.join(cwd, '.gitignore'), 'utf8');
     expect(text).toContain('node_modules');
     expect(text).toContain('.env');
+    expect(text).toContain('.reposell/purchases/');
     expect(await ensureGitignored(cwd)).toBe(false);
     const after = await fs.readFile(path.join(cwd, '.gitignore'), 'utf8');
     expect(after.match(/^.env$/gm)).toHaveLength(1);
+    expect(after.match(/^\.reposell\/purchases\/$/gm)).toHaveLength(1);
   });
 });

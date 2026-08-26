@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.21] - 2026-08-26
+## [0.1.22] - 2026-08-26
+
+### Added
+- **Contributor listing fallback**: if the publisher has no write access to the canonical listing registry (external contributors), `reposell publish` automatically opens a fork + pointer PR instead of failing
+- **Listing detail pages**: each tool on listing.reposell.dev now has a dedicated detail page with the two-step discovery flow (contribution → purchase)
+
+### Fixed
+- `.reposell/purchases/` is now gitignored by default — prevents accidental commits of buyer session data
+- `sell sync` now shows the "already entitled" count in the CLI output
+
+### Changed
+- Community listing sites link to the official listing detail page (not directly to the seller's /sell endpoint)
+- Listing cards now show "View details →" instead of direct buy/sell buttons
 
 ### Fixed
 - **Fulfillment correctness** (`sell sync`): purchase artifacts bind the real repository slug (was hardcoded `seller/project`) and the owner-decided **license terms** travel inside every fork

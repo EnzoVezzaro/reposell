@@ -39,10 +39,17 @@ export async function ensureGitignored(cwd: string, entry = '.env'): Promise<boo
     text = '';
   }
 
-  const alreadyIgnored = text.split(/\r?\n/).some((line) => line.trim() === entry);
-  if (alreadyIgnored) return false;
+  const entries = [entry, '.reposell/purchases/'];
+  const lines = text.split(/\r?\n/);
+  let changed = false;
 
-  const separator = text.length === 0 ? '' : text.endsWith('\n') ? '' : '\n';
-  await fs.writeFile(gitignorePath, `${text}${separator}${entry}\n`);
-  return true;
+  for (const e of entries) {
+    if (!lines.some((line) => line.trim() === e)) {
+      text += (text.length === 0 || text.endsWith('\n') ? '' : '\n') + e + '\n';
+      changed = true;
+    }
+  }
+
+  if (changed) await fs.writeFile(gitignorePath, text);
+  return changed;
 }

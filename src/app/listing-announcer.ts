@@ -119,7 +119,69 @@ export interface AnnouncementResult {
   dispatched: boolean;
   event: 'listing.created' | 'listing.updated';
   id: string;
+  /** Set when the announcement went through the contributor PR fallback. */
+  prUrl?: string;
   detail?: string;
+}
+
+/**
+ * Contributor transport: fork the registry, commit a pointer request file
+ * (repository@release + sell_url only), open the PR. Listing CI derives
+ * all listing data from the seller's live /sell — the PR carries no trust.
+ */
+function openPointerPr(payload: ListingPrPayload): { opened: boolean; url?: string; detail?: string } {
+  const request = {
+    schema: 'reposell-listing-request/v1',
+    repository: `${payload.repository.owner}/${payload.repository.name}`,
+    release: payload.release.version,
+    sell_url: payload.sell.url,
+  };
+  const content = `${JSON.stringify(request, null, 2)}\n`;
+  const base = `${payload.repository.owner}-${payload.repository.name}-${payload.release.version}`
+    .replace(/[^A-Za-z0-9._-]/g, '-');
+  const requestPath = `listing/${base}.request.json`;
+  const branch = `listing/${payload.repository.name}-${payload.release.version}`.replace(
+    /[^A-Za-z0-9/._-]/g,
+    '-',
+  );
+
+  try {
+    try {
+      gh(['repo', 'fork', LISTING_REGISTRY, '--clone=false']);
+    } catch {
+      // Owning the upstream repo (or an existing fork) errors here — fine.
+    }
+    const login = gh(['api', 'user', '--jq', '.login']).trim();
+    const isOwner = login === LISTING_REGISTRY.split('/')[0];
+    const repoFull = isOwner ? LISTING_REGISTRY : `${login}/reposell-listing`;
+    const baseSha = gh(['api', `repos/${repoFull}/git/ref/heads/main`, '--jq', '.object.sha']).trim();
+    gh([
+      'api', '--method', 'POST',
+      `repos/${repoFull}/git/refs`,
+      '-f', `ref=refs/heads/${branch}`,
+      '-f', `sha=${baseSha}`,
+    ]);
+    gh([
+      'api', '--method', 'PUT',
+      `repos/${repoFull}/contents/${requestPath}`,
+      '-f', `message=list ${request.repository} @ ${request.release}`,
+      '-f', `content=${Buffer.from(content, 'utf8').toString('base64')}`,
+      '-f', `branch=${branch}`,
+    ]);
+    const head = isOwner ? branch : `${login}:${branch}`;
+    const prUrl = gh([
+      'api', '--method', 'POST',
+      `repos/${LISTING_REGISTRY}/pulls`,
+      '-f', `title=${request.repository} @ ${request.release}`,
+      '-f', `head=${head}`,
+      '-f', 'base=main',
+      '-f', `body=Listing request for **${request.repository} @ ${request.release}**.\n\nAll listed fields are derived by CI from the live /sell endpoint.`,
+      '--jq', '.html_url',
+    ]).trim();
+    return { opened: true, url: prUrl };
+  } catch (error) {
+    return { opened: false, detail: error instanceof Error ? error.message.split('\n')[0] : String(error) };
+  }
 }
 
 /**
@@ -173,9 +235,31 @@ export async function announceListing(payload: ListingPrPayload): Promise<Announ
         },
       },
     });
-    gh(['api', '--method', 'POST', `repos/${LISTING_REGISTRY}/dispatches`, '--input', '-'], dispatchBody);
+    let dispatched = true;
+    let fallbackPrUrl: string | undefined;
+    try {
+      gh(['api', '--method', 'POST', `repos/${LISTING_REGISTRY}/dispatches`, '--input', '-'], dispatchBody);
+    } catch (dispatchError) {
+      // External contributors have no write access to the canonical
+      // registry — fall back to fork + pointer PR. Listing CI derives every
+      // field from the seller's live /sell either way, so the PR carries no
+      // trust; it is only the transport for non-collaborators.
+      const detail = dispatchError instanceof Error ? (dispatchError.message.split('\n')[0] ?? '') : '';
+      if (!/\b403\b|forbidden|not found/i.test(detail)) throw dispatchError;
+      const pr = await openPointerPr(payload);
+      if (!pr.opened) {
+        return { dispatched: false, event, id: record.id, detail: pr.detail ?? 'registry write denied' };
+      }
+      dispatched = false;
+      fallbackPrUrl = pr.url;
+    }
 
-    return { dispatched: true, event, id: record.id };
+    return {
+      dispatched,
+      event,
+      id: record.id,
+      ...(fallbackPrUrl !== undefined ? { prUrl: fallbackPrUrl } : {}),
+    };
   } catch (error) {
     return {
       dispatched: false,
