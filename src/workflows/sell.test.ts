@@ -65,12 +65,13 @@ describe('generateSellSite', () => {
     }
     const result = await generateSellSite(cwd, { productName: 'acme-tool' });
     expect(result.written).toContain('sell/index.html');
-    const raw = JSON.parse(
+    const raw: unknown = JSON.parse(
       await fs.readFile(path.join(cwd, '.reposell', 'storefront.json'), 'utf8'),
-    ) as unknown;
+    );
     // SAFETY: document produced by storefrontDocument; parse before render.
     const parsed = core.parseStorefrontDocument(raw);
     if (!parsed.ok || parsed.document === undefined) throw new Error('invalid generated document');
+    // SAFETY: validated by parseStorefrontDocument immediately above.
     const build = core.renderStorefront(parsed.document as never, {
       repositorySlug: '',
       repositoryUrl: '',

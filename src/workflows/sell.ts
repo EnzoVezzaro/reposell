@@ -320,6 +320,7 @@ async function renderWithCore(document: unknown): Promise<SellTemplateFiles | un
     if (!parsed.ok || parsed.document === undefined) return undefined;
     // Init-time context: no releases yet — identical fallback to the
     // Studio's loadContext when no fixture exists, keeping both in sync.
+    // SAFETY: document already validated by parseStorefrontDocument above.
     const build = core.renderStorefront(parsed.document as never, {
       repositorySlug: '',
       repositoryUrl: '',
