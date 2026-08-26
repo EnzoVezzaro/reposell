@@ -6,8 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "reposell": "./dist/bin/reposell.js",
-    "reposell-marketplace": "./dist/bin/reposell-marketplace.js"
+    "reposell": "dist/bin/reposell.js",
+    "reposell-marketplace": "dist/bin/reposell-marketplace.js"
   },
   "scripts": {
     "build": "tsc",
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@noble/ed25519": "^3.1.0",
-    "@reposell/sell": "file:../reposell-sell",
+    "@reposell/sell": "^0.1.0",
     "yaml": "^2.9.0"
   },
   "files": [
