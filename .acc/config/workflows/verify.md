@@ -28,7 +28,9 @@ If ANY verification step fails:
 
 ## Accounting Test (Mandatory)
 
-For a $50 product with $5 fee and 50/50 split:
+**Note:** Community referral economics are not yet implemented. The Main/Public listing splits are reserved for future use. Currently, the listing fee goes entirely to reposell.
+
+For a $50 product with $5 fee and 50/50 split (future — when community listings are supported):
 - Repository owner: $45
 - Main listing: $2.50
 - Public listing: $2.50

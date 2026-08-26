@@ -3,7 +3,9 @@
    Scoped to html[data-theme='shadcn'].
    ============================================================ */
 
-html[data-theme='shadcn'] {
+/* Dark mode: scoped under .dark so VitePress's own .dark CSS can
+   never override these values (higher specificity). */
+html.dark[data-theme='shadcn'] {
   --lx-bg: #09090b;
   --lx-bg-soft: #18181b;
   --lx-card: #0c0c0e;
@@ -104,7 +106,7 @@ html[data-theme='shadcn'] .lx-step:hover {
 }
 
 /* shadcn: VitePress component chrome follows the same geometry */
-html[data-theme='shadcn'] {
+html.dark[data-theme='shadcn'] {
   --vp-button-brand-radius: 0.5rem;
   --vp-button-alt-radius: 0.5rem;
   --vp-custom-block-radius: 0.5rem;

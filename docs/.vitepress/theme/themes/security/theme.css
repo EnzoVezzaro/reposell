@@ -6,8 +6,10 @@
    into other themes.
    ============================================================ */
 
-html[data-theme='security'],
-html:not([data-theme]) {
+/* Dark mode: scoped under .dark[data-theme] so VitePress's own
+   .dark CSS can never override these values (higher specificity). */
+html.dark[data-theme='security'],
+html.dark:not([data-theme]) {
   /* landing */
   --lx-bg: #0a0a0a;
   --lx-bg-soft: #111111;

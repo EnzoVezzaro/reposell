@@ -7,7 +7,9 @@
  * pointer; the Listing CI independently verifies everything).
  *
  * The discovery price is the LISTING's own price (default $5 USD per D16).
- * It is structurally independent from the seller's software price.
+ * It is structurally independent from the seller's software price — the buyer
+ * pays this ON TOP of the seller's price. The seller keeps 100% of their
+ * /sell revenue. Community referral economics are not yet implemented.
  */
 
 import { promises as fs } from 'fs';
@@ -120,7 +122,7 @@ export function formatListingPublish(report: ListingPublishReport): string {
     `  Repository: ${report.payload.repository.url}`,
     `  Release: ${report.payload.release.version}`,
     `  Seller /sell: ${report.payload.sell.url}`,
-    `  Discovery price: ${report.payload.listing.discovery_price.amount} ${report.payload.listing.discovery_price.currency} (Listing's own — independent of the seller's price)`,
+    `  Discovery price: ${report.payload.listing.discovery_price.amount} ${report.payload.listing.discovery_price.currency} (buyer-paid, on top of seller's price; seller keeps 100%)`,
   ];
   if (!report.healthChecked) {
     lines.push('– Live /sell verification skipped (--skip-verify)');

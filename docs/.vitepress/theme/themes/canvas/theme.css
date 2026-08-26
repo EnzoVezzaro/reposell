@@ -3,7 +3,9 @@
    Scoped to html[data-theme='canvas'].
    ============================================================ */
 
-html[data-theme='canvas'] {
+/* Dark mode: scoped under .dark so VitePress's own .dark CSS can
+   never override these values (higher specificity). */
+html.dark[data-theme='canvas'] {
   --lx-bg: #12122b;
   --lx-bg-soft: #16213e;
   --lx-card: #0f3460;
@@ -109,7 +111,7 @@ html[data-theme='canvas'] .lx-hero-overlay {
 }
 
 /* canvas: VitePress component chrome follows the same geometry */
-html[data-theme='canvas'] {
+html.dark[data-theme='canvas'] {
   --vp-button-brand-radius: 16px;
   --vp-button-alt-radius: 16px;
   --vp-custom-block-radius: 16px;

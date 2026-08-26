@@ -4,6 +4,20 @@
 
 **No server, no API, no edge functions, no webhooks.** Pure static frontend + GitHub Actions CI.
 
+## Two Independent Payment Flows
+
+```
+Buyer pays TWO separate transactions:
+
+1. DISCOVERY CONTRIBUTION → reposell's Stripe account
+   (link created by Listing CI during publication PR)
+   Seller declares the amount ($5/$10/$25/$50/custom)
+
+2. LICENSE PURCHASE → seller's own Stripe account
+   (seller-created Payment Link on their /sell page)
+   Seller keeps 100% of this revenue
+```
+
 ## How It Works
 
 ```
@@ -11,38 +25,37 @@ Developer runs: reposell init
         │
         ▼
 ┌─────────────────────────────┐
-│ Generates static files      │
+│ Generates static /sell page │
 │                             │
-│ - Stripe.js integration     │
-│ - Embedded Checkout UI      │
-│ - Connect onboarding link   │
+│ - Stripe Payment Link       │
+│ - Seller-created, seller-   │
+│   owned, 100% seller revenue│
 └─────────────────────────────┘
         │
         ▼
-Developer deploys to static host
-        │
-        ▼
-Buyer visits repo → Sees product → Clicks "Buy"
+Developer runs: reposell publish v1.0
         │
         ▼
 ┌─────────────────────────────┐
-│ Stripe Embedded Checkout    │
-│ (runs entirely in browser)  │
-│                             │
-│ Card | Apple Pay | Google   │
-│                             │
-│ [ Pay $49 ]                 │
+│ Listing CI creates          │
+│ per-release Discovery       │
+│ Payment Link (reposell's    │
+│ Stripe account)             │
 └─────────────────────────────┘
         │
         ▼
-    Stripe (handles everything)
+Buyer visits listing.reposell.dev
         │
-   ┌────┴─────┐
-   ▼          ▼
-Buyer      Seller (Connect)
-             │
-             ▼
-       Automatic payout
+        ▼
+┌─────────────────────────────┐
+│ Step 1: Pay discovery       │
+│ contribution ($5 default)   │
+│ → reposell's Stripe         │
+│                             │
+│ Step 2: Purchase license    │
+│ from seller's /sell page    │
+│ → seller's Stripe (100%)    │
+└─────────────────────────────┘
 ```
 
 ## Generated Files by `reposell init`
@@ -53,50 +66,40 @@ your-repo/
 │   ├── reposell.yml          # CI: lint, typecheck, test, build
 │   └── reposell-release.yml  # Release automation
 ├── sell/
-│   ├── index.html            # Static /sell page with Stripe
-│   ├── stripe-checkout.js    # Stripe.js + Embedded Checkout
-│   └── connect-onboard.html  # Connect onboarding page
-├── config/
-│   └── reposell.yml          # Payment config (provider: stripe)
-└── .env.example              # Stripe keys template (for local dev only)
+│   ├── index.html            # Static /sell page with Stripe Payment Link
+│   ├── styles.css
+│   └── scripts.js
+├── reposell.yml              # Payment config (listing opt-in, contribution amount)
+├── .env                      # REPOSELL_SIGNING_KEY, STRIPE_SECRET_KEY
+└── .gitignore                # .env, .reposell/purchases/
 ```
 
 ## Configuration (`reposell.yml`)
 
 ```yaml
-payment:
-  provider: stripe
-  # Stripe keys via GitHub Actions secrets (NEVER in repo):
-  # STRIPE_PUBLISHABLE_KEY
-  # STRIPE_SECRET_KEY (not used in frontend)
-  # STRIPE_WEBHOOK_SECRET (not used - no webhooks)
-  # STRIPE_CONNECT_CLIENT_ID
+listing:
+  enabled: true
+  contribution:
+    amount: 5
+    currency: USD
 ```
 
-## Stripe Connect Setup (Static)
+The contribution amount is the discovery fee buyers pay to reposell. The seller keeps 100% of their `/sell` price.
 
-1. **Platform creates Connect account** in Stripe Dashboard
-2. **Configure OAuth redirect** to your static `/connect-onboard.html`
-3. **Add `STRIPE_CONNECT_CLIENT_ID`** to GitHub Actions secrets
-4. **Seller clicks "Connect Stripe"** on repo → redirected to Stripe OAuth
-5. **Stripe handles onboarding** → returns to repo with connected account
+## Fee Model (Current)
 
-## Payment Flow (100% Client-Side)
+```
+Product Price:        $50.00
+Listing Fee:       $5.00  (buyer-paid, on top of seller's price)
+─────────────────────────────────────
+Net to Distribute:    $45.00
 
-1. Buyer clicks "Buy" on repo's `/sell` page
-2. `stripe-checkout.js` creates checkout session via Stripe.js
-3. Embedded Checkout opens in iframe/modal
-4. Buyer pays → Stripe handles payment, Connect split
-6. Stripe redirects to `success_url` with session_id
-7. Repo page verifies session client-side via Stripe.js
-8. **License delivered via GitHub** (fork private repo / grant access)
+Main Listing:     $2.50  (50% of fee)  — reserved for future use
+Public Listing:   $2.50  (50% of fee)  — reserved for future use
+Repository Owner:     $40.50 (remainder)
+```
 
-## Why No Webhooks?
-
-- Stripe Connect handles seller payouts automatically
-- Client-side verification via `stripe.confirmPayment()`
-- GitHub used for license delivery (repo fork / collaborator add)
-- CI validates purchases on release if needed
+**Note:** Community referral economics are not yet implemented. Currently, the listing fee goes entirely to reposell. The Main/Public splits are reserved for future use.
 
 ## Local Development
 
@@ -105,16 +108,5 @@ payment:
 npx serve sell/
 
 # Test Stripe integration
-# Uses test keys from .env.example (local only)
-```
-
-## CI Validation
-
-```yaml
-# .github/workflows/reposell.yml
-- name: Validate Stripe integration
-  run: |
-    # Check Stripe.js loads
-    # Verify publishable key format
-    # Confirm Connect client ID present
+# Uses test keys from .env (local only)
 ```

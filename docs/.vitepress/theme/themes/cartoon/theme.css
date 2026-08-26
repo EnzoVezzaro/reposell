@@ -3,7 +3,9 @@
    Scoped to html[data-theme='cartoon'].
    ============================================================ */
 
-html[data-theme='cartoon'] {
+/* Light mode: scoped under .light so VitePress's own .dark CSS can
+   never override these values (higher specificity). */
+html.light[data-theme='cartoon'] {
   --lx-bg: #fffef5;
   --lx-bg-soft: #fdf6df;
   --lx-card: #ffffff;
@@ -151,7 +153,7 @@ html[data-theme='cartoon'] .lx-hero-overlay {
 }
 
 /* cartoon: VitePress chrome gets ink outlines too */
-html[data-theme='cartoon'] {
+html.light[data-theme='cartoon'] {
   --vp-button-brand-radius: 12px;
   --vp-button-alt-radius: 12px;
   --vp-custom-block-radius: 12px;

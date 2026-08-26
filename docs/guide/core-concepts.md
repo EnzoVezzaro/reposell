@@ -157,6 +157,8 @@ Main = Fee × Main% / 100
 Public = Fee × Public% / 100
 ```
 
+**Current implementation:** The listing fee (discovery contribution) is paid by the buyer ON TOP of the seller's price. The seller keeps 100% of their `/sell` revenue. The contribution is a separate transaction to reposell's Stripe account. Community referral economics are not yet implemented — the `Main%` and `Public%` splits are reserved for future use.
+
 ## Security Model
 
 1. **Input Validation** — All user input validated at boundaries
@@ -178,6 +180,8 @@ For $50 product:
 - Repository owner: $45.00
 - Main listing: $2.50
 - Public listing: $2.50
+
+**Note:** Community referral economics are not yet implemented. Currently, the listing fee (discovery contribution) goes entirely to reposell. The Main/Public splits are reserved for future use when community listings are supported.
 
 ## License Model
 

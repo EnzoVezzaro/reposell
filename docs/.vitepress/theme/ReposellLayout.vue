@@ -16,13 +16,12 @@ function activeTheme() {
   return document.documentElement.getAttribute('data-theme') || 'security'
 }
 
-let forcedDark = false
-
 /**
  * Single source of truth for html-level classes. Runs on page change AND on
- * every theme switch (MutationObserver below) — without this, a stale
- * .dark/.light class mixes the previous theme's component styles into the
- * newly selected one (the "cartoon UI on security" bug).
+ * every theme switch (MutationObserver below). Always enforces the correct
+ * .dark/.light class for the active theme — on BOTH home and docs pages.
+ * Without this, a stale class mixes the previous theme's component styles
+ * into the newly selected one (e.g. light navbar on a dark theme).
  */
 function applyAppearance() {
   if (typeof document === 'undefined') return
@@ -33,34 +32,17 @@ function applyAppearance() {
   const theme = activeTheme()
   const wantsDark = !LIGHT_THEMES.has(theme)
 
-  if (isHome) {
-    if (wantsDark) {
-      el.classList.remove('light')
-      if (!el.classList.contains('dark')) {
-        el.classList.add('dark')
-        forcedDark = true
-      }
-    } else {
-      el.classList.remove('dark')
-      el.classList.add('light')
-      forcedDark = false
-    }
-    // Non-security themes animate via CSS; the boot-hide class must go or
-    // the hero content stays invisible.
-    if (theme !== 'security') el.classList.remove('lx-boot')
-  } else if (forcedDark) {
-    forcedDark = false
+  if (wantsDark) {
+    el.classList.remove('light')
+    el.classList.add('dark')
+  } else {
     el.classList.remove('dark')
-    try {
-      const pref = localStorage.getItem('vitepress-theme-appearance')
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      if (pref === 'dark' || ((pref === null || pref === 'auto') && prefersDark)) {
-        el.classList.add('dark')
-      }
-    } catch {
-      /* storage unavailable */
-    }
+    el.classList.add('light')
   }
+
+  // Non-security themes animate via CSS; the boot-hide class must go or
+  // the hero content stays invisible.
+  if (isHome && theme !== 'security') el.classList.remove('lx-boot')
 
   startMotionIfHome()
 }
