@@ -11,6 +11,11 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { detectGitInfo } from '../utils/git.js';
+import { loadEnvSource, resolveValue } from '../utils/env.js';
+import {
+  fetchPaymentLinkDetailsByUrl,
+  type PaymentLinkDetails,
+} from '../domain/payment/link-details.js';
 import { LicenseService, type LicenseCheckResult } from '../app/license-service.js';
 import { formatCheckResult, licenseCommand } from './license.js';
 import { renderBanner } from '../cli/banner.js';
@@ -234,29 +239,59 @@ async function initWizard(cwd: string): Promise<InitResult> {
       }
     }
 
-    // 2. payment link
+    // 2. payment link — price/currency are auto-detected from the link
+    //    whenever a Stripe secret key is available (env or local .env)
     const linkAnswer = await prompter.ask(
       '\nStripe Payment Link (create at dashboard.stripe.com/payment-links, leave blank to add later)',
     );
+    let detected: PaymentLinkDetails | undefined;
     if (linkAnswer.length > 0) {
       if (!/^https:\/\/(buy|checkout)\.stripe\.com\//.test(linkAnswer)) {
         transcript.push(`! "${linkAnswer}" does not look like a Stripe Payment Link URL — skipped.`);
       } else {
         paymentLink = linkAnswer;
         transcript.push(`✓ Payment link recorded: ${paymentLink}`);
+
+        const envSource = await loadEnvSource(cwd, process.env, async (filePath) => {
+          try {
+            return await fs.readFile(filePath, 'utf8');
+          } catch {
+            return undefined;
+          }
+        });
+        const apiKey =
+          resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'STRIPE_SECRET_KEY');
+        if (apiKey !== undefined && apiKey.startsWith('sk_')) {
+          transcript.push('  Reading price and currency from your Payment Link…');
+          detected = await fetchPaymentLinkDetailsByUrl({ apiKey, linkUrl: paymentLink });
+          if (detected !== undefined) {
+            transcript.push(
+              `✓ Detected ${detected.amount} ${detected.currency}${detected.recurring !== undefined ? ` (${detected.recurring.interval}ly)` : ''} from your Payment Link`,
+            );
+          }
+        }
       }
     }
 
     // 3. first release
     if (paymentLink !== undefined && (await prompter.confirm('\nCreate first draft release v0.1.0?', true))) {
       releaseTag = await prompter.ask('Release tag', 'v0.1.0');
-      const priceAnswer = await prompter.ask('Price (USD)', '10');
-      const price = Number(priceAnswer);
+      let price = 10;
+      let currency = 'USD';
+      if (detected !== undefined) {
+        price = detected.amount;
+        currency = detected.currency;
+        transcript.push(`✓ Using ${price} ${currency} from your Payment Link.`);
+      } else {
+        const priceAnswer = await prompter.ask('Price (USD)', '10');
+        const parsed = Number(priceAnswer);
+        if (Number.isFinite(parsed) && parsed > 0) price = parsed;
+      }
       transcript.push(
         await releaseCommand(cwd, {
           tag: releaseTag,
-          price: Number.isFinite(price) && price > 0 ? price : 10,
-          currency: 'USD',
+          price,
+          currency,
           link: paymentLink,
         }),
       );

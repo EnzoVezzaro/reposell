@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-08-25
+
+### Added
+- The init wizard now **auto-detects price and currency from your Stripe Payment Link** (official API) whenever a secret key is available in the environment or `.env` — no more typing the price twice; it falls back to the manual prompt otherwise
+
 ## [0.1.6] - 2026-08-25
 
 ### Added
