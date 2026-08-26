@@ -11,6 +11,9 @@
 export interface StripeSession {
   id: string;
   payment_status?: string;
+  payment_link?: string | null;
+  amount_total?: number | null;
+  currency?: string | null;
   payment_intent?: string | null;
   customer_details?: { email?: string | null } | null;
   metadata?: Record<string, string>;
@@ -67,6 +70,11 @@ export interface PurchaseRecord {
   status: 'paid' | 'refunded';
   release?: string;
   scheme?: string;
+  /** Payment Link the session was created from (dashboard links lack metadata). */
+  paymentLink?: string;
+  /** Minor-unit total + currency, for matching dashboard-created links. */
+  amountTotal?: number;
+  currency?: string;
 }
 
 export interface SyncResult {
@@ -93,6 +101,9 @@ export function sessionsToPurchases(sessions: StripeSession[]): SyncResult {
       status,
       ...(session.metadata !== undefined && session.metadata['release'] !== undefined ? { release: session.metadata['release'] } : {}),
       ...(session.metadata !== undefined && session.metadata['scheme'] !== undefined ? { scheme: session.metadata['scheme'] } : {}),
+      ...(session.payment_link !== undefined && session.payment_link !== null ? { paymentLink: session.payment_link } : {}),
+      ...(session.amount_total !== undefined && session.amount_total !== null ? { amountTotal: session.amount_total } : {}),
+      ...(session.currency !== undefined && session.currency !== null ? { currency: session.currency } : {}),
     };
     if (status === 'refunded') refunded.push(record);
     else purchased.push(record);

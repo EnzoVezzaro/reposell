@@ -5,7 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.18] - 2026-08-26
+## [0.1.21] - 2026-08-26
+
+### Fixed
+- **Fulfillment correctness** (`sell sync`): purchase artifacts bind the real repository slug (was hardcoded `seller/project`) and the owner-decided **license terms** travel inside every fork
+- **Forks happen exactly once**: `forks.json` ledger keys entitlements on buyer+repo+release+scheme — repeat purchases are recorded but never double-provision
+- Releases inferred for dashboard-created Payment Links (link id, then amount+currency) instead of "unknown"
+- `sell sync` reads the `.env` saved by init; report includes already-entitled count
+
+## [0.1.20] - 2026-08-26
+
+### Fixed
+- Dispatch payloads sent as JSON — discovery amounts no longer arrive as strings
+
+## [0.1.19] - 2026-08-26
+
+### Added
+- Event-driven listings: publisher verifies live `/sell`, derives the record, assigns stable `lst_` ids, announces via `repository_dispatch` (`listing.created/updated`) — PRs removed from the listing path
+- /sell embeds repository identity + seller-declared discovery contribution
 
 ### Changed
 - **Listing PRs are pointer-only**: the PR carries just `repository @ release` + the `/sell` URL — zero seller-authored listing data. Listing CI now derives every listed field live from the seller's endpoints (embedded `/sell` document: identity, available release, verified Payment Link, seller-declared discovery contribution) and commits the derived registry record into the PR branch before merge

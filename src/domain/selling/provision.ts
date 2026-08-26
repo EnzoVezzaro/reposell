@@ -19,6 +19,8 @@ export interface PurchaseFacts {
   repository: string;
   release: string;
   scheme: string;
+  /** License terms bound into the fork — decided by the repository owner. */
+  license?: string;
   amount: number;
   currency: string;
   session: string;
@@ -41,6 +43,7 @@ export interface PurchaseArtifact {
     repository: string;
     release: string;
     scheme: string;
+    license?: string;
     licensed_fork: string;
   };
   fingerprint: string;
@@ -78,6 +81,7 @@ export function buildPurchaseArtifact(facts: PurchaseFacts): PurchaseArtifact {
       repository: facts.repository,
       release: facts.release,
       scheme: facts.scheme,
+      ...(facts.license !== undefined ? { license: facts.license } : {}),
       licensed_fork: `${facts.buyer}/${facts.repository.split('/').pop() ?? 'fork'}`,
     },
     fingerprint,

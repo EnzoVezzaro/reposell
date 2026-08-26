@@ -135,7 +135,7 @@ async function main(): Promise<void> {
             paymentLinkId: rest[1] !== undefined && !rest[1].startsWith('--') ? rest[1] : undefined,
           });
           console.log([
-            `✓ sell sync complete — ${report.purchased} purchase(s), ${report.refunded} refund(s)`,
+            `✓ sell sync complete — ${report.purchased} purchase(s), ${report.refunded} refund(s), ${report.alreadyEntitled} already entitled`,
             ...report.written.map((file) => `  ${file}`),
           ].join('\n'));
           break;
@@ -204,7 +204,7 @@ async function main(): Promise<void> {
             paymentLinkId: rest[1] !== undefined && !rest[1].startsWith('--') ? rest[1] : undefined,
           });
           console.log([
-            `✓ sell sync complete — ${report.purchased} purchase(s), ${report.refunded} refund(s)`,
+            `✓ sell sync complete — ${report.purchased} purchase(s), ${report.refunded} refund(s), ${report.alreadyEntitled} already entitled`,
             ...report.written.map((file) => `  ${file}`),
           ].join('\n'));
           break;
