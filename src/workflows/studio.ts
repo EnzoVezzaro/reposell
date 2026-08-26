@@ -76,15 +76,6 @@ function isReady(): Promise<boolean> {
     .catch(() => false);
 }
 
-async function waitForReady(): Promise<boolean> {
-  const deadline = Date.now() + READY_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    if (await isReady()) return true;
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  return false;
-}
-
 /**
  * Starts the Studio via npx (detached — it outlives the wizard) and resolves
  * once it serves. If something already listens on the port, reports ready
@@ -106,6 +97,10 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
   }
 
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+  // The builder must outlive the wizard (detached), but if it dies BEFORE
+  // ever serving (bad install, crash on boot) we must not sit through the
+  // full readiness timeout — surface the exit immediately instead.
+  let exitedEarly: string | null = null;
   const spawnOnce = (): void => {
     const child = spawn(command, ['-y', '@reposell/storefront-studio@latest'], {
       cwd,
@@ -113,7 +108,12 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
       stdio: 'ignore',
     });
     child.unref();
-    child.on('error', () => {});
+    child.on('error', (error) => {
+      exitedEarly = `could not run npx (${error.message})`;
+    });
+    child.on('exit', (code, signal) => {
+      exitedEarly = `builder process exited before serving (code ${code ?? signal})`;
+    });
   };
 
   try {
@@ -126,15 +126,31 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
     };
   }
 
-  let ready = await waitForReady();
-  if (!ready && killStalePortHolders()) {
+  let ready = false;
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    ready = await isReady();
+    if (ready || exitedEarly !== null) break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  if (!ready && exitedEarly !== null && killStalePortHolders()) {
     // The fresh instance died against a zombie we only now could see
     // (race between probe and listen) — clear and retry exactly once.
+    exitedEarly = null;
     spawnOnce();
-    ready = await waitForReady();
+    const retryDeadline = Date.now() + READY_TIMEOUT_MS;
+    while (Date.now() < retryDeadline) {
+      ready = await isReady();
+      if (ready || exitedEarly !== null) break;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   }
   if (!ready) {
-    return { started: true, ready: false, detail: `builder did not become ready at ${STUDIO_URL} within ${READY_TIMEOUT_MS / 1000}s` };
+    return {
+      started: true,
+      ready: false,
+      detail: exitedEarly ?? `builder did not become ready at ${STUDIO_URL} within ${READY_TIMEOUT_MS / 1000}s`,
+    };
   }
   // Fresh start: give Vite's first compile a beat, then open.
   setTimeout(openBrowser, 1_500);

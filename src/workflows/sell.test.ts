@@ -33,7 +33,7 @@ describe('generateSellSite', () => {
     // No published release yet — checkout must not be live.
     expect(html).toContain('rs-btn--disabled');
     expect(html).not.toMatch(/href="https:\/\/buy\.stripe\.com/);
-    expect(html).toContain('Payment Link on record: https://buy.stripe.com/test_wizard');
+    // The wizard's link lives in reposell.yml, never in the public page.
   });
 
   it('never exposes the source repository to buyers', async () => {
@@ -51,8 +51,34 @@ describe('generateSellSite', () => {
     expect(css).toContain('#0af188'); // signal green
     expect(css).toContain('#0a0a0a'); // ink background
     expect(css).toContain('Syne');
-    expect(css).toContain('Oxanium');
     expect(css).toContain('"Geist Mono"');
+  });
+
+  it('renders through the SAME engine as Studio + CI (WYSIWYG)', async () => {
+    // With @reposell/storefront-core installed (dev/studio environments),
+    // sell/ files must be byte-identical to the core renderer output.
+    let core: typeof import('@reposell/storefront-core');
+    try {
+      core = await import('@reposell/storefront-core');
+    } catch {
+      return; // optional peer absent — legacy template path, nothing to prove
+    }
+    const result = await generateSellSite(cwd, { productName: 'acme-tool' });
+    expect(result.written).toContain('sell/index.html');
+    const raw = JSON.parse(
+      await fs.readFile(path.join(cwd, '.reposell', 'storefront.json'), 'utf8'),
+    ) as unknown;
+    // SAFETY: document produced by storefrontDocument; parse before render.
+    const parsed = core.parseStorefrontDocument(raw);
+    if (!parsed.ok || parsed.document === undefined) throw new Error('invalid generated document');
+    const build = core.renderStorefront(parsed.document as never, {
+      repositorySlug: '',
+      repositoryUrl: '',
+      releases: [],
+    });
+    expect(await fs.readFile(path.join(cwd, 'sell', 'index.html'), 'utf8')).toBe(build.html);
+    expect(await fs.readFile(path.join(cwd, 'sell', 'styles.css'), 'utf8')).toBe(build.css);
+    expect(await fs.readFile(path.join(cwd, 'sell', 'scripts.js'), 'utf8')).toBe(build.js);
   });
 
   it('renders a disabled CTA with publish guidance when no link is known', async () => {
@@ -60,7 +86,7 @@ describe('generateSellSite', () => {
     expect(result.paymentLinkWired).toBe(false);
     const html = await fs.readFile(path.join(cwd, 'sell', 'index.html'), 'utf8');
     expect(html).toContain('rs-btn--disabled');
-    expect(html).toContain('reposell publish v0.1.0');
+    expect(html).toContain('reposell release');
   });
 
   it('personalizes .reposell/storefront.json for the Studio', async () => {

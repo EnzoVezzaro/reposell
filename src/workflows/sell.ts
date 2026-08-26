@@ -4,17 +4,19 @@
  *
  * Outputs (never overwrites existing files):
  *   .reposell/storefront.json   storefront document (Studio/builder source)
- *   sell/index.html             editable HTML template
+ *   sell/index.html             rendered page — SAME output as Studio + build
  *   sell/styles.css             theme stylesheet
  *   sell/scripts.js             reveal-on-scroll runtime
  *
- * The template uses the reposell landing identity (signal green on ink,
- * Syne/Oxanium/Outfit/Geist Mono, chamfered edges) and is fork-centric:
- * buyers purchase a fork of the signed release — the page never links to,
- * names or exposes the source repository. The buy CTA starts disabled and
- * activates on the deployed /reposell/* surface once a release publishes;
- * the Stripe Payment Link captured during the wizard is kept on record
- * (comment + storefront document) for that hand-off.
+ * WYSIWYG contract: when @reposell/storefront-core is installed, the files
+ * are rendered by the CORE renderer from the document — byte-identical to
+ * what the Studio canvas shows and what CI deploys. Without core, a legacy
+ * built-in template is used instead (fail-open, optional peer dependency).
+ *
+ * Fork-centric: buyers purchase a fork of the signed release; at init time
+ * no release exists, so the buy CTA renders disabled and no payment link is
+ * exposed. The Stripe Payment Link captured during the wizard is kept on
+ * record in reposell.yml for the CI hand-off.
  */
 
 import { promises as fs } from 'fs';
@@ -79,7 +81,15 @@ function storefrontDocument(options: SellSiteOptions) {
           { title: 'Verified payment', body: 'The payment link is checked against the manifest before it ever reaches you.', icon: '◈' },
         ],
       },
-      { id: 'releases', type: 'releases', title: 'Releases' },
+      {
+        id: 'releases',
+        type: 'releases',
+        title: 'Releases',
+        // Onboarding rides the document, so Studio edits and CI renders
+        // carry the same guidance.
+        emptyMessage:
+          'No releases are available yet — declare one with `reposell release`, then run `reposell build`; this page updates automatically.',
+      },
       {
         id: 'faq',
         type: 'faq',
@@ -286,6 +296,41 @@ ${linkComment}
   return { html, css: STYLES_CSS, js: SCRIPTS_JS };
 }
 
+interface StorefrontCoreRenderModule {
+  parseStorefrontDocument: (input: unknown) => { ok: boolean; document?: unknown; errors: string[] };
+  renderStorefront: (document: unknown, context: unknown) => { html: string; css: string; js: string };
+}
+
+/**
+ * Renders the document with the SAME engine the Studio canvas and CI build
+ * use. Returns undefined when the optional peer dependency is absent or the
+ * document is invalid — callers fall back to the built-in template.
+ */
+async function renderWithCore(document: unknown): Promise<SellTemplateFiles | undefined> {
+  let core: StorefrontCoreRenderModule;
+  try {
+    // SAFETY: optional peer dependency; absence is a supported state.
+    core = (await import('@reposell/storefront-core')) as unknown as StorefrontCoreRenderModule;
+  } catch {
+    return undefined;
+  }
+  try {
+    // SAFETY: parseStorefrontDocument narrows unknown internally.
+    const parsed = core.parseStorefrontDocument(document);
+    if (!parsed.ok || parsed.document === undefined) return undefined;
+    // Init-time context: no releases yet — identical fallback to the
+    // Studio's loadContext when no fixture exists, keeping both in sync.
+    const build = core.renderStorefront(parsed.document as never, {
+      repositorySlug: '',
+      repositoryUrl: '',
+      releases: [],
+    });
+    return { html: build.html, css: build.css, js: build.js };
+  } catch {
+    return undefined;
+  }
+}
+
 /** Writes-or-skips helper: existing files are never clobbered. */
 async function writeFresh(fullPath: string, content: string): Promise<string | undefined> {
   try {
@@ -299,19 +344,23 @@ async function writeFresh(fullPath: string, content: string): Promise<string | u
 export async function generateSellSite(cwd: string, options: SellSiteOptions): Promise<SellSiteResult> {
   const written: string[] = [];
 
+  const document = storefrontDocument(options);
   const documentPath = path.join(cwd, '.reposell', 'storefront.json');
   await fs.mkdir(path.dirname(documentPath), { recursive: true });
-  if ((await writeFresh(documentPath, `${JSON.stringify(storefrontDocument(options), null, 2)}\n`)) !== undefined) {
+  if ((await writeFresh(documentPath, `${JSON.stringify(document, null, 2)}\n`)) !== undefined) {
     written.push(path.relative(cwd, documentPath));
   }
 
+  // WYSIWYG: prefer the core renderer so these files match the Studio
+  // canvas and the CI-deployed page exactly; legacy template as fallback.
+  const files = (await renderWithCore(document)) ?? renderSellTemplate(options);
+
   const sellDir = path.join(cwd, 'sell');
   await fs.mkdir(sellDir, { recursive: true });
-  const template = renderSellTemplate(options);
   for (const [fileName, content] of [
-    ['index.html', template.html],
-    ['styles.css', template.css],
-    ['scripts.js', template.js],
+    ['index.html', files.html],
+    ['styles.css', files.css],
+    ['scripts.js', files.js],
   ] as const) {
     const fullPath = path.join(sellDir, fileName);
     if ((await writeFresh(fullPath, content)) !== undefined) {
