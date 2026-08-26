@@ -169,10 +169,37 @@ ${blockedCards}
       ),
   };
 
+  // Runtime payment link validation — disables Buy buttons for inactive links.
+  const validationScript = `
+<script>
+(function(){
+  var PROXY='https://corsproxy.io/?url=';
+  var links=document.querySelectorAll('a.buy:not(.off)');
+  links.forEach(function(a){
+    var href=a.getAttribute('href');
+    if(!href||!href.includes('buy.stripe.com'))return;
+    fetch(PROXY+encodeURIComponent(href),{method:'HEAD',redirect:'follow'})
+      .then(function(res){
+        if(!res.ok||res.url.includes('error')){
+          a.classList.add('off');
+          a.textContent='Link inactive';
+          a.removeAttribute('href');
+          a.setAttribute('aria-disabled','true');
+          var p=document.createElement('p');
+          p.style.cssText='color:#f87171;font-size:.82rem;margin-top:.4rem';
+          p.textContent='\u26a0 This payment link is no longer active. Contact the seller.';
+          a.parentNode.appendChild(p);
+        }
+      })
+      .catch(function(){});
+  });
+})();
+</script>`;
+
   return renderPage({
     title: `${model.productName} — Buy`,
     description: model.description,
-    body,
+    body: body + validationScript,
     jsonLd,
     embeddedJson: {
       schema: 'reposell/sell-page/v1',
