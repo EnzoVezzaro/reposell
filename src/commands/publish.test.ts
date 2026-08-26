@@ -13,9 +13,9 @@ describe('publishCandidates', () => {
   });
 });
 
-describe('listing record derivation', () => {
-  it('maps the verified payload onto the registry record shape', async () => {
-    const { recordFromPayload, listingFilePaths } = await import('../app/listing-pr-submitter.js');
+describe('listing request derivation', () => {
+  it('builds the pointer-only request the listing PR carries', async () => {
+    const { requestFromPayload, listingRequestPath } = await import('../app/listing-pr-submitter.js');
     const payload = {
       schema: 'reposell-listing/v1' as const,
       repository: { url: 'https://github.com/acme/tool', owner: 'acme', name: 'tool' },
@@ -26,19 +26,13 @@ describe('listing record derivation', () => {
       },
       listing: { discovery_price: { amount: 5, currency: 'USD' } },
     };
-    const record = recordFromPayload(payload);
-    expect(record).toEqual({
-      schema: 'reposell-listing-record/v1',
-      product: { repository: 'acme/tool', release: 'v0.1.0' },
-      seller: {
-        sell_url: 'https://acme.github.io/tool/sell/',
-        payment_link: 'https://buy.stripe.com/test_link',
-      },
-      listing: { discovery_price: { amount: 5, currency: 'USD' } },
+    // Pointer-only: no seller data travels through the PR.
+    expect(requestFromPayload(payload)).toEqual({
+      schema: 'reposell-listing-request/v1',
+      repository: 'acme/tool',
+      release: 'v0.1.0',
+      sell_url: 'https://acme.github.io/tool/sell/',
     });
-    expect(listingFilePaths(payload)).toEqual({
-      record: 'listing/acme-tool-v0.1.0.json',
-      pr: 'listing/acme-tool-v0.1.0.pr.json',
-    });
+    expect(listingRequestPath(payload)).toBe('listing/acme-tool-v0.1.0.request.json');
   });
 });

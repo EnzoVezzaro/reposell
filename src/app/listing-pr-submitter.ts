@@ -1,9 +1,11 @@
 /**
  * Opens the Listing PR on the official listing repository (Git-native
- * registry, spec §6/D13): fork → branch → put record + PR payload → PR.
+ * registry, spec §6/D13): fork → branch → pointer request → PR.
  *
- * Uses the seller's authenticated `gh` session — the registry accepts
- * contributions only through pull requests, never through an API server.
+ * POINTER-ONLY: the request carries just repository@release + sell_url.
+ * Every piece of listing information is derived by Listing CI from the
+ * seller's LIVE /sell page and manifest at verification time — nothing
+ * seller-authored passes through the PR.
  */
 
 import { execFileSync } from 'child_process';
@@ -12,29 +14,28 @@ import type { ListingPrPayload } from '../domain/listing/pr.js';
 
 export const LISTING_UPSTREAM = 'EnzoVezzaro/reposell-listing';
 
-/** Registry record shape (spec §8) derived from the verified PR payload. */
-export function recordFromPayload(payload: ListingPrPayload): Record<string, unknown> {
+export interface ListingRequest {
+  schema: 'reposell-listing-request/v1';
+  repository: string;
+  release: string;
+  sell_url: string;
+}
+
+/** Pure: the minimal pointer the seller's publication puts on the PR. */
+export function requestFromPayload(payload: ListingPrPayload): ListingRequest {
   return {
-    schema: 'reposell-listing-record/v1',
-    product: {
-      repository: `${payload.repository.owner}/${payload.repository.name}`,
-      release: payload.release.version,
-    },
-    seller: {
-      sell_url: payload.sell.url,
-      payment_link: payload.sell.payment_link,
-    },
-    listing: {
-      discovery_price: payload.listing.discovery_price,
-    },
+    schema: 'reposell-listing-request/v1',
+    repository: `${payload.repository.owner}/${payload.repository.name}`,
+    release: payload.release.version,
+    sell_url: payload.sell.url,
   };
 }
 
-/** Pure: file paths inside the registry's listing/ directory. */
-export function listingFilePaths(payload: ListingPrPayload): { record: string; pr: string } {
+/** Pure: file path inside the registry's listing/ directory. */
+export function listingRequestPath(payload: ListingPrPayload): string {
   const base = `${payload.repository.owner}-${payload.repository.name}-${payload.release.version}`
     .replace(/[^A-Za-z0-9._-]/g, '-');
-  return { record: `listing/${base}.json`, pr: `listing/${base}.pr.json` };
+  return `listing/${base}.request.json`;
 }
 
 function gh(args: string[], input?: string): string {
@@ -52,9 +53,9 @@ export interface ListingPrResult {
  * caller can print so publication itself is never blocked by the listing.
  */
 export function openListingPr(payload: ListingPrPayload): ListingPrResult {
-  const record = JSON.stringify(recordFromPayload(payload), null, 2);
-  const prJson = JSON.stringify(payload, null, 2);
-  const paths = listingFilePaths(payload);
+  const request = requestFromPayload(payload);
+  const content = `${JSON.stringify(request, null, 2)}\n`;
+  const requestPath = listingRequestPath(payload);
   const branch = `listing/${payload.repository.name}-${payload.release.version}`.replace(/[^A-Za-z0-9/._-]/g, '-');
 
   try {
@@ -66,72 +67,52 @@ export function openListingPr(payload: ListingPrPayload): ListingPrResult {
     }
 
     const login = gh(['api', 'user', '--jq', '.login']).trim();
-    const baseSha = gh([
-      'api',
-      `repos/${login}/reposell-listing/git/ref/heads/main`,
-      '--jq',
-      '.object.sha',
-    ]).trim();
+    const repoFull =
+      login === 'EnzoVezzaro'
+        ? LISTING_UPSTREAM // same owner — branch directly on upstream
+        : `${login}/reposell-listing`;
+
+    const baseSha = gh(['api', `repos/${repoFull}/git/ref/heads/main`, '--jq', '.object.sha']).trim();
 
     gh(
       [
-        'api',
-        '--method',
-        'POST',
-        `repos/${login}/reposell-listing/git/refs`,
-        '-f',
-        `ref=refs/heads/${branch}`,
-        '-f',
-        `sha=${baseSha}`,
+        'api', '--method', 'POST',
+        `repos/${repoFull}/git/refs`,
+        '-f', `ref=refs/heads/${branch}`,
+        '-f', `sha=${baseSha}`,
       ],
       // A previous attempt may have created the branch already.
     );
 
-    for (const [path, content] of [
-      [paths.record, record],
-      [paths.pr, prJson],
-    ] as const) {
-      gh(
-        [
-          'api',
-          '--method',
-          'PUT',
-          `repos/${login}/reposell-listing/contents/${path}`,
-          '-f',
-          `message=list ${payload.repository.owner}/${payload.repository.name} @ ${payload.release.version}`,
-          '-f',
-          `content=${Buffer.from(content, 'utf8').toString('base64')}`,
-          '-f',
-          `branch=${branch}`,
-        ],
-      );
-    }
+    gh(
+      [
+        'api', '--method', 'PUT',
+        `repos/${repoFull}/contents/${requestPath}`,
+        '-f', `message=list ${request.repository} @ ${request.release}`,
+        '-f', `content=${Buffer.from(content, 'utf8').toString('base64')}`,
+        '-f', `branch=${branch}`,
+      ],
+    );
 
     const body = [
-      `Listing request for **${payload.repository.owner}/${payload.repository.name} @ ${payload.release.version}**.`,
+      `Listing request for **${request.repository} @ ${request.release}**.`,
       '',
-      `- Seller /sell: ${payload.sell.url}`,
-      `- Seller Payment Link: ${payload.sell.payment_link}`,
-      `- Discovery price: ${payload.listing.discovery_price.amount} ${payload.listing.discovery_price.currency} (buyer-paid, immutable per release)`,
+      `- Seller /sell endpoint: ${request.sell_url}`,
       '',
-      'Listing CI: verify fail-closed against the live /sell endpoint.',
+      'Listing CI derives every listed field live from this endpoint (identity,',
+      'release, verified Payment Link, seller-declared discovery contribution)',
+      'and commits the registry record into this branch before merge.',
     ].join('\n');
 
+    const head = login === 'EnzoVezzaro' ? branch : `${login}:${branch}`;
     const prUrl = gh([
-      'api',
-      '--method',
-      'POST',
+      'api', '--method', 'POST',
       `repos/${LISTING_UPSTREAM}/pulls`,
-      '-f',
-      `title=${payload.repository.owner}/${payload.repository.name} @ ${payload.release.version}`,
-      '-f',
-      `head=${login}:${branch}`,
-      '-f',
-      'base=main',
-      '-f',
-      `body=${body}`,
-      '--jq',
-      '.html_url',
+      '-f', `title=${request.repository} @ ${request.release}`,
+      '-f', `head=${head}`,
+      '-f', 'base=main',
+      '-f', `body=${body}`,
+      '--jq', '.html_url',
     ]).trim();
 
     return { opened: true, url: prUrl };

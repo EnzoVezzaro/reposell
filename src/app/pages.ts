@@ -86,6 +86,10 @@ export interface SellPageModel {
   productName: string;
   description: string;
   entries: ReleasesIndexEntry[];
+  /** owner/name — embedded so listing CI can verify repository identity. */
+  repositorySlug: string;
+  /** Seller-configured discovery contribution (buyer-paid at the listing). */
+  listingContribution?: { amount: number; currency: string };
 }
 
 function money(amount: number, currency: string): string {
@@ -170,7 +174,12 @@ ${blockedCards}
     description: model.description,
     body,
     jsonLd,
-    embeddedJson: { schema: 'reposell/sell-page/v1', releases: model.entries },
+    embeddedJson: {
+      schema: 'reposell/sell-page/v1',
+      repository: model.repositorySlug,
+      releases: model.entries,
+      ...(model.listingContribution !== undefined ? { listing: { contribution: model.listingContribution } } : {}),
+    },
   });
 }
 

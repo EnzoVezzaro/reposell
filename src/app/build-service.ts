@@ -303,6 +303,16 @@ export async function buildSite(cwd: string, options: BuildOptions = {}): Promis
       productName: evaluation.productName,
       description: evaluation.description,
       entries: catalogEntries,
+      repositorySlug: evaluation.repositorySlug,
+      ...(evaluation.config?.listing?.contribution?.amount !== undefined &&
+      evaluation.config.listing.contribution.currency !== undefined
+        ? {
+            listingContribution: {
+              amount: evaluation.config.listing.contribution.amount,
+              currency: evaluation.config.listing.contribution.currency,
+            },
+          }
+        : {}),
     });
 
   files['index.html'] = renderLandingPage({

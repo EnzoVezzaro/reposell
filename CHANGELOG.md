@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-08-26
+
+### Changed
+- **Listing PRs are pointer-only**: the PR carries just `repository @ release` + the `/sell` URL — zero seller-authored listing data. Listing CI now derives every listed field live from the seller's endpoints (embedded `/sell` document: identity, available release, verified Payment Link, seller-declared discovery contribution) and commits the derived registry record into the PR branch before merge
+- The /sell page embeds its repository identity and the seller-configured discovery contribution so CI has a trustworthy source of truth
+
+### Fixed
+- Live /sell health check no longer reads an undefined repository field
+
 ## [0.1.17] - 2026-08-26
 
 ### Added
