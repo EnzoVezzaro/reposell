@@ -291,14 +291,7 @@ export async function buildSite(cwd: string, options: BuildOptions = {}): Promis
   }
 
   const availableEntries = catalogEntries.filter((entry) => entry.status === 'available');
-  const customSell = await renderCustomStorefront({
-    cwd,
-    repositorySlug: evaluation.repositorySlug,
-    repositoryUrl: `https://github.com/${evaluation.repositorySlug}`,
-    catalogEntries,
-  });
   files['sell/index.html'] =
-    customSell ??
     renderSellPage({
       productName: evaluation.productName,
       description: evaluation.description,
@@ -402,57 +395,6 @@ function aggregateChecks(evaluations: ReleaseEvaluation[]): HealthChecks {
     checks[name] = evaluations.every((evaluation) => evaluation.checks[name] === 'valid') ? 'valid' : 'failed';
   }
   return checks;
-}
-
-interface StorefrontCoreModule {
-  parseStorefrontDocument: (input: unknown) => { ok: boolean; document?: unknown; errors: string[] };
-  renderStorefront: (document: unknown, context: unknown) => { html: string };
-}
-
-/**
- * Renders sell/index.html from `.reposell/storefront.json` when the seller
- * customized their storefront (Studio output). The core module is an
- * OPTIONAL dependency: absent (published CLI) or invalid document →
- * undefined → caller falls back to the built-in page. Fail-open by design.
- */
-export async function renderCustomStorefront(input: {
-  cwd: string;
-  repositorySlug: string;
-  repositoryUrl: string;
-  catalogEntries: ReleasesIndexEntry[];
-}): Promise<string | undefined> {
-  let raw: string;
-  try {
-    raw = await fs.readFile(path.join(input.cwd, '.reposell', 'storefront.json'), 'utf8');
-  } catch {
-    return undefined;
-  }
-  let core: StorefrontCoreModule;
-  try {
-    // SAFETY: optional peer dependency; absence is a supported state.
-    core = (await import('@reposell/storefront-core')) as unknown as StorefrontCoreModule;
-  } catch {
-    console.warn('storefront.json found but @reposell/storefront-core is not installed — using built-in sell page');
-    return undefined;
-  }
-  try {
-    // SAFETY: JSON.parse returns `any`; parseStorefrontDocument narrows unknown internally.
-    const parsed = core.parseStorefrontDocument(JSON.parse(raw) as unknown);
-    if (!parsed.ok || parsed.document === undefined) {
-      console.warn(`storefront.json invalid (${parsed.errors.join('; ')}) — using built-in sell page`);
-      return undefined;
-    }
-    const context = {
-      repositorySlug: input.repositorySlug,
-      repositoryUrl: input.repositoryUrl,
-      releases: input.catalogEntries,
-    };
-    // SAFETY: parsed.document validated by parseStorefrontDocument above.
-    return core.renderStorefront(parsed.document as never, context as never).html;
-  } catch (error) {
-    console.warn(`custom storefront render failed (${error instanceof Error ? error.message : String(error)}) — using built-in sell page`);
-    return undefined;
-  }
 }
 
 export function stableJson(value: unknown): string {

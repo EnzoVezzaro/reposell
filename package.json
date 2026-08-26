@@ -57,13 +57,5 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
-  ],
-  "peerDependencies": {
-    "@reposell/storefront-core": "*"
-  },
-  "peerDependenciesMeta": {
-    "@reposell/storefront-core": {
-      "optional": true
-    }
-  }
+  ]
 }

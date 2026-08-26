@@ -72,8 +72,7 @@ github.com/EnzoVezzaro/reposell-listing          # official listing instance (re
 github.com/EnzoVezzaro/reposell-community-listing   # community listing frontend
 ```
 
-Local development may also keep sibling tooling folders alongside them
-(`storefront-core/` — document schema + renderer, npm: `@reposell/storefront-core`).
+Local development may also keep sibling tooling folders alongside them.
 This is optional and not required to build the CLI.
 
 Clone and build the CLI:

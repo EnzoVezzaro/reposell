@@ -54,34 +54,6 @@ describe('generateSellSite', () => {
     expect(css).toContain('"Geist Mono"');
   });
 
-  it('renders through the SAME engine as Studio + CI (WYSIWYG)', async () => {
-    // With @reposell/storefront-core installed (dev/studio environments),
-    // sell/ files must be byte-identical to the core renderer output.
-    let core: typeof import('@reposell/storefront-core');
-    try {
-      core = await import('@reposell/storefront-core');
-    } catch {
-      return; // optional peer absent — legacy template path, nothing to prove
-    }
-    const result = await generateSellSite(cwd, { productName: 'acme-tool' });
-    expect(result.written).toContain('sell/index.html');
-    const raw: unknown = JSON.parse(
-      await fs.readFile(path.join(cwd, '.reposell', 'storefront.json'), 'utf8'),
-    );
-    // SAFETY: document produced by storefrontDocument; parse before render.
-    const parsed = core.parseStorefrontDocument(raw);
-    if (!parsed.ok || parsed.document === undefined) throw new Error('invalid generated document');
-    // SAFETY: validated by parseStorefrontDocument immediately above.
-    const build = core.renderStorefront(parsed.document as never, {
-      repositorySlug: '',
-      repositoryUrl: '',
-      releases: [],
-    });
-    expect(await fs.readFile(path.join(cwd, 'sell', 'index.html'), 'utf8')).toBe(build.html);
-    expect(await fs.readFile(path.join(cwd, 'sell', 'styles.css'), 'utf8')).toBe(build.css);
-    expect(await fs.readFile(path.join(cwd, 'sell', 'scripts.js'), 'utf8')).toBe(build.js);
-  });
-
   it('renders a disabled CTA with publish guidance when no link is known', async () => {
     const result = await generateSellSite(cwd, { productName: 'acme-tool' });
     expect(result.paymentLinkWired).toBe(false);

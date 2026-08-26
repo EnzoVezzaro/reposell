@@ -8,10 +8,6 @@
  *   sell/styles.css             theme stylesheet
  *   sell/scripts.js             reveal-on-scroll runtime
  *
- * WYSIWYG contract: when @reposell/storefront-core is installed, the files
- * are rendered by the CORE renderer from the document — byte-identical to
- * what the Studio canvas shows and what CI deploys. Without core, a legacy
- * built-in template is used instead (fail-open, optional peer dependency).
  *
  * Fork-centric: buyers purchase a fork of the signed release; at init time
  * no release exists, so the buy CTA renders disabled and no payment link is
@@ -296,42 +292,6 @@ ${linkComment}
   return { html, css: STYLES_CSS, js: SCRIPTS_JS };
 }
 
-interface StorefrontCoreRenderModule {
-  parseStorefrontDocument: (input: unknown) => { ok: boolean; document?: unknown; errors: string[] };
-  renderStorefront: (document: unknown, context: unknown) => { html: string; css: string; js: string };
-}
-
-/**
- * Renders the document with the SAME engine the Studio canvas and CI build
- * use. Returns undefined when the optional peer dependency is absent or the
- * document is invalid — callers fall back to the built-in template.
- */
-async function renderWithCore(document: unknown): Promise<SellTemplateFiles | undefined> {
-  let core: StorefrontCoreRenderModule;
-  try {
-    // SAFETY: optional peer dependency; absence is a supported state.
-    core = (await import('@reposell/storefront-core')) as unknown as StorefrontCoreRenderModule;
-  } catch {
-    return undefined;
-  }
-  try {
-    // SAFETY: parseStorefrontDocument narrows unknown internally.
-    const parsed = core.parseStorefrontDocument(document);
-    if (!parsed.ok || parsed.document === undefined) return undefined;
-    // Init-time context: no releases yet — identical fallback to the
-    // Studio's loadContext when no fixture exists, keeping both in sync.
-    // SAFETY: document already validated by parseStorefrontDocument above.
-    const build = core.renderStorefront(parsed.document as never, {
-      repositorySlug: '',
-      repositoryUrl: '',
-      releases: [],
-    });
-    return { html: build.html, css: build.css, js: build.js };
-  } catch {
-    return undefined;
-  }
-}
-
 /** Writes-or-skips helper: existing files are never clobbered. */
 async function writeFresh(fullPath: string, content: string): Promise<string | undefined> {
   try {
@@ -352,9 +312,7 @@ export async function generateSellSite(cwd: string, options: SellSiteOptions): P
     written.push(path.relative(cwd, documentPath));
   }
 
-  // WYSIWYG: prefer the core renderer so these files match the Studio
-  // canvas and the CI-deployed page exactly; legacy template as fallback.
-  const files = (await renderWithCore(document)) ?? renderSellTemplate(options);
+  const files = renderSellTemplate(options);
 
   const sellDir = path.join(cwd, 'sell');
   await fs.mkdir(sellDir, { recursive: true });
