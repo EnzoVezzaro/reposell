@@ -5,6 +5,7 @@
  */
 
 import type { ReleasesIndexEntry } from '../domain/protocol/documents.js';
+import { readSellTemplate } from './sell-template.js';
 
 export function escapeHtml(value: string): string {
   return value
@@ -107,237 +108,60 @@ function offerLabel(entry: { offers?: ReleasesIndexEntry['offers'] }): string {
 
 export function renderSellPage(model: SellPageModel): string {
   const available = model.entries.filter((entry) => entry.status === 'available');
-  const blocked = model.entries.filter((entry) => entry.status !== 'available');
 
-  const cards = available
-    .map((entry) => {
-      const rows = (entry.offers ?? [])
-        .filter((offer) => offer.paymentLink !== undefined)
-        .map((offer) => {
-          // SAFETY: available offers always carry a verified payment link.
-          const link = escapeHtml(offer.paymentLink ?? '#');
-          const cadence =
-            offer.billing === 'recurring'
-              ? `per-${offer.interval ?? 'month'}`
-              : 'one-time';
-          const seats = offer.seats !== undefined ? ` &middot; ${offer.seats} seats` : '';
-          return `<div class="offer"><div><span class="offer-name">${escapeHtml(offer.name)}</span><div class="meta">${cadence}${seats}</div></div><div style="text-align:right"><span class="price">${escapeHtml(money(offer.price, offer.currency))}</span> <a class="buy" href="${link}" rel="nofollow">Buy</a></div></div>`;
-        })
-        .join('\n  ');
-      return `<div class="card release">
-  <div class="ver">Release ${escapeHtml(entry.version)}</div>
-  <div class="offers">
-  ${rows.length > 0 ? rows : `<div class="meta">no verified payment links</div>`}
-  </div>
-  <div class="meta">${escapeHtml(offerLabel(entry))} &middot; instant fork delivery</div>
-</div>`;
-    })
-    .join('\n');
+  // Build the reposell-data JSON that the Vue app reads
+  const embeddedData = {
+    schema: 'reposell/sell-page/v1' as const,
+    productName: model.productName,
+    description: model.description || 'Buy directly from the source repository.',
+    repository: model.repositorySlug,
+    releases: model.entries.map((e) => ({
+      version: e.version,
+      status: e.status,
+      offers: (e.offers ?? []).map((o) => ({
+        scheme: o.scheme,
+        name: o.name,
+        billing: o.billing,
+        interval: o.interval,
+        seats: o.seats,
+        price: o.price,
+        currency: o.currency,
+        status: o.status,
+        paymentLink: o.paymentLink,
+      })),
+    })),
+    ...(model.listingContribution !== undefined ? { listing: { contribution: model.listingContribution } } : {}),
+  };
 
-  const blockedCards = blocked
-    .map(
-      (entry) => `<div class="card">
-  <div><div class="ver">Release ${escapeHtml(entry.version)}</div><div class="meta">not currently purchasable</div></div>
-  <span class="pill bad">blocked</span>
-</div>`,
-    )
-    .join('\n');
-
-  const body = `<span class="badge">Direct sale</span>
-<h1>${escapeHtml(model.productName)}</h1>
-<p class="desc">${escapeHtml(model.description || 'Buy directly from the source repository.')}</p>
-<div class="card" id="gh-section" style="flex-direction:column;align-items:stretch;gap:.8rem;margin-bottom:1.2rem;">
-  <div class="ver">GitHub</div>
-  <div id="gh-content">
-    <p class="meta">Connect your GitHub account to buy and fork this repository.</p>
-    <button class="buy" id="gh-connect-btn" style="margin-top:.5rem">Connect GitHub</button>
-  </div>
-  <div id="gh-status" style="font-size:.85rem;color:var(--muted);display:none"></div>
-  <div id="gh-actions" style="display:none"></div>
-</div>
-<div class="grid" id="sell-grid">
-${cards.length > 0 ? cards : '<p class="empty">No releases are currently available for purchase.</p>'}
-${blockedCards}
-</div>`;
-
+  // Build JSON-LD for structured data
+  const jsonLdOffers = available.flatMap((entry) =>
+    (entry.offers ?? [])
+      .filter((offer) => offer.paymentLink !== undefined)
+      .map((offer) => ({
+        '@type': 'Offer',
+        name: `${offer.name} — Release ${entry.version}`,
+        price: offer.price.toFixed(2),
+        priceCurrency: offer.currency,
+        availability: 'https://schema.org/InStock',
+        url: offer.paymentLink,
+      })),
+  );
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: model.productName,
     description: model.description,
-    offers: available.flatMap((entry) =>
-      (entry.offers ?? [])
-        .filter((offer) => offer.paymentLink !== undefined)
-        .map((offer) => ({
-          '@type': 'Offer',
-          name: `${offer.name} — Release ${entry.version}`,
-          price: offer.price.toFixed(2),
-          priceCurrency: offer.currency,
-          availability: 'https://schema.org/InStock',
-          url: offer.paymentLink,
-        })),
-      ),
+    ...(jsonLdOffers.length > 0 ? { offers: jsonLdOffers } : {}),
   };
 
-  // Full flow script: GitHub login first → Buy buttons enabled → Payment → Fork
-  // Same pattern as listing detail page.
-  const forkScript = `
-<script>
-(function(){
-  var GITHUB_CLIENT_ID='Iv23lidhennqrdpdFUAT';
-  var CORS_PROXY='https://corsproxy.io/?url=';
-  var GH_TOKEN_KEY='rs-sell-gh-token';
-  var GH_USER_KEY='rs-sell-gh-user';
-  var params=new URLSearchParams(location.search);
-  var sid=params.get('session_id');
+  // Load the Vue app template and inject data
+  const template = readSellTemplate();
 
-  var dataEl=document.getElementById('reposell-data');
-  var repoSlug='';
-  if(dataEl){try{var d=JSON.parse(dataEl.textContent);repoSlug=d.repository||''}catch(e){}}
-  var parts=repoSlug.split('/');
-  var owner=parts[0]||'';var repo=parts[1]||'';
-
-  var ghContent=document.getElementById('gh-content');
-  var ghStatus=document.getElementById('gh-status');
-  var ghActions=document.getElementById('gh-actions');
-  var sellGrid=document.getElementById('sell-grid');
-  var token=sessionStorage.getItem(GH_TOKEN_KEY);
-  var ghUser=sessionStorage.getItem(GH_USER_KEY);
-  var pollTimer=null;
-
-  function disableBuyButtons(){
-    var btns=sellGrid.querySelectorAll('a.buy');
-    for(var i=0;i<btns.length;i++){btns[i].classList.add('off');btns[i].setAttribute('aria-disabled','true')}
-  }
-  function enableBuyButtons(){
-    var btns=sellGrid.querySelectorAll('a.buy');
-    for(var i=0;i<btns.length;i++){btns[i].classList.remove('off');btns[i].removeAttribute('aria-disabled')}
-  }
-  disableBuyButtons();
-
-  function proxyFetch(url,options){
-    return fetch(CORS_PROXY+encodeURIComponent(url),options)
-  }
-
-  function showConnected(login){
-    ghContent.innerHTML='';
-    ghStatus.style.display='';
-    ghStatus.innerHTML='\u2713 Connected as <strong>'+login+'</strong>';
-    ghActions.style.display='';
-    ghActions.innerHTML='<button id="gh-disconnect" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer">Disconnect</button>';
-    document.getElementById('gh-disconnect').onclick=function(){
-      sessionStorage.removeItem(GH_TOKEN_KEY);
-      sessionStorage.removeItem(GH_USER_KEY);
-      token=null;ghUser=null;
-      disableBuyButtons();
-      resetToIdle();
-    };
-    enableBuyButtons();
-  }
-
-  function resetToIdle(){
-    ghStatus.style.display='none';
-    ghActions.style.display='none';
-    ghContent.innerHTML='<p class="meta">Connect your GitHub account to buy and fork this repository.</p><button class="buy" id="gh-connect-btn" style="margin-top:.5rem">Connect GitHub</button>';
-    document.getElementById('gh-connect-btn').onclick=connectGithub;
-  }
-
-  function connectGithub(){
-    ghContent.innerHTML='';
-    ghStatus.style.display='';
-    ghStatus.innerHTML='Connecting to GitHub...';
-    ghActions.style.display='';
-    ghActions.innerHTML='';
-
-    proxyFetch('https://github.com/login/device/code',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,scope:'repo'})})
-    .then(function(r){
-      if(!r.ok)throw new Error('GitHub returned HTTP '+r.status);
-      return r.json();
-    }).then(function(data){
-      if(data.error){ghStatus.innerHTML='<span style="color:var(--bad)">Error: '+(data.error_description||data.error)+'</span>';ghActions.innerHTML='<button id="gh-retry" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer;margin-top:.5rem">Try again</button>';document.getElementById('gh-retry').onclick=connectGithub;return}
-      window.open(data.verification_uri,'_blank','noopener');
-      ghStatus.innerHTML='Enter code: <strong style="font-size:1.15rem;letter-spacing:.1em">'+data.user_code+'</strong>';
-      ghActions.innerHTML='<div class="meta">at <a href="'+data.verification_uri+'" target="_blank" rel="noopener">'+data.verification_uri+'</a></div>';
-      pollForToken(data.device_code,data.interval||5,data.expires_in||900);
-    }).catch(function(e){ghStatus.innerHTML='<span style="color:var(--bad)">Could not reach GitHub: '+(e.message||'check your connection')+'</span>';ghActions.innerHTML='<button id="gh-retry" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer;margin-top:.5rem">Try again</button>';document.getElementById('gh-retry').onclick=connectGithub});
-  }
-
-  function pollForToken(code,intervalMs,deadline){
-    if(Date.now()>=deadline){ghStatus.innerHTML='Device code expired — ';resetToIdle();return}
-    pollTimer=setTimeout(function(){
-      proxyFetch('https://github.com/login/oauth/access_token',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,device_code:code,grant_type:'urn:ietf:params:oauth:grant-type:device_code'})})
-      .then(function(r){return r.json()}).then(function(data){
-        if(data.access_token){
-          token=data.access_token;
-          sessionStorage.setItem(GH_TOKEN_KEY,token);
-          fetch('https://api.github.com/user',{headers:{Authorization:'Bearer '+token}})
-          .then(function(r){return r.json()}).then(function(u){
-            ghUser=JSON.stringify({login:u.login,id:u.id});
-            sessionStorage.setItem(GH_USER_KEY,ghUser);
-            showConnected(u.login);
-            if(sid)forkRepo();
-          });
-          return;
-        }
-        if(data.error==='authorization_pending'){pollForToken(code,intervalMs,deadline);return}
-        if(data.error==='slow_down'){pollForToken(code,intervalMs+5000,deadline);return}
-        ghStatus.innerHTML='Authorization failed: '+(data.error_description||data.error);
-        resetToIdle();
-      }).catch(function(){pollForToken(code,intervalMs,deadline)});
-    },intervalMs);
-  }
-
-  function forkRepo(){
-    if(!token||!owner||!repo)return;
-    var forkDiv=document.createElement('div');
-    forkDiv.className='card fork-section';
-    forkDiv.style.cssText='flex-direction:column;align-items:stretch;gap:1rem;border:2px solid var(--ok);';
-    forkDiv.innerHTML='<div class="ver" style="color:var(--ok)">&#10003; Payment confirmed</div>'+
-      '<div id="fork-status" style="font-size:.85rem;color:var(--muted)">Forking <strong>'+owner+'/'+repo+'</strong> to your GitHub...</div>'+
-      '<div id="fork-actions"></div>';
-    sellGrid.appendChild(forkDiv);
-    var forkStatus=document.getElementById('fork-status');
-    var forkActions=document.getElementById('fork-actions');
-
-    fetch('https://api.github.com/repos/'+owner+'/'+repo+'/forks',{method:'POST',headers:{Authorization:'Bearer '+token,'Accept':'application/vnd.github+json'}})
-    .then(function(r){
-      if(!r.ok)return r.json().then(function(b){throw new Error(b.message||'Fork failed: HTTP '+r.status)});
-      return r.json();
-    })
-    .then(function(fork){
-      forkStatus.innerHTML='<span style="color:var(--ok)">&#10003; Fork created!</span>';
-      forkActions.innerHTML='<a href="'+fork.html_url+'" target="_blank" rel="noopener" class="buy">Open forked repository &#8599;</a>'+
-        '<div class="meta" style="margin-top:.5rem">'+fork.full_name+'</div>';
-    })
-    .catch(function(e){
-      forkStatus.innerHTML='<span style="color:var(--bad)">Fork failed: '+e.message+'</span>';
-      forkActions.innerHTML='<button class="buy" id="retry-fork">Try again</button>';
-      document.getElementById('retry-fork').onclick=forkRepo;
-    });
-  }
-
-  // INIT: check stored token or show button
-  if(token&&ghUser){
-    try{showConnected(JSON.parse(ghUser).login);if(sid)forkRepo()}catch(e){resetToIdle()}
-  }else{
-    document.getElementById('gh-connect-btn').onclick=connectGithub;
-    if(sid)connectGithub();
-  }
-})();
-</script>`;
-
-  return renderPage({
-    title: `${model.productName} — Buy`,
-    description: model.description,
-    body: body + forkScript,
-    jsonLd,
-    embeddedJson: {
-      schema: 'reposell/sell-page/v1',
-      repository: model.repositorySlug,
-      releases: model.entries,
-      ...(model.listingContribution !== undefined ? { listing: { contribution: model.listingContribution } } : {}),
-    },
-  });
+  // Replace placeholders
+  return template
+    .replace('__REPOSELL_DATA__', JSON.stringify(embeddedData))
+    .replace('__JSON_LD__', JSON.stringify(jsonLd))
+    .replace('RepoSell — Buy', `${model.productName} — Buy`);
 }
 
 export interface LandingPageModel {
