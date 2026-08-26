@@ -48,8 +48,8 @@ describe('generateSellSite', () => {
     const result = await generateSellSite(cwd, { productName: 'acme-tool' });
     expect(result.written).toContain('sell/styles.css');
     const css = await fs.readFile(path.join(cwd, 'sell', 'styles.css'), 'utf8');
-    expect(css).toContain('#0af188'); // signal green
-    expect(css).toContain('#0a0a0a'); // ink background
+    expect(css).toContain('#f5d90a'); // accent
+    expect(css).toContain('#0b0c10'); // background
     expect(css).toContain('Syne');
     expect(css).toContain('"Geist Mono"');
   });

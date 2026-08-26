@@ -3,11 +3,10 @@
  * repository can start selling right after init.
  *
  * Outputs (never overwrites existing files):
- *   .reposell/storefront.json   storefront document (Studio/builder source)
- *   sell/index.html             rendered page — SAME output as Studio + build
- *   sell/styles.css             theme stylesheet
- *   sell/scripts.js             reveal-on-scroll runtime
- *
+ *   .reposell/storefront.json   storefront document
+ *   sell/index.html             rendered page
+ *   sell/styles.css             theme stylesheet (from @reposell/sell)
+ *   sell/scripts.js             reveal-on-scroll runtime (from @reposell/sell)
  *
  * Fork-centric: buyers purchase a fork of the signed release; at init time
  * no release exists, so the buy CTA renders disabled and no payment link is
@@ -17,6 +16,12 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import {
+  STYLES_CSS,
+  SCRIPTS_JS,
+  buildStorefrontDocument,
+  STOREFRONT_VERSION,
+} from '@reposell/sell';
 
 export interface SellSiteOptions {
   productName: string;
@@ -29,76 +34,6 @@ export interface SellSiteResult {
   paymentLinkWired: boolean;
 }
 
-const STOREFRONT_VERSION = 1;
-
-function storefrontDocument(options: SellSiteOptions) {
-  return {
-    schema: 'reposell-storefront',
-    version: STOREFRONT_VERSION,
-    product: {
-      name: options.productName,
-      description: 'Buy a licensed fork of the signed release — delivered instantly.',
-    },
-    theme: {
-      colors: {
-        background: '#0a0a0a',
-        surface: '#161616',
-        ink: '#f0f0f0',
-        muted: '#7a7a7a',
-        accent: '#0af188',
-        accentInk: '#0a0a0a',
-        line: 'rgba(240,240,240,0.08)',
-      },
-      fonts: {
-        heading: 'Syne, sans-serif',
-        body: 'Outfit, sans-serif',
-        mono: '"Geist Mono", monospace',
-      },
-      radiusCard: '2px',
-      radiusButton: '2px',
-      maxWidth: '920px',
-    },
-    sections: [
-      {
-        id: 'hero',
-        type: 'hero',
-        eyebrow: 'Official /sell',
-        title: options.productName,
-        subtitle: 'Buy a licensed fork of the signed release — delivered instantly, license included.',
-        ctas: [{ label: 'Buy latest release', action: { kind: 'purchase' }, variant: 'primary' }],
-      },
-      {
-        id: 'features',
-        type: 'features',
-        title: 'What you get',
-        items: [
-          { title: 'Signed release fork', body: 'You fork the exact tagged release you purchased — cryptographically signed.', icon: '◆' },
-          { title: 'License terms included', body: 'Your purchase ships with the project license and AI policy.', icon: '◇' },
-          { title: 'Verified payment', body: 'The payment link is checked against the manifest before it ever reaches you.', icon: '◈' },
-        ],
-      },
-      {
-        id: 'releases',
-        type: 'releases',
-        title: 'Releases',
-        // Onboarding rides the document, so Studio edits and CI renders
-        // carry the same guidance.
-        emptyMessage:
-          'No releases are available yet — declare one with `reposell release`, then run `reposell build`; this page updates automatically.',
-      },
-      {
-        id: 'faq',
-        type: 'faq',
-        items: [
-          { question: 'How is it delivered?', answer: 'Instantly — you receive a fork of the signed release, with your license terms attached.' },
-          { question: 'What about updates?', answer: 'Each release is a separate purchase; new releases appear here as they publish.' },
-        ],
-      },
-      { id: 'footer', type: 'footer', text: 'Powered by reposell — sell software straight from your project.', links: [] },
-    ],
-  };
-}
-
 function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -107,83 +42,6 @@ function escapeHtml(value: string): string {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
-
-const STYLES_CSS = `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Oxanium:wght@400..800&family=Syne:wght@400..800&family=Geist+Mono:wght@300..700&display=swap');
-:root{
-  --rs-bg:#0a0a0a;
-  --rs-surface:#161616;
-  --rs-surface-soft:#111111;
-  --rs-ink:#f0f0f0;
-  --rs-muted:#7a7a7a;
-  --rs-accent:#0af188;
-  --rs-accent-hover:#3df5a0;
-  --rs-accent-dim:rgba(10,241,136,0.12);
-  --rs-accent-ink:#0a0a0a;
-  --rs-line:rgba(240,240,240,0.08);
-  --rs-font-hero:Syne,sans-serif;
-  --rs-font-heading:Oxanium,sans-serif;
-  --rs-font-body:Outfit,sans-serif;
-  --rs-font-mono:"Geist Mono",monospace;
-  --rs-radius:2px;
-  --rs-max-width:920px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:var(--rs-font-body);background:var(--rs-bg);color:var(--rs-ink);line-height:1.6;-webkit-font-smoothing:antialiased}
-.rs-shell{width:min(var(--rs-max-width),92vw);margin:0 auto;padding:3rem 0 4rem}
-.rs-section{padding:2rem 0}
-.rs-section+.rs-section{border-top:1px solid var(--rs-line)}
-.rs-eyebrow{display:inline-block;font-family:var(--rs-font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rs-accent);background:var(--rs-accent-dim);border:1px solid transparent;border-radius:var(--rs-radius);padding:.3rem .8rem}
-.rs-title{font-family:var(--rs-font-hero);font-weight:700;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1.05;letter-spacing:-.02em;margin:.9rem 0 .5rem}
-.rs-subtitle{color:var(--rs-muted);font-size:1.08rem;max-width:56ch}
-.rs-ctas{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.5rem}
-.rs-btn{display:inline-block;font-family:var(--rs-font-heading);font-weight:600;background:var(--rs-accent);color:var(--rs-accent-ink);text-decoration:none;border-radius:var(--rs-radius);padding:.7rem 1.6rem;transition:transform .15s ease,background .15s ease}
-.rs-btn:hover{background:var(--rs-accent-hover);transform:translateY(-1px)}
-.rs-btn--disabled{background:transparent;border:1px solid var(--rs-line);color:var(--rs-muted);pointer-events:none}
-.rs-h2{font-family:var(--rs-font-heading);font-size:clamp(1.4rem,3vw,2rem);margin-bottom:1.2rem;letter-spacing:-.01em}
-.rs-kicker{font-family:var(--rs-font-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rs-accent);display:block;margin-bottom:.4rem}
-.rs-grid{display:grid;gap:1rem}
-.rs-grid--features{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.rs-card{position:relative;background:var(--rs-surface);border:1px solid var(--rs-line);border-radius:var(--rs-radius);padding:1.3rem 1.4rem}
-.rs-card::before{content:'+';position:absolute;top:.45rem;right:.7rem;font-family:var(--rs-font-mono);font-size:.8rem;color:var(--rs-accent)}
-.rs-feature-icon{color:var(--rs-accent);margin-bottom:.55rem}
-.rs-feature-title{font-family:var(--rs-font-heading);font-size:1rem;font-weight:600;margin-bottom:.35rem}
-.rs-feature-body{color:var(--rs-muted);font-size:.92rem}
-.rs-empty{color:var(--rs-muted)}
-.rs-note{color:var(--rs-muted);font-size:.88rem;margin-top:.8rem}
-.rs-note code{font-family:var(--rs-font-mono);color:var(--rs-accent)}
-.rs-faq{display:grid;gap:.7rem}
-.rs-faq-item summary{cursor:pointer;font-family:var(--rs-font-heading);font-weight:600;list-style:none}
-.rs-faq-item summary::-webkit-details-marker{display:none}
-.rs-faq-item[open] summary{margin-bottom:.5rem;color:var(--rs-accent)}
-.rs-faq-item p{color:var(--rs-muted);font-size:.95rem}
-.rs-reveal{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s ease}
-.rs-reveal--in{opacity:1;transform:none}
-footer.rs-footer{border-top:1px solid var(--rs-line);padding:1.6rem 0;color:var(--rs-muted);font-size:.88rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.rs-footer-links{display:flex;gap:1rem;flex-wrap:wrap}
-.rs-footer-links a,.rs-footer a{color:var(--rs-accent)}
-@media (prefers-reduced-motion: reduce){
-  html{scroll-behavior:auto}
-  .rs-reveal{opacity:1;transform:none;transition:none}
-  .rs-btn{transition:none}
-}`;
-
-const SCRIPTS_JS = `(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const targets = document.querySelectorAll('.rs-card, .rs-hero');
-  if (!('IntersectionObserver' in window)) {
-    targets.forEach((el) => el.classList.add('rs-reveal--in'));
-    return;
-  }
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      entry.target.classList.add('rs-reveal--in');
-      observer.unobserve(entry.target);
-    }
-  }, { threshold: 0.12 });
-  targets.forEach((el) => { el.classList.add('rs-reveal'); observer.observe(el); });
-})();`;
 
 export interface SellTemplateFiles {
   html: string;
@@ -305,7 +163,10 @@ async function writeFresh(fullPath: string, content: string): Promise<string | u
 export async function generateSellSite(cwd: string, options: SellSiteOptions): Promise<SellSiteResult> {
   const written: string[] = [];
 
-  const document = storefrontDocument(options);
+  const document = buildStorefrontDocument(
+    options.productName,
+    'Buy a licensed fork of the signed release — delivered instantly.',
+  );
   const documentPath = path.join(cwd, '.reposell', 'storefront.json');
   await fs.mkdir(path.dirname(documentPath), { recursive: true });
   if ((await writeFresh(documentPath, `${JSON.stringify(document, null, 2)}\n`)) !== undefined) {
