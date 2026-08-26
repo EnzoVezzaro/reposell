@@ -69,7 +69,10 @@ jobs:
           fi
 
       - name: Publish to npm
-        run: npm publish
+        run: |
+          # Auto-bump patch version so each push publishes a new version
+          npm version patch --no-git-tag-version
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
