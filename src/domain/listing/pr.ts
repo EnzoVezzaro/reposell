@@ -36,6 +36,15 @@ export interface ListingPrPayload {
       currency: string;
     };
   };
+  /** Product description from reposell.yml. */
+  description?: string;
+  /** Repository price from the seller's offer. */
+  price?: number;
+  currency?: string;
+  /** License scheme name (e.g. "RSL-1.0"). */
+  license?: string;
+  /** Tags for filtering listings (e.g. ["reposell", "example"]). */
+  tags?: string[];
   /** README markdown — fetched by the CLI from the seller's repo during publish. */
   readme?: string;
 }
@@ -159,6 +168,11 @@ export function buildListingPr(input: {
   sellUrl: string;
   sellerPaymentLink: string;
   discoveryPrice: { amount: number; currency: string };
+  description?: string;
+  price?: number;
+  currency?: string;
+  license?: string;
+  tags?: string[];
   readme?: string;
 }): ListingPrPayload {
   return {
@@ -182,6 +196,11 @@ export function buildListingPr(input: {
         currency: input.discoveryPrice.currency,
       },
     },
+    ...(input.description !== undefined ? { description: input.description } : {}),
+    ...(input.price !== undefined ? { price: input.price } : {}),
+    ...(input.currency !== undefined ? { currency: input.currency } : {}),
+    ...(input.license !== undefined ? { license: input.license } : {}),
+    ...(input.tags !== undefined && input.tags.length > 0 ? { tags: input.tags } : {}),
     ...(input.readme !== undefined ? { readme: input.readme } : {}),
   };
 }

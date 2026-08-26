@@ -141,6 +141,8 @@ export interface ListingSection {
     amount?: number;
     currency?: string;
   };
+  /** Tags for filtering listings (e.g. ["reposell", "example"]). */
+  tags?: string[];
 }
 
 export interface ParsedRelease {
@@ -243,6 +245,12 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
       if (c['currency'] !== undefined) {
         recordIssues(issues, typeof c['currency'] !== 'string', 'listing.contribution.currency must be a string');
         if (typeof c['currency'] === 'string') config.listing.contribution.currency = c['currency'].toUpperCase();
+      }
+    }
+    if (l['tags'] !== undefined) {
+      recordIssues(issues, !Array.isArray(l['tags']), 'listing.tags must be an array of strings');
+      if (Array.isArray(l['tags'])) {
+        config.listing.tags = l['tags'].filter((t: unknown) => typeof t === 'string');
       }
     }
   }

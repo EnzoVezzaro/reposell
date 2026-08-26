@@ -91,6 +91,12 @@ export async function listingPublishCommand(
     // README is optional — not all repos have one.
   }
 
+  // Extract product info from config.
+  const description = config.product?.description;
+  const licenseScheme = config.licensing?.schemes?.[primaryOffer?.scheme ?? ''];
+  const licenseName = licenseScheme?.template ?? licenseScheme?.name;
+  const tags = config.listing?.tags;
+
   const payload = buildListingPr({
     repositoryUrl: `https://github.com/${git.owner}/${git.repo}`,
     owner: git.owner,
@@ -99,6 +105,11 @@ export async function listingPublishCommand(
     sellUrl,
     sellerPaymentLink,
     discoveryPrice: { amount: discoveryAmount, currency: discoveryCurrency },
+    description,
+    price: primaryOffer?.amount,
+    currency: primaryOffer?.currency,
+    license: licenseName,
+    tags,
     readme,
   });
 
