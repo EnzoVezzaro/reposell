@@ -185,7 +185,6 @@ ${blockedCards}
 <script>
 (function(){
   var GITHUB_CLIENT_ID='Iv23lidhennqrdpdFUAT';
-  var CORS_PROXY='https://corsproxy.io/?url=';
   var GH_TOKEN_KEY='rs-sell-gh-token';
   var GH_USER_KEY='rs-sell-gh-user';
   var params=new URLSearchParams(location.search);
@@ -214,10 +213,6 @@ ${blockedCards}
     for(var i=0;i<btns.length;i++){btns[i].classList.remove('off');btns[i].removeAttribute('aria-disabled')}
   }
   disableBuyButtons();
-
-  function proxyFetch(url,options){
-    return fetch(CORS_PROXY+encodeURIComponent(url),options)
-  }
 
   function showConnected(login){
     ghContent.innerHTML='';
@@ -249,7 +244,7 @@ ${blockedCards}
     ghActions.style.display='';
     ghActions.innerHTML='';
 
-    proxyFetch('https://github.com/login/device/code',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,scope:'repo'})})
+    fetch('https://github.com/login/device/code',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,scope:'repo'})})
     .then(function(r){
       if(!r.ok)throw new Error('GitHub returned HTTP '+r.status);
       return r.json();
@@ -265,7 +260,7 @@ ${blockedCards}
   function pollForToken(code,intervalMs,deadline){
     if(Date.now()>=deadline){ghStatus.innerHTML='Device code expired — ';resetToIdle();return}
     pollTimer=setTimeout(function(){
-      proxyFetch('https://github.com/login/oauth/access_token',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,device_code:code,grant_type:'urn:ietf:params:oauth:grant-type:device_code'})})
+      fetch('https://github.com/login/oauth/access_token',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,device_code:code,grant_type:'urn:ietf:params:oauth:grant-type:device_code'})})
       .then(function(r){return r.json()}).then(function(data){
         if(data.access_token){
           token=data.access_token;
