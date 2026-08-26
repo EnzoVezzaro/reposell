@@ -70,7 +70,8 @@ export async function listingPublishCommand(
     ]);
   }
 
-  const sellUrl = args.sellUrl ?? `https://${git.owner}.github.io/${git.repo}/reposell/sell/`;
+  const sellUrl =
+    args.sellUrl ?? `https://${git.owner}.github.io/${git.repo}/sell/`;
   // Contribution preference recorded by the init wizard wins over the $5
   // default (D16); explicit flags win over both.
   const wizardAmount = config.listing?.contribution?.amount;

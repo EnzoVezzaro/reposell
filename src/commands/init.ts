@@ -608,7 +608,7 @@ function summarizeNextSteps(result: InitResult, state: WizardState): string {
   pending.push('reposell publish <tag>', 'git push — CI validates, signs, builds and deploys /reposell/*');
   if (state.listedContribution !== undefined && state.releaseTag !== undefined) {
     pending.push(
-      `After publishing: reposell listing publish ${state.releaseTag} — opens your Listing PR on EnzoVezzaro/reposell-listing`,
+      `Publishing opens your Listing PR automatically — your store goes live on listing.reposell.dev after CI verifies it`,
     );
   }
 

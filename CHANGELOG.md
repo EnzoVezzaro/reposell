@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2026-08-26
+
+### Added
+- **Publication opens the Listing PR automatically** when the seller opted in during init: fork → branch → `listing/<repo>-<release>.json` (+ PR payload) → PR on `EnzoVezzaro/reposell-listing` — CI verifies fail-closed, PASS auto-merges, discovery link provisions, store is listed. Failures never block the release and print retry guidance
+- Listing record + file paths are derived deterministically from the verified payload
+
+### Fixed
+- The seller's /sell endpoint default is now `https://<owner>.github.io/<repo>/sell/` (was the protocol-surface path `/reposell/sell/`)
+
 ## [0.1.16] - 2026-08-26
 
 ### Fixed

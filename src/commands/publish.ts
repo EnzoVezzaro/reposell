@@ -21,6 +21,8 @@ import {
 import { evaluateRepository, type BuildOptions } from '../app/build-service.js';
 import { formatEvaluation } from './evaluation-format.js';
 import { releaseCommand } from './release.js';
+import { listingPublishCommand, ListingPublishError, formatListingPublish } from './listing-publish.js';
+import { openListingPr } from '../app/listing-pr-submitter.js';
 
 export interface PublishResult {
   ok: boolean;
@@ -137,16 +139,55 @@ export async function publishCommand(
 
     await setReleaseStatus({ cwd, tag: target, status: 'published' });
 
+    let listingLines: string[] = [];
+    // Listing opt-in (init): publication opens the Listing PR automatically —
+    // the Git-native registry accepts stores only through pull requests.
+    let listingEnabled = false;
+    try {
+      listingEnabled = (await loadConfigFile(cwd)).config.listing?.enabled === true;
+    } catch {
+      // No config → not listed.
+    }
+    if (listingEnabled) {
+      try {
+        const listingReport = await listingPublishCommand(cwd, { tag: target });
+        const pr = openListingPr(listingReport.payload);
+        listingLines = formatListingPublish(listingReport).split('\n');
+        listingLines = listingLines.filter((line) => !line.startsWith('! Open the Listing PR'));
+        if (pr.opened) {
+          listingLines.push(`✓ Listing PR opened: ${pr.url ?? 'created'}`, '  CI verifies it fail-closed; PASS auto-merges → you are listed.');
+        } else {
+          listingLines.push(
+            `! Could not open the Listing PR (${pr.detail ?? 'unknown'}).`,
+            `  .reposell/listing-pr.json is ready — open one on ${'EnzoVezzaro/reposell-listing'} manually.`,
+          );
+        }
+      } catch (error) {
+        const detail =
+          error instanceof ListingPublishError
+            ? error.issues.join('; ')
+            : error instanceof Error
+              ? error.message.split('\n')[0]
+              : String(error);
+        listingLines = [
+          '! Listing PR not opened (listing publish failed):',
+          `    ${detail}`,
+          '  Your release is published; retry with `reposell listing publish ' + target + '`.',
+        ];
+      }
+    }
+
     return {
       ok: true,
       report: [
       `✓ Published ${target} with ${mine.gates.offers.length} offer(s): ${mine.gates.offers.map((o) => o.scheme).join(', ')}`,
       '  Payment link verified structurally' +
         (mine.offerDeepLinks.some((d) => d.outcome.kind === 'verified') ? ' and against Stripe price authority' : ''),
+      ...(listingLines.length > 0 ? ['', ...listingLines] : []),
       '',
       'Next steps:',
       '  git add reposell.yml && git commit -m "reposell: publish ' + target + '" && git push',
-      'CI will validate, sign, build /reposell/* and deploy GitHub Pages.',
+      'CI will validate, sign, build /reposell/* and deploy your /sell page.',
     ].join('\n'),
     };
   } catch (error) {
