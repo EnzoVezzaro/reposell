@@ -16,6 +16,7 @@ import { formatCheckResult, licenseCommand } from './license.js';
 import { renderBanner } from '../cli/banner.js';
 import { generateWorkflows } from '../workflows/ci.js';
 import { generateSellSite } from '../workflows/sell.js';
+import { launchStudio, STUDIO_URL } from '../workflows/studio.js';
 import { createIdentity } from '../app/signing-service.js';
 import { Prompter } from '../cli/prompts.js';
 import { releaseCommand } from './release.js';
@@ -318,6 +319,24 @@ async function initWizard(cwd: string): Promise<InitResult> {
         `✓ Built your /sell site${sellSiteLinked ? ' with your Stripe Payment Link' : ' (buy button disabled — no Stripe link yet)'}:`,
         ...sellSiteFiles.map((file) => `    ${file}`),
       );
+
+      // 7. open the /sell builder so the user can start building immediately
+      if (await prompter.confirm('\nOpen the /sell builder now?', true)) {
+        transcript.push('  Starting the visual builder (first run downloads it)…');
+        const studio = await launchStudio(cwd);
+        if (studio.ready) {
+          transcript.push(
+            `✓ Builder running at ${STUDIO_URL} — opening in your browser.`,
+            '  It keeps running in the background; close it with Ctrl+C in its terminal or:',
+            `    kill $(lsof -ti :5199)`,
+          );
+        } else {
+          transcript.push(
+            `! Could not start the builder (${studio.detail ?? 'unknown error'}).`,
+            '  Start it any time with: npx @reposell/storefront-studio',
+          );
+        }
+      }
     }
   } catch (wizardError) {
     // stdin ended early or a step failed — finish scaffolding, tell the user.

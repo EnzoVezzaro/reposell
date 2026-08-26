@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-08-25
+
+### Added
+- The init wizard now **opens the /sell builder automatically** at the end: launches `@reposell/storefront-studio` via npx against the repository (document `.reposell/storefront.json`, output `sell/`) and opens the browser at http://localhost:5199
+- New `/sell builder` identity: template matches the reposell landing pages (signal green on ink, Syne/Oxanium/Outfit/Geist Mono, chamfered edges) and is fork-centric — buyers never see the source repository
+
 ## [0.1.5] - 2026-08-25
 
 ### Added
