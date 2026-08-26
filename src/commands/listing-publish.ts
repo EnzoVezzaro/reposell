@@ -81,6 +81,16 @@ export async function listingPublishCommand(
   const discoveryAmount = args.discoveryAmount ?? wizardAmount ?? 5;
   const discoveryCurrency = (args.discoveryCurrency ?? wizardCurrency ?? 'USD').toUpperCase();
 
+  // Fetch README from the seller's repo (works for both public and private repos
+  // because the CLI runs locally with the user's git credentials).
+  let readme: string | undefined;
+  try {
+    const readmePath = path.join(cwd, 'README.md');
+    readme = await fs.readFile(readmePath, 'utf8');
+  } catch {
+    // README is optional — not all repos have one.
+  }
+
   const payload = buildListingPr({
     repositoryUrl: `https://github.com/${git.owner}/${git.repo}`,
     owner: git.owner,
@@ -89,6 +99,7 @@ export async function listingPublishCommand(
     sellUrl,
     sellerPaymentLink,
     discoveryPrice: { amount: discoveryAmount, currency: discoveryCurrency },
+    readme,
   });
 
   const validation = validateListingPr(payload);

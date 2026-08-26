@@ -36,6 +36,8 @@ export interface ListingPrPayload {
       currency: string;
     };
   };
+  /** README markdown — fetched by the CLI from the seller's repo during publish. */
+  readme?: string;
 }
 
 export interface PrValidationIssue {
@@ -157,6 +159,7 @@ export function buildListingPr(input: {
   sellUrl: string;
   sellerPaymentLink: string;
   discoveryPrice: { amount: number; currency: string };
+  readme?: string;
 }): ListingPrPayload {
   return {
     schema: LISTING_PR_SCHEMA,
@@ -179,5 +182,6 @@ export function buildListingPr(input: {
         currency: input.discoveryPrice.currency,
       },
     },
+    ...(input.readme !== undefined ? { readme: input.readme } : {}),
   };
 }
