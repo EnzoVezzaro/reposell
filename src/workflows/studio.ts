@@ -1,15 +1,11 @@
 /**
  * Launches the visual /sell builder (@reposell/storefront-studio) against
- * the current repository. Fetched from npm at run time via npx, so it works
- * for every repo everywhere — no local checkout required.
- *
- * Environment contract with the Studio:
- *   REPOSELL_SELL_DIR     rendered storefront output dir (<cwd>/sell)
- *   REPOSELL_STOREFRONT   document source of truth (<cwd>/.reposell/storefront.json)
+ * the current repository. Fetched from npm at run time via npx — zero
+ * configuration: the Studio operates on <cwd>/.reposell/storefront.json
+ * and renders into <cwd>/sell/ by convention.
  */
 
 import { spawn } from 'child_process';
-import path from 'path';
 
 export const STUDIO_PORT = 5199;
 export const STUDIO_URL = `http://localhost:${STUDIO_PORT}`;
@@ -20,14 +16,6 @@ export interface StudioLaunch {
   /** True when the URL is serving (freshly started or already running). */
   ready: boolean;
   detail?: string;
-}
-
-/** Pure: environment handed to the Studio process. Exported for tests. */
-export function buildStudioEnv(cwd: string): Record<string, string> {
-  return {
-    REPOSELL_SELL_DIR: path.join(cwd, 'sell'),
-    REPOSELL_STOREFRONT: path.join(cwd, '.reposell', 'storefront.json'),
-  };
 }
 
 function isReady(): Promise<boolean> {
@@ -56,13 +44,11 @@ export async function launchStudio(cwd: string): Promise<StudioLaunch> {
   }
 
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  let child;
   try {
-    child = spawn(command, ['-y', '@reposell/storefront-studio@latest'], {
+    const child = spawn(command, ['-y', '@reposell/storefront-studio@latest'], {
       cwd,
       detached: true,
       stdio: 'ignore',
-      env: { ...process.env, ...buildStudioEnv(cwd) },
     });
     child.unref();
     child.on('error', () => {});

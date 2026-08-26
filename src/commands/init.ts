@@ -326,24 +326,25 @@ async function initWizard(cwd: string): Promise<InitResult> {
       );
     }
 
-    // 3b. discovery listing opt-in — voluntary, buyer-paid contribution
+    // 3b. discovery listing opt-in — seller-priced, buyer-paid contribution
     output.write(
       [
         '',
         'reposell is a one-person, self-funded project that needs funding to keep going.',
-        'The official listing (listing.reposell.dev) is how buyers discover your tool. When',
-        'you are listed, buyers can add a small voluntary discovery contribution on top of',
-        'their purchase — paid to reposell, never taken from you:',
         '',
-        '  • You keep 100% of your /sell revenue. Always.',
-        '  • A contribution costs the buyer pennies on top and costs you nothing.',
-        '  • Every dollar keeps development alive — hugely appreciated.',
+        'Listing your tool on listing.reposell.dev puts it in front of buyers. There, YOU',
+        'decide the discovery contribution buyers pay to discover your tool — paid by the',
+        'buyer on top of your price, straight to reposell:',
+        '',
+        '  • You keep 100% of your /sell revenue. The contribution is never taken from you.',
+        '  • It costs you nothing — the buyer covers it at checkout.',
+        '  • Every dollar keeps this one-person project alive — hugely appreciated.',
         '',
       ].join('\n'),
     );
     if (await prompter.confirm('List this tool on listing.reposell.dev?', true)) {
       const amountChoice = await prompter.choose(
-        'Suggested discovery contribution per sale (buyers may add it at checkout):',
+        'Discovery contribution buyers pay to discover your tool (you keep 100% of your price):',
         [
           { label: '$5', hint: 'buy the dev a coffee', value: '5' },
           { label: '$10', hint: 'most helpful', value: '10' },
@@ -368,7 +369,7 @@ async function initWizard(cwd: string): Promise<InitResult> {
       });
       listedContribution = contributionAmount;
       transcript.push(
-        `✓ Listing enabled — suggested contribution ${contributionAmount} ${contributionCurrency} per sale`,
+        `✓ Listing enabled — discovery contribution set: ${contributionAmount} ${contributionCurrency} per sale (buyer-paid, you keep 100%)`,
         '  You keep 100% of your /sell price; the contribution is a separate buyer-paid flow.',
       );
     } else {
@@ -536,7 +537,7 @@ function summarizeNextSteps(result: InitResult, state: WizardState): string {
       ? '✓ Signing key stored as GitHub secret'
       : '○ Signing key not stored yet — see PRIVATE KEY above',
     state.listedContribution !== undefined
-      ? `✓ Listed on listing.reposell.dev (suggested contribution: $${state.listedContribution}/sale — you keep 100% of your revenue)`
+      ? `✓ Listed on listing.reposell.dev (discovery contribution: $${state.listedContribution}/sale, buyer-paid — you keep 100% of your revenue)`
       : null,
   ].filter((entry): entry is string => entry !== null);
 

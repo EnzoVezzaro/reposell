@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-08-26
+
+### Changed
+- Listing pitch corrected: **the seller decides the discovery contribution** buyers pay to discover the tool (buyer-paid on top of the seller's price — the seller keeps 100% of their /sell revenue)
+- The /sell builder is now fully zero-configuration (`@reposell/storefront-studio@0.2`): no environment variables — it operates on `<cwd>/.reposell/storefront.json` → `sell/` by convention; all dev-only env shortcuts removed
+
 ## [0.1.10] - 2026-08-26
 
 ### Added
