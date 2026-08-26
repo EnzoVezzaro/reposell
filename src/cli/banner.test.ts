@@ -2,16 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { BANNER_FULL, BANNER_COMPACT, renderBanner } from './banner.js';
 
 describe('banner', () => {
-  it('full art contains the r stem and the slash', () => {
-    expect(BANNER_FULL).toContain('-%%@@@@@%@@%.');
-    expect(BANNER_FULL).toContain('***:');
-    expect(BANNER_FULL).toContain('.============.');
+  it('full art contains the r stem and the @ slash', () => {
+    expect(BANNER_FULL).toContain('\u2586\u2586\u2586\u2586\u2586');
+    expect(BANNER_FULL).toContain('@@@@');
+    expect(BANNER_FULL).toContain('i*@@@@#I');
+    expect(BANNER_FULL).toContain(':<@@@@@!');
   });
 
-  it('every line of the full art is left-aligned with no leading blank columns', () => {
-    const lines = BANNER_FULL.split('\n');
-    expect(lines.length).toBeGreaterThan(10);
-    for (const line of lines) expect(line.startsWith(' ')).toBe(false);
+  it('has no trailing whitespace on any line', () => {
+    for (const line of BANNER_FULL.split('\n')) {
+      expect(line.endsWith(' ')).toBe(false);
+    }
   });
 
   it('compact variant carries the solo developer message', () => {
@@ -21,7 +22,8 @@ describe('banner', () => {
     expect(compact).toContain('Enzo Vezzaro');
   });
 
-  it('compact art is much smaller than full art', () => {
-    expect(BANNER_COMPACT.length).toBeLessThan(BANNER_FULL.length / 2);
+  it('uses one canonical mark for both variants', () => {
+    expect(BANNER_COMPACT).toBe(BANNER_FULL);
+    expect(renderBanner('compact').startsWith(BANNER_FULL)).toBe(true);
   });
 });

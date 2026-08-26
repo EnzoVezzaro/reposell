@@ -44,6 +44,8 @@ describe('generateSellSite', () => {
 
   it('personalizes .reposell/storefront.json for the Studio', async () => {
     await generateSellSite(cwd, { productName: 'acme-tool' });
+    // SAFETY: JSON.parse returns any; the generated storefront.json is produced
+    // by generateSellSite above, and the assertions below pin its schema.
     const document = JSON.parse(
       await fs.readFile(path.join(cwd, '.reposell', 'storefront.json'), 'utf8'),
     ) as { schema: string; product: { name: string } };
