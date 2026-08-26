@@ -250,13 +250,16 @@ ${blockedCards}
     ghActions.innerHTML='';
 
     proxyFetch('https://github.com/login/device/code',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({client_id:GITHUB_CLIENT_ID,scope:'repo'})})
-    .then(function(r){return r.json()}).then(function(data){
-      if(data.error){ghStatus.innerHTML='Error: '+(data.error_description||data.error);resetToIdle();return}
+    .then(function(r){
+      if(!r.ok)throw new Error('GitHub returned HTTP '+r.status);
+      return r.json();
+    }).then(function(data){
+      if(data.error){ghStatus.innerHTML='<span style="color:var(--bad)">Error: '+(data.error_description||data.error)+'</span>';ghActions.innerHTML='<button id="gh-retry" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer;margin-top:.5rem">Try again</button>';document.getElementById('gh-retry').onclick=connectGithub;return}
       window.open(data.verification_uri,'_blank','noopener');
       ghStatus.innerHTML='Enter code: <strong style="font-size:1.15rem;letter-spacing:.1em">'+data.user_code+'</strong>';
       ghActions.innerHTML='<div class="meta">at <a href="'+data.verification_uri+'" target="_blank" rel="noopener">'+data.verification_uri+'</a></div>';
       pollForToken(data.device_code,data.interval||5,data.expires_in||900);
-    }).catch(function(){ghStatus.innerHTML='Could not reach GitHub — check your connection';resetToIdle()});
+    }).catch(function(e){ghStatus.innerHTML='<span style="color:var(--bad)">Could not reach GitHub: '+(e.message||'check your connection')+'</span>';ghActions.innerHTML='<button id="gh-retry" style="background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer;margin-top:.5rem">Try again</button>';document.getElementById('gh-retry').onclick=connectGithub});
   }
 
   function pollForToken(code,intervalMs,deadline){
