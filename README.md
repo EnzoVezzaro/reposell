@@ -156,7 +156,6 @@ listing:
 | **reposell CLI** | Repository init, release management, signing, storefront | [reposell.dev](https://reposell.dev/) |
 | **reposell listing** | Official discovery directory — verification CI + discovery payments | [listing.reposell.dev](https://listing.reposell.dev/) |
 | **reposell community listing** | Self-hosted federated discovery directory — community-operated | [community.reposell.dev](https://community.reposell.dev/) |
-| **reposell storefront studio** | Visual storefront builder for `/sell` pages | [GitHub](https://github.com/EnzoVezzaro/reposell-storefront-studio) |
 | **reposell example** | Minimal Vite + React app for testing the CLI | [GitHub](https://github.com/EnzoVezzaro/reposell-example) |
 
 ## Documentation
