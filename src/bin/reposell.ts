@@ -20,6 +20,7 @@ import { loadConfigFile } from '../app/config-service.js';
 import { verifyCommand } from '../commands/verify.js';
 import { keysCommand } from '../commands/keys.js';
 import { createPaymentLink } from '../commands/sell-create-link.js';
+import { balanceCommand } from '../commands/balance.js';
 import { renderBanner } from '../cli/banner.js';
 
 // SAFETY: dist/bin/reposell.js sits two levels below the package root.
@@ -61,6 +62,7 @@ const USAGE = [
   '  verify <manifest|trust|pricing URL>',
   '                              CI verification entry points',
   '  keys <generate|show>        Ed25519 signing identity management',
+  '  balance                     Show Stripe balance and payout status',
   '  help                        Show this help',
 ].join('\n');
 
@@ -294,6 +296,12 @@ async function main(): Promise<void> {
       }
       case 'keys': {
         const result = await keysCommand(cwd, positionals[0]);
+        console.log(result.report);
+        if (!result.ok) process.exitCode = 1;
+        break;
+      }
+      case 'balance': {
+        const result = await balanceCommand(cwd);
         console.log(result.report);
         if (!result.ok) process.exitCode = 1;
         break;

@@ -6,6 +6,7 @@ import {
   StripePaymentProvider,
   StripeKeyMissingError,
   type PaymentAccountStatus,
+  type BalanceStatus,
   type FetchLike,
 } from '../domain/payment/stripe.js';
 import { loadEnvSource, resolveValue, type EnvSource } from '../utils/env.js';
@@ -16,6 +17,7 @@ export interface ListingStatus {
   reposellYmlPresent: boolean;
   licenseMode: 'rsl-1.0' | 'keep-existing' | undefined;
   payment: PaymentAccountStatus | { provider: 'stripe'; mode: 'unconfigured'; connected: false };
+  balance?: BalanceStatus;
   sellEndpointEnabled: boolean;
 }
 
@@ -56,6 +58,7 @@ export async function listingStatus(
   }
 
   const payment = await resolvePayment(envSource, options.fetchImpl);
+  const balance = await resolveBalance(envSource, options.fetchImpl);
 
   return {
     repository,
@@ -63,6 +66,7 @@ export async function listingStatus(
     reposellYmlPresent: ymlRaw !== undefined,
     licenseMode: extractLicenseMode(ymlRaw),
     payment,
+    balance,
     sellEndpointEnabled: ymlRaw !== undefined && /sell:\s*\n\s*enabled:\s*true/.test(ymlRaw),
   };
 }
@@ -90,6 +94,26 @@ async function resolvePayment(
       return unconfigured();
     }
     throw error;
+  }
+}
+
+async function resolveBalance(
+  envSource: EnvSource,
+  doFetch?: ListingStatusOptions['fetchImpl'],
+): Promise<BalanceStatus | undefined> {
+  const key = resolveValue(envSource, 'STRIPE_SECRET_KEY') ?? resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY');
+  if (key === undefined || !key.startsWith('sk_')) return undefined;
+  try {
+    const provider = StripePaymentProvider.fromEnv(
+      {
+        STRIPE_SECRET_KEY: key,
+        REPOSELL_STRIPE_SECRET_KEY: resolveValue(envSource, 'REPOSELL_STRIPE_SECRET_KEY'),
+      },
+      doFetch,
+    );
+    return await provider.checkBalanceStatus();
+  } catch {
+    return undefined;
   }
 }
 

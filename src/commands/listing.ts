@@ -1,5 +1,5 @@
 import { listingStatus, type ListingStatus } from '../app/listing-service.js';
-import { StripeKeyMissingError, type PaymentAccountStatus } from '../domain/payment/stripe.js';
+import { StripeKeyMissingError, type PaymentAccountStatus, type BalanceStatus } from '../domain/payment/stripe.js';
 
 export function formatPaymentStatus(payment: ListingStatus['payment']): string {
   if (payment.mode === 'unconfigured') {
@@ -21,6 +21,31 @@ export function formatPaymentStatus(payment: ListingStatus['payment']): string {
     .join('\n');
 }
 
+export function formatBalanceStatus(balance: ListingStatus['balance']): string {
+  if (balance === undefined) return '';
+
+  const lines: string[] = [];
+  lines.push('💰 Balance:');
+
+  // Format available balance
+  const usdAvailable = balance.balance.available.find((b) => b.currency === 'usd');
+  const usdPending = balance.balance.pending.find((b) => b.currency === 'usd');
+
+  lines.push(
+    `    Available: ${usdAvailable !== undefined ? `$${(usdAvailable.amount / 100).toFixed(2)}` : 'N/A'}`,
+  );
+  lines.push(
+    `    Pending:   ${usdPending !== undefined ? `$${(usdPending.amount / 100).toFixed(2)}` : 'N/A'}`,
+  );
+
+  // Show issues if any
+  if (balance.issues.length > 0) {
+    lines.push(`    ⚠ ${balance.issues[0]}`);
+  }
+
+  return lines.join('\n');
+}
+
 export function formatListingStatus(status: ListingStatus): string {
   const licenseLine =
     status.license.status === 'ok'
@@ -35,6 +60,7 @@ export function formatListingStatus(status: ListingStatus): string {
     `│ reposell.yml: ${status.reposellYmlPresent ? '✓ present' : '— missing (run reposell init)'}${status.licenseMode !== undefined ? ` · license mode: ${status.licenseMode}` : ''}`,
     `│ /sell endpoint: ${status.sellEndpointEnabled ? '✓ enabled' : '— not enabled'}`,
     formatPaymentStatus(status.payment),
+    formatBalanceStatus(status.balance),
     '└──────────────────────────────────────────',
   ].join('\n');
 }
