@@ -146,7 +146,10 @@ export class StripePaymentProvider {
 
     return {
       provider: 'stripe',
-      mode: body.livemode === true ? 'live' : 'test',
+      // SAFETY: the /v1/account response does not carry a `livemode`
+      // field, so the only reliable signal is the secret key prefix
+      // (sk_live_/rk_live_). Fall back to body.livemode when present.
+      mode: body.livemode === true || classifySecretKey(this.apiKey) === 'live' ? 'live' : 'test',
       connected: true,
       accountId: strOrUndef(body.id),
       businessName: strOrUndef(body.business_profile?.name),
