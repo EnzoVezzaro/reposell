@@ -143,6 +143,16 @@ export interface ListingSection {
   };
   /** Tags for filtering listings (e.g. ["reposell", "example"]). */
   tags?: string[];
+  /**
+   * Whether the repository is private. When true, the /sell storefront shows
+   * fork guidance (buyer must get read access from the seller first).
+   */
+  private?: boolean;
+  /**
+   * Auth backend (WorkOS AuthKit) used by the /sell storefront for buyer
+   * login. Defaults to the official reposell access worker.
+   */
+  accessApi?: string;
 }
 
 export interface ParsedRelease {
@@ -251,6 +261,20 @@ export function validateConfig(value: unknown): { config: ReposellYml; issues: s
       recordIssues(issues, !Array.isArray(l['tags']), 'listing.tags must be an array of strings');
       if (Array.isArray(l['tags'])) {
         config.listing.tags = l['tags'].filter((t: unknown) => typeof t === 'string');
+      }
+    }
+    if (l['private'] !== undefined) {
+      recordIssues(issues, typeof l['private'] !== 'boolean', 'listing.private must be a boolean');
+      if (typeof l['private'] === 'boolean') config.listing.private = l['private'];
+    }
+    if (l['access'] !== undefined) {
+      recordIssues(
+        issues,
+        typeof l['access'] !== 'string' || !/^https?:\/\//.test(l['access']),
+        'listing.access must be an http(s) URL of the auth backend',
+      );
+      if (typeof l['access'] === 'string' && /^https?:\/\//.test(l['access'])) {
+        config.listing.accessApi = l['access'];
       }
     }
   }

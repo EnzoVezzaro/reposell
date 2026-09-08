@@ -94,6 +94,13 @@ export interface SellPageModel {
   listingContribution?: { amount: number; currency: string };
   /** License info embedded from the repo during build. */
   license?: { type: string; spdx?: string; name?: string; url?: string };
+  /**
+   * Auth backend (WorkOS AuthKit) the storefront uses for buyer login.
+   * Defaults to the official reposell access worker. Overridable per seller.
+   */
+  accessApi?: string;
+  /** Whether the repository is private (affects fork guidance). */
+  privateRepo?: boolean;
 }
 
 function money(amount: number, currency: string): string {
@@ -117,6 +124,8 @@ export function renderSellPage(model: SellPageModel): string {
     productName: model.productName,
     description: model.description || 'Buy directly from the source repository.',
     repository: model.repositorySlug,
+    access: { api: model.accessApi ?? 'https://access.reposell.dev' },
+    ...(model.privateRepo === true ? { private: true } : {}),
     releases: model.entries.map((e) => ({
       version: e.version,
       status: e.status,

@@ -333,6 +333,8 @@ export async function buildSite(cwd: string, options: BuildOptions = {}): Promis
       description: evaluation.description,
       entries: catalogEntries,
       repositorySlug: evaluation.repositorySlug,
+      accessApi: evaluation.config?.listing?.accessApi,
+      privateRepo: evaluation.config?.listing?.private,
       license: {
         type: evaluation.licenseType,
         ...(evaluation.licenseSpdx !== undefined ? { spdx: evaluation.licenseSpdx } : {}),

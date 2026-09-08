@@ -317,10 +317,16 @@ async function initWizard(cwd: string): Promise<InitResult> {
         const trimmed = keyAnswer.trim();
         if (trimmed.length > 0 && /^sk_(test|live)_/.test(trimmed)) {
           await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
+          const pkAnswer = await prompter.ask(
+            'Stripe publishable key (pk_test_…/pk_live_…) — optional, for client-side use. Saved with the secret key.',
+          );
+          if (/^pk_(test|live)_/.test(pkAnswer.trim())) {
+            await upsertEnvValue(cwd, 'STRIPE_PUBLISHABLE_KEY', pkAnswer.trim());
+          }
           await ensureGitignored(cwd);
           apiKey = trimmed;
           stripeApiKey = trimmed;
-          transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
+          transcript.push('✓ Saved STRIPE_SECRET_KEY (and STRIPE_PUBLISHABLE_KEY when provided) to .env (gitignored — never committed)');
         } else {
           transcript.push('! Invalid Stripe key — skipping Payment Link creation.');
         }
@@ -381,10 +387,16 @@ async function initWizard(cwd: string): Promise<InitResult> {
             const trimmed = keyAnswer.trim();
             if (trimmed.length > 0 && /^sk_(test|live)_/.test(trimmed)) {
               await upsertEnvValue(cwd, 'STRIPE_SECRET_KEY', trimmed);
+              const pkAnswer = await prompter.ask(
+                'Stripe publishable key (pk_test_…/pk_live_…) — optional, for client-side use. Saved with the secret key.',
+              );
+              if (/^pk_(test|live)_/.test(pkAnswer.trim())) {
+                await upsertEnvValue(cwd, 'STRIPE_PUBLISHABLE_KEY', pkAnswer.trim());
+              }
               await ensureGitignored(cwd);
               apiKey = trimmed;
               stripeApiKey = trimmed;
-              transcript.push('✓ Saved STRIPE_SECRET_KEY to .env (gitignored — never committed)');
+              transcript.push('✓ Saved STRIPE_SECRET_KEY (and STRIPE_PUBLISHABLE_KEY when provided) to .env (gitignored — never committed)');
             } else {
               transcript.push('! Invalid key — continuing without Stripe verification.');
             }
