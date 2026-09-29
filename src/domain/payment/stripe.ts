@@ -219,6 +219,9 @@ export class StripePaymentProvider {
       id: item.id ?? 'unknown',
       amount: item.amount ?? 0,
       currency: item.currency ?? 'usd',
+      // SAFETY: item.status comes from the Stripe payouts API, whose documented
+      // status values are exactly the StripePayout['status'] union; a missing
+      // value falls back to 'pending' rather than leaking undefined.
       status: (item.status as StripePayout['status']) ?? 'pending',
       arrival_date: item.arrival_date ?? 0,
       created: item.created ?? 0,

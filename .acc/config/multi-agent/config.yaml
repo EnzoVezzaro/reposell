@@ -1,0 +1,80 @@
+# Multi-agent topology — machine-readable record.
+#
+# This file is the authoritative record of *which agent runs on which model*
+# and *who may delegate to whom*. It holds no prompt text: prompts, models
+# and permissions live in `.opencode/agents/*.md`, and the delegation gate
+# lives in `opencode.json`. This file is the map between them, so the
+# topology can be reviewed in one place without reading the agents.
+#
+# ACC does not read this file (its own `acc agents` orchestration is
+# reserved for a future version — see `README.md`). It is here because the
+# repository-structure spec defines `.acc/config/multi-agent/config.yaml` as
+# part of the control plane, and because a topology that lives only in prose
+# drifts silently.
+
+topology:
+  runtime: opencode          # the only agent runtime this project uses
+  orchestrator:
+    agent: orchestrator
+    file: .opencode/agents/orchestrator.md
+    mode: primary
+    model: opencode/big-pickle
+    responsibility: >-
+      Owns the development lifecycle end-to-end (understand, frame, apply
+      conventions, implement, delegate review, verify, record) and makes
+      every product decision call that needs a human.
+  subagents:
+    - agent: architect
+      file: .opencode/agents/architect.md
+      mode: subagent
+      model: opencode/glm-5.3
+      scope: >-
+        Structural review — acc graph/impact/context/check, layer boundaries,
+        declared invariants, contract consistency. Read-only.
+    - agent: product-reviewer
+      file: .opencode/agents/product-reviewer.md
+      mode: subagent
+      model: opencode/glm-5.3-flash
+      scope: >-
+        Product reasoning, UX decisions, user flows, edge cases, unnecessary
+        complexity. Read-only.
+    - agent: ui-reviewer
+      file: .opencode/agents/ui-reviewer.md
+      mode: subagent
+      model: opencode/glm-5.3-flash
+      scope: >-
+        Visual hierarchy, interaction, responsive behavior, accessibility,
+        loading/error/empty states, polish. Read-only.
+
+# Model rationale. The orchestrator holds the whole repository in context and
+# owns the decisions, so it runs the strongest model; the three read-only
+# reviewers run cheaper models because their output is a bounded report, not
+# an implementation.
+model_policy:
+  orchestrator: opencode/big-pickle
+  subagents_tier_1: opencode/glm-5.3      # 1 subagent: architect
+  subagents_tier_2: opencode/glm-5.3-flash # 2 subagents: product + ui review
+  provider: opencode                       # OpenCode Zen
+  notes: >-
+    All three are OpenCode Zen models on the OpenAI-compatible chat route.
+    Big Pickle is currently free but is a stealth model whose data may be
+    used to improve it while free; GLM 5.3 and GLM 5.3 Flash are billed per
+    token. Confirm this cost/privacy trade-off before it becomes a habit —
+    see the Zen pricing table. The same ladder is mirrored in the `ai:`
+    section of `.acc/config/config.yaml` for `acc engine` / `acc review`.
+
+# Delegation. The orchestrator may spawn subagents; subagents may not spawn
+# anything (no recursion). Enforced by `permission.task` in the orchestrator
+# agent file, not by this file.
+delegation:
+  max_depth: 1
+  allowed:
+    orchestrator:
+      - architect
+      - product-reviewer
+      - ui-reviewer
+  subagents_may_delegate: false
+  verification: >-
+    Every reviewer is read-only and returns findings as text; the
+    orchestrator applies them or explains why not. A subagent never edits
+    files, and never resolves a product decision on its own.

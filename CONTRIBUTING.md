@@ -63,14 +63,11 @@ Follow the project's coding standards:
 ### 3. Test Your Changes
 
 ```bash
-# Run all tests
-bun test
+# Run all tests (Vitest, co-located src/**/*.test.ts)
+npm test
 
-# Run specific test file
-bun test tests/unit/commands/init.test.ts
-
-# Run with coverage
-bun test --coverage
+# Run a specific test file
+npm test -- src/commands/release.test.ts
 ```
 
 ### 4. Validate Architecture
@@ -97,6 +94,9 @@ model: gemini-2.5-flash
 ```
 
 CI will verify against the allowlist in `.github/pr_allow_providers.yml`.
+
+This repository's own agent setup (OpenCode project agents, delegation roles, and Herdr runtime
+integration) is documented in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ### 6. Submit Pull Request
 

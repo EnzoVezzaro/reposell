@@ -24,5 +24,5 @@
 - [ ] Output validation on all generated manifests
 - [ ] GitHub token minimization (narrowest permissions)
 - [ ] Secure HTTP headers (CSP, HSTS, etc.)
-- [ ] Dependency auditing (bun audit)
+- [ ] Dependency auditing (`npm audit`)
 - [ ] Supply chain protection

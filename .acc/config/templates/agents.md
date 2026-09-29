@@ -38,4 +38,5 @@ Owner: <team or module path>
 ## Workflows
 
 - See `.acc/config/workflows/feature.md` for the standard feature workflow.
+- See `.acc/config/workflows/testing.md` for the testing procedure.
 - See `.acc/config/workflows/release.md` for the release automation workflow.

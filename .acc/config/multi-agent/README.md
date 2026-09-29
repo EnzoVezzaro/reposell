@@ -1,90 +1,32 @@
-# Multi-Agent Orchestration Configuration
+# Multi-Agent Topology
 
-This directory contains configuration for multi-agent orchestration in the ACC framework.
+The real multi-agent setup lives in **OpenCode**, not in this directory. This directory records
+where everything is; it deliberately contains **no duplicate agent configuration**.
 
-## Structure
+## Topology — 1 orchestrator + 3 subagents
 
-```
-multi-agent/
-├── config.yaml
-├── agents/
-│   ├── architect.yaml
-│   ├── implementer.yaml
-│   ├── reviewer.yaml
-│   └── tester.yaml
-└── workflows/
-    └── feature.yaml
-```
+The authoritative record — agent, mode, model, scope, and the delegation rules — is
+`config.yaml` in this directory. Do not restate it in prose here; read the file.
 
-## Configuration
+| Agent | Mode | Prompt & permissions | Model |
+|-------|------|---------------------|-------|
+| `orchestrator` | primary | `.opencode/agents/orchestrator.md` | `opencode/big-pickle` |
+| `architect` | subagent | `.opencode/agents/architect.md` | `opencode/glm-5.3` |
+| `product-reviewer` | subagent | `.opencode/agents/product-reviewer.md` | `opencode/glm-5.3-flash` |
+| `ui-reviewer` | subagent | `.opencode/agents/ui-reviewer.md` | `opencode/glm-5.3-flash` |
 
-The main configuration defines:
-- `enabled` - Enable multi-agent mode
-- `max_concurrency` - Maximum concurrent agents
-- `max_depth` - Maximum orchestration depth
-- `task_timeout` - Task timeout in seconds
-- `resource_limits` - CPU, memory, token budgets
-- `isolation_mode` - Isolation strategy (git_worktree, process, container)
-- `conflict_policy` - Conflict resolution policy
+- **Registration, delegation gate, models, permissions**: `opencode.json` + the agent files —
+  nothing else.
+- **Delegation**: OpenCode's native Task tool, gated to the three subagents
+  (`permission.task` in the orchestrator agent file). Subagents may not delegate further.
+- **Runtime**: OpenCode. No second agent runtime, no external workspace manager.
+- **Lifecycle**: the orchestrator follows the ACC development lifecycle documented in
+  `DEVELOPMENT.md`; workflows in this `.acc/config/workflows/` tree feed it.
 
-## Agent Roles
+## ACC note
 
-| Role | Responsibility | When to Use |
-|------|----------------|-------------|
-| **architect** | Architecture review, graph analysis, impact assessment | Before implementing, design decisions |
-| **implementer** | Feature implementation, code changes | After architecture approved |
-| **reviewer** | Code review, ACC compliance, security audit | After implementation |
-| **tester** | Test generation, E2E testing, validation | After review passes |
-
-## Workflows
-
-The orchestration follows a linear pipeline:
-1. **Architect** analyzes requirements, creates plan
-2. **Implementer** executes the plan
-3. **Reviewer** validates against ACC rules, security
-4. **Tester** runs tests, verifies behavior
-
-## Conflict Resolution
-
-- `sequentialize` - Run agents sequentially (default)
-- `parallel` - Run with git worktree isolation
-- `merge` - Attempt auto-merge, escalate on conflict
-
-## Example Configuration
-
-```yaml
-# multi-agent/config.yaml
-enabled: false
-max_concurrency: 4
-max_depth: 1
-task_timeout: 300
-resource_limits:
-  cpu_percent: 80
-  memory_mb: 4096
-  token_budget: 1000000
-isolation_mode: "git_worktree"
-conflict_policy: "sequentialize"
-
-agents:
-  architect:
-    enabled: true
-    profile: ".acc/config/agents/architect.md"
-  implementer:
-    enabled: true
-  reviewer:
-    enabled: true
-  tester:
-    enabled: true
-```
-
-## Usage
-
-When enabled, agents can be invoked via:
-
-```bash
-# Single agent
-acc agent architect --task "review payment flow"
-
-# Full pipeline
-acc pipeline feature --name "add webhook support"
-```
+ACC's own multi-agent orchestration (`acc agents`, pipeline mode) is **reserved, not implemented
+in ACC V1**. Orchestration therefore lives in OpenCode's native mechanisms; ACC stays the
+context/convention layer (`acc context`, `acc graph`, `acc impact`, `acc check`). The
+`multi_agent` section of `.acc/config/config.yaml` stays `enabled: false` to match — that flag
+governs ACC's own swarm, which this project does not use.

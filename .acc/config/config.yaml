@@ -2,55 +2,88 @@
 #
 # Optional. When absent, ACC uses sensible defaults and every command
 # still works. See the repository-structure spec.
+#
+# IMPORTANT — unknown keys are silently dropped. ACC's loader keeps only the
+# keys it knows (`pick(parsed, Object.keys(DEFAULTS))`), so a misspelled or
+# unsupported key is inert, not an error. `acc check` reports the effective
+# configuration only indirectly; verify a key took effect before relying on it.
 schema_version: 1
 
-# Templates — the system uses these to create and modify ACC files.
-# Edit the .md files in .acc/config/templates/ to customize output.
-# Uncomment to override a template path (relative to project root).
-# templates:
-#   agents_md: .acc/config/templates/agents.md
+# Language analyzers drive discovered-dependency detection (ACC022) and the
+# "no analyzer for extension" note (ACC040). This repository is TypeScript,
+# so the rust/go/python defaults are pure overhead — declare the real set.
+language_analyzers:
+  typescript: true
+  javascript: true
+  rust: false
+  go: false
+  python: false
 
-# Engine (AI-powered, token-gated). The AI phase only runs when the
-# trigger fires — that is the token budget control. mode: commits |
-# changes | always. commits → count git commits since the last
-# triggered run; changes → content-hash snapshot of changed files.
-# Default: 3 commits.
-# engine:
-#   trigger:
-#     mode: commits
-#     threshold: 3
-#   supervisor:
-#     # Second AI pass that scores proposed changes against ACC rules
-#     # (0-100) before anything is written; iterates until compliant.
-#     enabled: false
-#     threshold: 85
-#     max_iterations: 3
+# Paths excluded from scanning. The key is `ignore` (not `exclude`), and a
+# trailing slash means "prefix match" — the form ACC's matcher understands.
+#
+# `.git/`, `node_modules/`, `target/`, `dist/`, `build/` and `*.lock` are
+# already excluded by ACC's built-in defaults; do not repeat them here.
+#
+# `.agents/` is vendored third-party skill content (3.7 MB of SKILL.md
+# packages), not project architecture, and is not a declared area in the
+# root AGENTS.md. `tools/oxlint/anti-slop/` is deliberately NOT excluded:
+# it is a declared dependency area with its own AGENTS.md contracts.
+ignore:
+  - ".agents/"
 
-# AI configuration (optional, AI SDK v5). Core ACC stays offline and
-# deterministic — AI is explicit opt-in and never required. Uncomment
-# and edit to configure one or more providers. API keys are read from
-# the environment (api_key_env), never stored in the repository.
-# ai:
-#   enabled: false
-#   default: main
-#   providers:
-#     - id: main
-#       provider: openai            # openai | anthropic | google | <npm package>
-#       model: gpt-4o
-#       api_key_env: OPENAI_API_KEY
-#       base_url: null              # optional override (e.g. NVIDIA, OpenRouter)
+# Diagnostics policy. Empty on purpose: every warning ACC reports is a real
+# drift signal for this repository.
+#
+# Verified against acc 0.6.9: this key is read into `config.warn_only` but
+# never applied — adding a code here changes nothing. Do not rely on it to
+# silence a false positive; filter at the call site instead
+# (`acc check --code ACCxxx`, `--severity`).
+diagnostics:
+  warn_only: []
 
-# Exclude patterns - paths to ignore during scanning
-exclude:
-  - "tools/oxlint/anti-slop/**"
-  - ".agents/skills/**"
-  - "node_modules/**"
-  - "dist/**"
-  - "build/"
+# Dependency rules the repository must never have (directory prefixes,
+# relative to the project root). These encode the layering constraint
+# declared in `src/AGENTS.md` and `.acc/config/standards/architecture.md`
+# ("domain → application → cli/config; domain stays free of external
+# services") as a machine-checked rule.
+#
+# Known gap, deliberately NOT encoded: `src/domain` → `src/utils`.
+# `src/domain/signature/AGENTS.md` declares it ("crypto primitives"), which
+# contradicts the "domain has zero external dependencies" rule. Resolving
+# that is an architecture decision, not a config change.
+#
+# Expect 5 permanent ACC025 warnings ("rule declared but unenforced"): acc
+# 0.6.9 flags any rule whose paths exist but match no edge, so a correctly
+# satisfied rule always warns. That is the intended steady state here — the
+# rules below are guardrails, and the payoff is ACC024 (severity: error,
+# exit 1) the moment a violating edge appears. Warnings do not fail
+# `acc check`; only errors do.
+forbidden_deps:
+  - from: "src/domain"
+    to: "src/app"
+  - from: "src/domain"
+    to: "src/commands"
+  - from: "src/domain"
+    to: "src/cli"
+  - from: "src/domain"
+    to: "src/bin"
+  - from: "src/domain"
+    to: "src/config"
 
-# Ownership
+# Ownership — `strict: true` would error on any unclaimed directory. Several
+# areas (branding, docs internals) are intentionally unowned, so this stays
+# advisory.
 ownership:
   strict: false
+
+# Focused context assembly (`acc context <path>`), used in step 1 and 5 of
+# the development lifecycle. The byte budget is the real guard against
+# over-feeding an agent.
+context:
+  default_depth: 1
+  default_max_bytes: 65536
+  default_include: null
 
 # Graph settings
 graph:
@@ -77,7 +110,71 @@ discover:
     - "unknown-owner"
     - "orphan-code"
 
-# Multi-agent
+# Engine (AI-powered, token-gated). The AI phase only runs when the
+# trigger fires — that is the token budget control. mode: commits |
+# changes | always. commits → count git commits since the last
+# triggered run; changes → content-hash snapshot of changed files.
+engine:
+  trigger:
+    mode: commits
+    threshold: 3
+  supervisor:
+    # Second AI pass that scores proposed changes against ACC rules
+    # (0-100) before anything is written; iterates until compliant.
+    # Off by default: it costs a full extra model call per sync.
+    enabled: false
+    threshold: 85
+    max_iterations: 3
+  ai:
+    retries: 3
+    retry_delay_ms: 1000
+    # Try the next configured provider when one fails — with the ladder
+    # below this degrades orchestrator → architect → reviewer models
+    # instead of failing the run.
+    fallback: true
+    max_consecutive_failures: 3
+
+# AI configuration (AI SDK v5). Core ACC stays offline and deterministic —
+# AI is explicit opt-in and never required. Uncomment and edit to configure
+# one or more providers. API keys are read from the environment
+# (api_key_env), never stored in the repository.
+#
+# All three models are served by OpenCode Zen over the OpenAI-compatible
+# chat route, so `provider: openai` + an explicit `base_url` is the correct
+# wiring (`acc` then calls {base_url}/chat/completions). The same ladder is
+# mirrored per agent in `.opencode/agents/*.md` and recorded in
+# `.acc/config/multi-agent/config.yaml`.
+#
+# The key lives in the environment (or the gitignored `.env`), never here:
+#   export OPENCODE_API_KEY=...   # from https://opencode.ai/auth
+# Without it, `acc ai` reports the missing key and the engine degrades
+# cleanly — core ACC commands are unaffected.
+ai:
+  enabled: true
+  default: orchestrator
+  providers:
+    - id: orchestrator
+      provider: openai
+      model: big-pickle
+      base_url: "https://opencode.ai/zen/v1"
+      api_key_env: OPENCODE_API_KEY
+    - id: architect
+      provider: openai
+      model: glm-5.3
+      base_url: "https://opencode.ai/zen/v1"
+      api_key_env: OPENCODE_API_KEY
+    - id: reviewers
+      provider: openai
+      model: glm-5.3-flash
+      base_url: "https://opencode.ai/zen/v1"
+      api_key_env: OPENCODE_API_KEY
+
+# Multi-agent. The real topology (1 orchestrator + 3 read-only subagents,
+# and which model each one runs on) lives in `.acc/config/multi-agent/`:
+# `config.yaml` is the machine-readable record, `README.md` the prose.
+# ACC's own swarm orchestration (`acc agents`) is reserved for a future
+# version — delegation happens through OpenCode's Task tool, so this
+# section stays disabled on purpose rather than being aspirational.
 multi_agent:
   enabled: false
   max_concurrency: 4
@@ -96,5 +193,12 @@ tools:
   # for the acc tools manifest. acc tools is a listing, never an executor.
   auto_discover: true
   plugins:
+    # This directory holds only a README, so it lists no plugins; project
+    # tools are discovered from package.json scripts above.
     enabled: true
     directory: ".acc/config/tools"
+
+# Templates are resolved from `.acc/config/templates/<name>.md`
+# automatically (see `agents.md` there). There is deliberately no `templates:`
+# key here: it is not part of ACC's recognized key set, so writing one would
+# be silently ignored.

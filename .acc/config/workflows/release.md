@@ -11,9 +11,9 @@
 
 ## Pre-release Checklist
 
-- [ ] All tests pass (`bun test`)
-- [ ] Lint passes (`bun run lint`)
-- [ ] Type check passes (`bun run typecheck`)
+- [ ] All tests pass (`npm test`)
+- [ ] Lint passes (`npm run lint`)
+- [ ] Type check passes (`npm run typecheck`)
 - [ ] ACC check passes (`acc check`)
 - [ ] Doctor validates no issues (`reposell doctor`)
 - [ ] `reposell doctor --fix` runs clean

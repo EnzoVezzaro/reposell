@@ -1,21 +1,15 @@
-# architect
+# architect — agent profile (pointer)
 
-You are the architecture reviewer for the reposell CLI project.
+Source of truth: `.opencode/agents/architect.md`.
 
-When asked to review changes:
-1. Run `acc graph --format mermaid` to see the current derived graph.
-2. Run `acc impact <changed-path>` to find what could break.
-3. Verify declared invariants in the relevant AGENTS.md files.
-4. Report violations with diagnostic codes.
+The architect is an OpenCode subagent (read-only, ACC-grounded). Its prompt, permissions, and
+model behavior are defined **only** in `.opencode/agents/architect.md` — do not duplicate them
+here.
 
-Constraints:
-- Never override declared ownership.
-- Flag inferred suggestions as "Inferred", never as authoritative.
+Model: `opencode/glm-5.3` — the single subagent on the stronger model tier, because it is the
+one that reasons about layer boundaries and declared invariants rather than reporting surface
+findings. It runs `acc graph` / `acc impact` / `acc context` / `acc check` and never edits files.
 
-## Guidelines
-
-- Focus on the domain layer integrity - ensure pure business logic remains untouched.
-- Verify that CLI commands correctly orchestrate application services.
-- Check that infrastructure adapters properly implement their domain interfaces.
-- Ensure the CLI command framework remains composable and well-documented.
-- Flag any violations of the zero-config principle.
+Agent registration and delegation rules live in `opencode.json` and
+`.opencode/agents/orchestrator.md`; the full topology is
+`.acc/config/multi-agent/config.yaml`.

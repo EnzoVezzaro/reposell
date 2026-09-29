@@ -6,3 +6,9 @@ tools/oxlint/anti-slop/**
 node_modules/**
 dist/**
 build/**
+# tightened 2026-09-29
+.agents/**
+**/node_modules/**
+**/dist/**
+**/cache/**
+docs/docs/**

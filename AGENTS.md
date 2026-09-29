@@ -39,11 +39,16 @@ Owner: src/cli
 
 ## Dependencies
 
-- # Domain layer (to be implemented)
-- # Application layer (to be implemented)
-- # Infrastructure layer (to be implemented)
-- # CLI layer (to be implemented)
-- # Config layer (to be implemented)
+Declared areas (each has its own AGENTS.md contract; a declared area covers its subpaths):
+
+- src/app
+- tools/oxlint
+- tools/oxlint/anti-slop
+- src/
+- tools/
+- docs/
+- functions/
+- .github/
 
 ## Constraints
 
@@ -67,7 +72,18 @@ The CLI follows clean architecture with these layers:
 
 Commands are composable: `init`, `configure`, `sell`, `listing enable|disable|register|status`, `release`, `verify`, `doctor`.
 
+## Testing
+
+Tests are co-located (`src/**/*.test.ts`, Vitest) and run with `npm test`; `npm run typecheck`,
+`npm run lint` (anti-slop), and `acc check` are part of testing, not separate from it. UI
+surfaces are verified with ego lite. Expectations and rules:
+`.acc/config/standards/testing.md`.
+
 ## Workflows
 
 - See `.acc/config/workflows/feature.md` for the standard feature workflow.
+- See `.acc/config/workflows/testing.md` for the testing procedure.
+- See `.acc/config/workflows/verify.md` for CI verification and trust enforcement.
+- See `.acc/config/workflows/security.md` for security-sensitive changes.
 - See `.acc/config/workflows/release.md` for the release automation workflow.
+- See `DEVELOPMENT.md` for the agentic development lifecycle (Herdr + OpenCode + ACC).

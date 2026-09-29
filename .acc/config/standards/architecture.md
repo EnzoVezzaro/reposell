@@ -120,11 +120,8 @@ All generated manifests include:
 
 ## Testing
 
-- **Unit tests**: >90% coverage for domain logic
-- **Integration tests**: All infrastructure adapters
-- **Contract tests**: Protocol schemas
-- **CLI tests**: All commands
-- **E2E tests**: Critical user flows
+See `.acc/config/standards/testing.md` (expectations) and
+`.acc/config/workflows/testing.md` (procedure) — including ego lite UI verification.
 
 ## Anti-Patterns
 
