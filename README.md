@@ -177,9 +177,11 @@ listing:
 
 ## Feature your repo
 
-A featured placement on the [reposell listing](https://listing.reposell.dev/) — the official discovery directory with verification CI and discovery payments — is **$9.00/mo**:
+A featured placement puts your repo at the top of the live [RepoSell leaderboard](https://reposell-alpha.vercel.app/) — the AI & Dev repo leaderboard. **$9.00/mo, cancel anytime:**
 
-**[Feature your repo — $9.00/mo](https://buy.stripe.com/fZu9AU0D3e3b3Y55rR2880b)**
+**[Feature your repo — $9/mo](https://buy.stripe.com/fZu9AU0D3e3b3Y55rR2880b)**
+
+*The checkout asks for your GitHub repo (owner/name) so the placement lands on the right listing.*
 
 ## Documentation
 

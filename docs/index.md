@@ -237,6 +237,7 @@ description: Your repo, your keys, your revenue. Turn any Git repository into so
           <li><a href="/guide/installation">Installation</a></li>
           <li><a href="/commands/">Commands</a></li>
           <li><a href="/configuration/">Configuration</a></li>
+          <li><a href="https://buy.stripe.com/fZu9AU0D3e3b3Y55rR2880b" target="_blank" rel="noopener">Feature your repo — $9/mo</a></li>
         </ul>
       </nav>
       <nav class="lx-fcol" aria-label="Protocol">
