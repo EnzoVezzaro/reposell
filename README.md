@@ -175,6 +175,12 @@ listing:
 | **reposell community listing** | Self-hosted federated discovery directory — community-operated | [community.reposell.dev](https://community.reposell.dev/) |
 | **reposell example** | Minimal Vite + React app for testing the CLI | [GitHub](https://github.com/EnzoVezzaro/reposell-example) |
 
+## Feature your repo
+
+A featured placement on the [reposell listing](https://listing.reposell.dev/) — the official discovery directory with verification CI and discovery payments — is **$9.00/mo**:
+
+**[Feature your repo — $9.00/mo](https://buy.stripe.com/fZu9AU0D3e3b3Y55rR2880b)**
+
 ## Documentation
 
 Full documentation: [reposell.dev](https://reposell.dev/)
