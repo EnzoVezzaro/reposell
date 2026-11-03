@@ -2,6 +2,11 @@
 
 Manage listing integration.
 
+> **Status:** Only `listing status` and `listing publish <tag>` are registered in
+> the shipped binary (`src/bin/reposell.ts`). The subcommands below
+> (`enable`, `disable`, `register`, `verify`) are documented as planned and are
+> not available yet.
+
 ```bash
 reposell listing <command> [options]
 ```

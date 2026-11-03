@@ -8,9 +8,12 @@ reposell <command> [args]
 
 ## Commands (shipped)
 
+These are the commands actually registered in `src/bin/reposell.ts` (the CLI
+dispatcher). Status here is authoritative for the shipped binary.
+
 | Command | Description |
 |---------|-------------|
-| `init` | Detect the repository, create `reposell.yml`, generate the CI workflow and an Ed25519 verification key |
+| `init [--yes] [--wizard]` | Detect the repository, create `reposell.yml`, generate the CI workflow and an Ed25519 verification key |
 | `license check` | Detect and explain the repository license |
 | `license use rsl` | Generate an RSL-1.0 `LICENSE` + `ai-policy.json` with your info |
 | `license keep` | Record that you keep your existing license |
@@ -19,26 +22,37 @@ reposell <command> [args]
 | `license validate` | Validate the machine-readable licensing artifacts |
 | `license compatibility` | SPDX dependency compatibility check |
 | `audit` | Full licensing/compliance audit — PASS / WARN / BLOCKED, SBOMs, signed report |
+| `reciprocity [--revenue N]` | Show, validate and simulate the Reciprocity Program |
 | `listing status` | Dashboard: repo, license, `/sell` endpoint, live Stripe account state |
-| `release <tag>` | Declare a release (price, currency, Payment Link — interactive when flags are omitted) |
-| `publish <tag>` | Run the publication gate and approve a release (manual mode) |
+| `listing publish <tag>` | Build + verify a Listing publication PR payload (writes `.reposell/listing-pr.json`) |
+| `sell init [--link URL] [--name NAME]` | Scaffold the `/sell` storefront wired to a Stripe Payment Link |
+| `sell create-link --price N [--currency USD]` | Create a Stripe Payment Link with the correct redirect |
+| `sell sync [payment_link_id]` | Pull-based fulfillment: purchases, refunds, fork artifacts |
+| `release [tag] [--price N] [--currency USD] [--link URL]` | Declare a release (interactive when flags are omitted) |
+| `publish [tag]` | Run the publication gate and approve a release (manual mode) |
 | `validate` | Run the full publication gate checklist |
 | `build [--out dist]` | Generate the `/reposell/*` static surface |
 | `health` | Health report for every configured release |
 | `verify <manifest\|trust\|pricing> [url]` | CI verification entry points |
 | `keys <generate\|show>` | Ed25519 signing identity management |
-| `help` | Show usage |
+| `balance` | Show Stripe balance and payout status |
+| `help` / `--help` / `-h` | Show usage |
+| `--version` / `-v` / `version` | Print the CLI version |
 
-## Planned commands
+## Planned / not-yet-registered commands
 
-These are specified in the protocol and land in upcoming releases:
+These names appear in older docs or the implementation tracker but are **not**
+registered in `src/bin/reposell.ts` today. They are listed here only so the
+status is unambiguous; do not treat them as available.
 
-| Command | Purpose |
-|---------|---------|
-| `configure` | Inspect and modify `reposell.yml` from the terminal |
-| `sell` | Generate and preview the `/sell` page locally |
-| `doctor` | Full local audit with `--fix` for safe repairs |
-| `payment setup` / `payment verify` | Validate a seller Payment Link against a release |
+| Command | Status |
+|---------|--------|
+| `configure` | Planned — inspect/modify `reposell.yml` from the terminal (not implemented) |
+| `doctor [--fix]` | Planned — full local audit with auto-repair (not implemented) |
+| `payment setup` / `payment verify` | Planned — validate a seller Payment Link against a release (not implemented) |
+| `listing enable` / `disable` / `register` / `verify` | Planned/legacy — listing registration helpers (not implemented; use `listing status` and `listing publish`) |
+| `sell generate` / `validate` / `preview` | Planned/legacy — local `/sell` generation/preview (not implemented; use `build`) |
+
 
 ## Global options
 

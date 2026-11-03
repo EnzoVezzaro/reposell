@@ -33,6 +33,7 @@ During `reposell init`, the wizard will:
 |---------|-------------|
 | `reposell init [--yes] [--wizard]` | Guided setup wizard — license, payment, signing key |
 | `reposell sell init [--link URL]` | Scaffold the `/sell` storefront wired to your Stripe Payment Link |
+| `reposell sell create-link --price N [--currency USD]` | Create a Stripe Payment Link with the correct redirect |
 | `reposell sell sync [payment_link_id]` | Pull-based fulfillment: purchases, refunds, fork artifacts |
 | `reposell release [tag] [--price N] [--currency USD] [--link URL]` | Declare a release with pricing |
 | `reposell publish [tag]` | Approve publication after gates pass |
@@ -41,6 +42,7 @@ During `reposell init`, the wizard will:
 | `reposell health` | Health report for every configured release |
 | `reposell verify <manifest\|trust\|pricing> [url]` | CI verification entry points |
 | `reposell keys <generate\|show>` | Ed25519 signing identity management |
+| `reposell balance` | Show Stripe balance and payout status |
 | `reposell license check\|use\|keep\|compose\|explain\|validate\|compatibility` | License management and SPDX analysis |
 | `reposell listing status\|publish` | Listing status dashboard and publication |
 | `reposell audit` | Full licensing/compliance audit (PASS/WARN/BLOCKED) |
