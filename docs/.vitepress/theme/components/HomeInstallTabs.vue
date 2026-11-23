@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { track } from '../analytics'
 
 const TABS = [
   { id: 'npm', label: 'npm', cmd: 'npm install -g @reposell/cli' },
@@ -22,6 +23,7 @@ async function copy() {
   try {
     await navigator.clipboard.writeText(cmd)
     copied.value = true
+    track('install_command_copied', { package_manager: active.value })
     clearTimeout(resetTimer)
     resetTimer = setTimeout(() => (copied.value = false), 1600)
   } catch {

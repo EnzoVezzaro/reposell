@@ -1,4 +1,5 @@
 <script setup>
+import { track } from '../analytics'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const GITHUB_CLIENT_ID = 'Iv23lidhennqrdpdFUAT'
@@ -222,6 +223,7 @@ function proxyFetch(url, options) {
 }
 
 async function connect() {
+  track('audit_github_connect_started')
   connectState.value = 'device'
   connectError.value = ''
   deviceCode.value = ''
@@ -316,6 +318,7 @@ async function pollForToken(code, intervalMs, deadline) {
       token.value = data.access_token
       connectState.value = 'connected'
       sessionStorage.setItem(TOKEN_KEY, token.value)
+      track('audit_github_connected')
       void loadRepos()
       return
     }
@@ -522,6 +525,7 @@ async function run() {
       score.value = total
       grade.value = gradeFrom(total)
       state.value = 'done'
+      track('audit_completed', { score: total, grade: grade.value, connected: Boolean(token.value) })
     })
   } catch (err) {
     state.value = 'error'

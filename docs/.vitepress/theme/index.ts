@@ -1,5 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
-import type { Theme } from 'vitepress'
+import { inBrowser, type Theme } from 'vitepress'
+import { initAnalytics, trackPageview } from './analytics'
 
 import '../../../branding/theme/styles/variables.css'
 import '../../../branding/theme/styles/custom.css'
@@ -30,7 +31,13 @@ import FooterWordmark from './components/FooterWordmark.vue'
 export default {
   extends: DefaultTheme,
   Layout: ReposellLayout,
-  enhanceApp({ app }) {
+  enhanceApp({ app, router }) {
+    if (inBrowser) {
+      initAnalytics()
+      trackPageview()
+      router.onAfterRouteChanged = () => trackPageview()
+      window.addEventListener('popstate', () => setTimeout(trackPageview, 0))
+    }
     app.component('VPButton', VPButton)
     app.component('VPCard', VPCard)
     app.component('VPBadge', VPBadge)

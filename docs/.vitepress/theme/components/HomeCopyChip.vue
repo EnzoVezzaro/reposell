@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from 'vue'
+import { track } from '../analytics'
 
 defineProps<{ cmd?: string }>()
 
@@ -10,6 +11,7 @@ async function copy(cmd: string) {
   try {
     await navigator.clipboard.writeText(cmd)
     copied.value = true
+    track('command_copied', { command: cmd })
     clearTimeout(resetTimer)
     resetTimer = setTimeout(() => (copied.value = false), 1600)
   } catch {
