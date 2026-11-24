@@ -46,6 +46,7 @@ export default defineConfig({
     ['link', { rel: 'apple-touch-icon', href: '/branding/icon.png' }],
     ['script', {}, `window.__APP_VERSION__ = "${pkg.version}"`],
     ['meta', { name: 'theme-color', content: '#0af188' }],
+    ['meta', { name: 'google-site-verification', content: '-STFycPaKRGRjkrYpN_96lJsVQxvCrnmS5y76UvZV7w' }],
     ['meta', { property: 'og:image', content: '/branding/logo.png' }],
     ['meta', { property: 'og:site_name', content: 'reposell' }],
     ['link', { rel: 'preload', as: 'style', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap' }],
