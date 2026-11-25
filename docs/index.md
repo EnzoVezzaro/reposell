@@ -3,7 +3,7 @@ layout: home
 footer: false
 
 title: reposell
-description: Your repo, your keys, your revenue. Turn any Git repository into something people can buy.
+description: 'Turn any Git repository into a sellable product with reposell: signed /sell endpoints, Stripe checkout, licensing and release automation wired by one CLI. No platform lock-in, no daemons — your keys and your revenue stay yours.'
 ---
 
 <LandingHero>

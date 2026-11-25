@@ -1,12 +1,43 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defineConfig } from 'vitepress'
+import { defineConfig, type HeadConfig } from 'vitepress'
 
 const pkg = JSON.parse(readFileSync(resolve(import.meta.dirname, '../../package.json'), 'utf8'))
 
+const SITE_URL = 'https://reposell.dev'
+const SITE_DESCRIPTION = 'reposell is the open protocol and CLI that turns any Git repository into a sellable product: signed /sell endpoints, Stripe checkout, licensing and release automation, wired by one command. No platform lock-in, no daemons — you keep your keys and your revenue.'
+
+/** Public URL of a built VitePress page (cleanUrls is disabled in this version). */
+function canonicalPath(relativePath: string): string {
+  if (!relativePath || relativePath === 'index.md') return '/'
+  const withoutExt = relativePath.replace(/\.md$/, '')
+  if (withoutExt.endsWith('/index')) return `/${withoutExt.slice(0, -'/index'.length)}/`
+  return `/${withoutExt}.html`
+}
+
+const landingStructuredData = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'reposell CLI',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Linux, macOS, Windows',
+      url: `${SITE_URL}/`,
+      description: SITE_DESCRIPTION,
+    },
+    {
+      '@type': 'Organization',
+      name: 'reposell',
+      url: `${SITE_URL}/`,
+      founder: { '@type': 'Person', name: 'Enzo Vezzaro' },
+    },
+  ],
+})
+
 export default defineConfig({
   title: 'reposell CLI',
-  description: 'Don\'t let AI consume your repo for free. Earn for the tools you build for the Opensource',
+  description: SITE_DESCRIPTION,
   lang: 'en-US',
   base: '/',
   head: [
@@ -16,15 +47,34 @@ export default defineConfig({
     ['script', {}, `window.__APP_VERSION__ = "${pkg.version}"`],
     ['meta', { name: 'theme-color', content: '#0af188' }],
     ['meta', { property: 'og:image', content: '/branding/logo.png' }],
+    ['meta', { property: 'og:site_name', content: 'reposell' }],
     ['link', { rel: 'preload', as: 'style', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap' }],
     ['link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap' }],
-    ['meta', { name: 'description', content: 'Don\'t let AI consume your repo for free. Earn for the tools you build for the Opensource' }],
     // pre-paint: pin home to dark + arm anime.js boot-hide before first frame
     ['script', {}, `(function(){try{var p=location.pathname,b='/docs/',h=p===b||p===b+'index.html'||p==='/'||p==='/index.html';if(!h)return;var d=document.documentElement;d.classList.add('rs-home','dark');if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))d.classList.add('lx-boot')}catch(e){}})()`],
   ],
+  transformHead({ pageData, title, description }): HeadConfig[] {
+    const url = `${SITE_URL}${canonicalPath(pageData.relativePath)}`
+    const pageDescription = description || SITE_DESCRIPTION
+    const head: HeadConfig[] = [
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: pageDescription }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { property: 'og:type', content: 'website' }],
+      ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+      ['meta', { name: 'twitter:title', content: title }],
+      ['meta', { name: 'twitter:description', content: pageDescription }],
+      ['meta', { name: 'twitter:image', content: `${SITE_URL}/branding/logo.png` }],
+    ]
+    if (pageData.relativePath === 'index.md') {
+      head.push(['script', { type: 'application/ld+json' }, landingStructuredData])
+    }
+    return head
+  },
   themeConfig: {
     siteTitle: false,
-    description: 'Don\'t let AI consume your repo for free. Earn for the tools you build for the Opensource',
+    description: SITE_DESCRIPTION,
     nav: [
       {
         text: 'Guide',
